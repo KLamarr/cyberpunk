@@ -49,7 +49,8 @@ extends Resource
 
 
 ## Nel creatore di NPC le forme di libreria sono bloccate finché non si attiva
-## «Modifica la libreria»: nell'Inspector la forma resta visibile ma non modificabile.
+## «Modifica la libreria»: la forma sparisce dall'Inspector (aprendola lì la si
+## modificherebbe per tutti) e la nota del creatore ne dice il nome.
 static var library_locked := true
 
 
@@ -58,7 +59,7 @@ func _validate_property(property: Dictionary) -> void:
 		property.hint = PROPERTY_HINT_ENUM
 		property.hint_string = ",".join(NPCRig.BONES)
 	if property.name == "shape" and library_locked and NPCDefinition.is_library_shape(shape):
-		property.usage |= PROPERTY_USAGE_READ_ONLY
+		property.usage &= ~PROPERTY_USAGE_EDITOR
 
 
 static func create(lbl: String, s: SegmentShape, b: String, off: Vector3, rot: Vector3, len: float, mir := false) -> NPCAttachment:

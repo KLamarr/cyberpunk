@@ -80,6 +80,10 @@ var _pending: Callable
 var _after_save: Callable
 var _quiet := 0
 var _dirty_shapes := {}
+## Modifiche a forme di libreria che l'NPC ha smesso di usare (Rendi unica, cambio forma,
+## accessorio rimosso): la forma torna com'è su disco e le modifiche restano qui, pronte
+## a tornare se l'annulla la rimette in uso.
+var _released := {}
 var _watched: Array[Resource] = []
 var _refresh_queued := false
 var _built := false
@@ -576,6 +580,7 @@ func _apply(owner: NPCDefinition, obj: Object, prop: String, value: Variant) -> 
 func _after_edit() -> void:
 	_assign_history_paths()
 	_watch_shapes()
+	_sync_library_shapes()
 	_mark_dirty()
 	_queue_refresh()
 
@@ -635,9 +640,14 @@ func open_definition(d: NPCDefinition) -> void:
 func _load_def(d: NPCDefinition, keep_dirty_shapes := false) -> void:
 	if def != null and def.changed.is_connected(_on_def_changed):
 		def.changed.disconnect(_on_def_changed)
+	if def != null and d != def and plugin != null:
+		# le modifiche fatte negli Inspector integrati sono azioni normali dell'editor: un
+		# Ctrl+Z dopo aver cambiato NPC cambierebbe quello chiuso. Si riparte da zero.
+		plugin.get_undo_redo().clear_history(EditorUndoRedoManager.GLOBAL_HISTORY, false)
 	def = d
 	dirty = false
 	_last_merge_key = ""
+	_released.clear()
 	if not keep_dirty_shapes:
 		_dirty_shapes.clear()
 	def.changed.connect(_on_def_changed)
@@ -656,6 +666,7 @@ func _on_def_changed() -> void:
 		return
 	# subito, non al prossimo frame: una forma appena assegnata va già sorvegliata
 	_watch_shapes()
+	_sync_library_shapes()
 	_mark_dirty()
 	_queue_refresh()
 
@@ -668,6 +679,7 @@ func revert_unsaved() -> void:
 	for sp in _dirty_shapes:
 		NPCLibrary.restore_from_disk(_dirty_shapes[sp])
 	_dirty_shapes.clear()
+	_released.clear()
 	if def != null and def_path != "" and dirty:
 		NPCLibrary.restore_from_disk(def)
 	_quiet -= 1
@@ -763,22 +775,22 @@ func save() -> void:
 
 
 ## Ctrl+S dell'editor (anche da un'altra scheda), avvio del gioco, chiusura con
-## salvataggio. Salva senza chiedere solo un NPC che ha già il suo file e nessuna forma
-## condivisa modificata: in tutti gli altri casi avvisa e lascia decidere.
+## salvataggio. Godot a ogni Ctrl+S salva comunque le risorse modificate che hanno un file
+## (l'NPC aperto e le forme di libreria cambiate con «Modifica la libreria»): il creatore
+## fa lo stesso, in ordine. Un NPC mai salvato non ha un file: resta da salvare, con un avviso.
 func save_on_editor_save() -> void:
-	if def == null or not dirty:
+	if def == null or (not dirty and _dirty_shapes.is_empty()):
 		return
-	if def_path == "":
-		_warn_unsaved("non è mai stato salvato")
-	elif not _dirty_shapes.is_empty():
-		_warn_unsaved("ha modifiche a forme condivise della libreria")
-	else:
+	if def_path != "":
 		save_to(def_path)
+		return
+	var n := _save_library_shapes()
+	_warn_unsaved("non è mai stato salvato" + (" (salvate %d forme di libreria)" % n if n > 0 else ""))
 
 
 func _warn_unsaved(why: String) -> void:
-	var msg := "Creatore di NPC: «%s» %s: non l'ho salvato. Usa Salva nella scheda NPC." % [def.display_name, why]
-	_status("Non salvato: " + why)
+	var msg := "Creatore di NPC: «%s» %s. Usa Salva nella scheda NPC per dargli un file." % [def.display_name, why]
+	_status("NPC non salvato: " + why)
 	push_warning(msg)
 
 
@@ -786,13 +798,15 @@ func _warn_unsaved(why: String) -> void:
 func save_to(path: String) -> Error:
 	if def_path != "" and path != def_path:
 		return save_as(path)
-	def.take_over_path(path)
+	var target := _adopt_path(def, path)
 	# le sottorisorse (parti, accessori, forme uniche) prendono percorsi di questo file:
 	# niente oggetti condivisi con altri file, e le modifiche vanno nella cronologia giusta
-	var err := ResourceSaver.save(def, path, ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
+	var err := ResourceSaver.save(target, path, ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
 	if err != OK:
 		_status("Errore %d nel salvare %s" % [err, path])
 		return err
+	if target != def:
+		_load_def(target, true)
 	var extra := _save_library_shapes()
 	dirty = false
 	_update_title()
@@ -805,8 +819,7 @@ func save_to(path: String) -> Error:
 ## «Salva come»: l'NPC aperto diventa una copia nel nuovo file; il file di prima resta
 ## com'era su disco (con i livelli che lo usano).
 func save_as(path: String) -> Error:
-	var copy := def.clone()
-	copy.take_over_path(path)
+	var copy := _adopt_path(def.clone(), path)
 	var err := ResourceSaver.save(copy, path, ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
 	if err != OK:
 		_status("Errore %d nel salvare %s" % [err, path])
@@ -826,6 +839,21 @@ func save_as(path: String) -> Error:
 	return OK
 
 
+## Salvare sopra un file già caricato da un'altra risorsa (per esempio ruiz.tres, usato
+## dalle guardie di un livello aperto): i dati vanno nell'oggetto che tutti usano, così il
+## livello continua a puntare al file invece di incorporarsi la versione vecchia.
+func _adopt_path(src: NPCDefinition, path: String) -> NPCDefinition:
+	if ResourceLoader.has_cached(path):
+		var target := load(path)
+		if target is NPCDefinition and target != src:
+			_quiet += 1
+			NPCLibrary.copy_storage(src, target)
+			_quiet -= 1
+			return target
+	src.take_over_path(path)
+	return src
+
+
 ## Salva le forme di libreria modificate che l'NPC usa ancora; quelle che non usa più
 ## tornano com'erano (le modifiche valevano solo per lui).
 func _save_library_shapes() -> int:
@@ -841,6 +869,7 @@ func _save_library_shapes() -> int:
 			NPCLibrary.restore_from_disk(sh)
 			_quiet -= 1
 	_dirty_shapes.clear()
+	_released.clear()
 	return n
 
 
@@ -864,7 +893,6 @@ func save_shape_to_library(path: String) -> void:
 	_fs_update(path)
 	NPCLibrary.invalidate()
 	_set_prop(part, "shape", target, "forma in libreria")
-	_release_library_shape(old)
 	_status("Forma salvata in libreria: " + path.get_file())
 
 
@@ -942,18 +970,32 @@ func _on_lib_shape_changed(sh: SegmentShape) -> void:
 	_mark_dirty()
 
 
-## Una forma di libreria che l'NPC non usa più torna com'è su disco: le sue modifiche non
-## salvate sono passate nella copia unica o nel nuovo file, gli altri NPC non le vedono.
-func _release_library_shape(lib: SegmentShape) -> void:
-	if lib == null or not NPCDefinition.is_library_shape(lib) or _uses_shape(lib):
+## Forme di libreria modificate che l'NPC non usa più (Rendi unica, cambio di forma,
+## accessorio rimosso, anche per annulla/ripeti): tornano com'erano su disco, così gli
+## altri NPC e i livelli non vedono modifiche orfane. Se l'annulla le rimette in uso,
+## riprendono le modifiche.
+func _sync_library_shapes() -> void:
+	if def == null:
 		return
-	if not _dirty_shapes.has(lib.resource_path):
-		return
-	_dirty_shapes.erase(lib.resource_path)
-	_quiet += 1
-	NPCLibrary.restore_from_disk(lib)
-	_quiet -= 1
-	_status("«%s» in libreria è rimasta com'era" % NPCLibrary.shape_name_of(lib))
+	var used := _used_shapes()
+	for sp in _dirty_shapes.keys():
+		var sh: SegmentShape = _dirty_shapes[sp]
+		if not sh in used:
+			_released[sp] = sh.duplicate(true)
+			_dirty_shapes.erase(sp)
+			_quiet += 1
+			NPCLibrary.restore_from_disk(sh)
+			_quiet -= 1
+			_status("«%s» in libreria è rimasta com'era" % NPCLibrary.shape_name_of(sh))
+	for sp in _released.keys():
+		for sh in used:
+			if sh.resource_path == sp:
+				_quiet += 1
+				NPCLibrary.copy_storage(_released[sp], sh)
+				_quiet -= 1
+				_dirty_shapes[sp] = sh
+				_released.erase(sp)
+				break
 
 
 ## Le sottorisorse senza percorso (parti e accessori di un NPC nuovo, forme uniche non
@@ -1154,9 +1196,7 @@ func _on_shape_selected(i: int, is_b: bool) -> void:
 		return
 	var s: SegmentShape = null if path == "" else load(path)
 	var part := _part()
-	var old: SegmentShape = part.shape_b if is_b else part.shape
 	_set_prop(part, "shape_b" if is_b else "shape", s, "forma")
-	_release_library_shape(old)
 
 
 func _make_unique() -> void:
@@ -1167,7 +1207,6 @@ func _make_unique() -> void:
 	var copy: SegmentShape = lib.duplicate(true)
 	copy.resource_name = NPCLibrary.shape_name_of(lib) + "_unica"
 	_set_prop(part, "shape", copy, "rendi unica")
-	_release_library_shape(lib)
 
 
 func _on_section_edited(sec: PackedFloat32Array) -> void:
@@ -1252,13 +1291,13 @@ func _select_acc(i: int) -> void:
 
 func _update_acc_note(a: NPCAttachment) -> void:
 	if a == null or a.shape == null:
-		acc_note.text = "Posizione, direzione e lunghezza qui sotto; la forma si apre cliccandoci sopra."
+		acc_note.text = "Posizione, direzione e lunghezza qui sotto."
 	elif NPCDefinition.is_library_shape(a.shape) and not edit_library:
-		acc_note.text = "La forma «%s» è della libreria ed è bloccata. «Rendi unica la forma» per cambiarla solo qui, oppure attiva «Modifica la libreria» nella scheda Forme per cambiarla per tutti." % NPCLibrary.shape_name_of(a.shape)
+		acc_note.text = "Forma «%s» della libreria, bloccata (%s). «Rendi unica la forma» per cambiarla solo qui, oppure attiva «Modifica la libreria» nella scheda Forme per cambiarla per tutti." % [NPCLibrary.shape_name_of(a.shape), ", ".join(NPCLibrary.shape_users(a.shape.resource_path)) if not NPCLibrary.shape_users(a.shape.resource_path).is_empty() else "condivisa"]
 	elif NPCDefinition.is_library_shape(a.shape):
 		acc_note.text = "Stai modificando la forma di libreria «%s»: cambia per tutti gli NPC che la usano." % NPCLibrary.shape_name_of(a.shape)
 	else:
-		acc_note.text = "Forma unica di questo accessorio: si salva dentro il file dell'NPC."
+		acc_note.text = "Forma unica di questo accessorio (si apre cliccandoci sopra): si salva dentro il file dell'NPC."
 
 
 func _make_acc_unique() -> void:
@@ -1271,7 +1310,6 @@ func _make_acc_unique() -> void:
 	var copy: SegmentShape = lib.duplicate(true)
 	copy.resource_name = NPCLibrary.shape_name_of(lib) + "_unica"
 	_set_prop(a, "shape", copy, "rendi unica")
-	_release_library_shape(lib)
 	acc_inspector.edit(null)
 	_fill_acc_ui()
 

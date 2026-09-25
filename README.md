@@ -145,9 +145,12 @@ nell'anteprima la seleziona. Ogni modifica si annulla con Ctrl+Z. Aprire un file
 `.tres` di un NPC dal FileSystem lo carica nel creatore. Prima di lasciare un NPC con
 modifiche non salvate il creatore chiede **Salva / Scarta / Annulla**; **Scarta** lo
 riporta esattamente com'è su disco. **Salva come** lascia il file di prima com'era (con
-i livelli che lo usano) e continua sulla copia. Il Ctrl+S dell'editor salva anche l'NPC
-aperto, ma solo se ha già il suo file e non tocca forme condivise; negli altri casi
-avvisa nell'Output.
+i livelli che lo usano) e continua sulla copia; salvare sopra un file già usato da un
+livello aperto aggiorna i dati senza staccare il livello dal file. Il Ctrl+S dell'editor,
+come fa Godot con tutte le risorse modificate, salva anche l'NPC aperto (se ha già un
+file) e le forme di libreria cambiate con «Modifica la libreria»; un NPC mai salvato resta
+da salvare, con un avviso nell'Output. Aprire un altro NPC azzera la cronologia di
+annulla globale, così un Ctrl+Z non può cambiare l'NPC appena chiuso.
 
 **Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC,
 e nel creatore sono **bloccate**: la nota dice quali personaggi usano la forma.

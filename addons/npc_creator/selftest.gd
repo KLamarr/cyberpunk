@@ -83,6 +83,9 @@ func run() -> void:
 	await _test_save_as()
 	await _test_discard()
 	await _test_open_cancel_and_save()
+	await _test_undo_release()
+	await _test_overwrite_cached()
+	await _test_history_on_switch()
 	await _test_existing_characters()
 	await _test_background()
 	_check(not _scene_marked_unsaved(), "modificare gli NPC non marca come modificata la scena aperta")
@@ -168,11 +171,18 @@ func _test_basics() -> void:
 	p._add_accessory()
 	_check(p.def.attachments.size() == n_acc + 1, "accessorio aggiunto")
 	var acc: NPCAttachment = p.def.attachments[-1]
-	var ro := false
+	var hidden := false
 	for prop in acc.get_property_list():
 		if prop.name == "shape":
-			ro = prop.usage & PROPERTY_USAGE_READ_ONLY != 0
-	_check(ro, "la forma di libreria di un accessorio è in sola lettura nell'Inspector")
+			hidden = prop.usage & PROPERTY_USAGE_EDITOR == 0 and prop.usage & PROPERTY_USAGE_STORAGE != 0
+	_check(hidden, "la forma di libreria di un accessorio non si apre nell'Inspector (ma si salva)")
+	p.edit_library = true
+	var shown := false
+	for prop in acc.get_property_list():
+		if prop.name == "shape":
+			shown = prop.usage & PROPERTY_USAGE_EDITOR != 0
+	p.edit_library = false
+	_check(shown, "con «Modifica la libreria» la forma dell'accessorio torna nell'Inspector")
 	# clic sull'anteprima: la testa è in alto al centro
 	await _frames(2)
 	var picked := [""]
@@ -221,7 +231,8 @@ func _test_history() -> void:
 func _test_editor_save() -> void:
 	var before := DirAccess.get_files_at(NPCLibrary.CHARACTERS_DIR)
 	_check(p.dirty and p.def_path == "", "NPC nuovo non salvato")
-	plugin._save_external_data()
+	EditorInterface.save_scene()
+	await _frames(2)
 	_check(DirAccess.get_files_at(NPCLibrary.CHARACTERS_DIR) == before and p.dirty, "Ctrl+S non crea un personaggio senza chiedere")
 	var path := TMP.path_join("nuovo.tres")
 	_check(p.save_to(path) == OK and not p.dirty and p.def_path == path, "primo salvataggio con nome")
@@ -235,7 +246,8 @@ func _test_editor_save() -> void:
 		ids_ok = ids_ok and p.def.parts[k].resource_path != "" and ur.get_object_history_id(p.def.parts[k]) == EditorUndoRedoManager.GLOBAL_HISTORY
 	_check(ids_ok, "dopo il salvataggio le parti restano nella cronologia globale")
 	p._set_prop(p.def, "height", 1.7)
-	plugin._save_external_data()
+	EditorInterface.save_scene()
+	await _frames(2)
 	_check(not p.dirty and is_equal_approx((_disk(path) as NPCDefinition).height, 1.7), "Ctrl+S salva un NPC che ha già il suo file")
 
 
@@ -339,7 +351,6 @@ func _test_discard() -> void:
 		p.save()
 		lib = d.get_part("testa").shape
 	var lib_disk: SegmentShape = _disk(testa_path)
-	var files_before := FileAccess.get_md5(prova_path)
 	p._set_prop(d, "max_health", 250.0)
 	p._set_prop(d, "investigates_noises", false)
 	p._set_prop(d, "faction", "ribelli")
@@ -356,15 +367,20 @@ func _test_discard() -> void:
 		"Scarta ripristina accessori e parti")
 	_check(is_equal_approx(lib.extend_start, lib_disk.extend_start) and lib.smooth == lib_disk.smooth, "Scarta ripristina la forma di libreria")
 	_check(not p.dirty and p._dirty_shapes.is_empty(), "dopo Scarta niente da salvare")
-	plugin._save_external_data()
-	_check(FileAccess.get_md5(prova_path) == files_before, "le modifiche scartate non finiscono su disco col Ctrl+S successivo")
-	# Ctrl+S con una forma condivisa modificata: non salva senza chiedere
+	EditorInterface.save_scene()
+	await _frames(2)
+	var after: NPCDefinition = _disk(prova_path)
+	var lib_after: SegmentShape = _disk(testa_path)
+	_check(is_equal_approx(after.max_health, disk.max_health) and after.faction == disk.faction and after.investigates_noises == disk.investigates_noises
+		and is_equal_approx(lib_after.extend_start, lib_disk.extend_start) and lib_after.smooth == lib_disk.smooth,
+		"le modifiche scartate non finiscono su disco col Ctrl+S successivo")
+	# Ctrl+S con una forma di libreria modificata (di proposito): la salva, come fa Godot
 	p.edit_library = true
-	p._set_prop(lib, "rings", lib.rings + 1)
+	p._set_prop(lib, "rings", lib_disk.rings + 1)
 	p.edit_library = false
-	plugin._save_external_data()
-	_check(p.dirty and (_disk(testa_path) as SegmentShape).rings == lib_disk.rings, "Ctrl+S non salva da solo le forme condivise")
-	p.revert_unsaved()
+	EditorInterface.save_scene()
+	await _frames(2)
+	_check(not p.dirty and (_disk(testa_path) as SegmentShape).rings == lib_disk.rings + 1, "Ctrl+S salva l'NPC e la forma di libreria modificata")
 
 
 ## «Apri…» annullato non perde le modifiche; «Salva» nella conferma salva e prosegue.
@@ -387,6 +403,80 @@ func _test_open_cancel_and_save() -> void:
 	p.confirm.custom_action.emit("save")
 	_check(p.def != d and p.def.resource_path.ends_with("prova_elite.tres"), "Salva: salva e apre l'altro NPC")
 	_check(is_equal_approx((_disk(prova_path) as NPCDefinition).height, h), "…e le modifiche sono su disco")
+
+
+## Annulla/ripeti di «Rendi unica» e di un accessorio rimosso: la forma di libreria non
+## resta modificata senza che nessuno la usi, e l'annulla le restituisce le modifiche.
+func _test_undo_release() -> void:
+	p.open_definition(load(prova_path))
+	await _frames(2)
+	p.select_part("testa", false)
+	var lib: SegmentShape = p.def.get_part("testa").shape
+	_check(NPCDefinition.is_library_shape(lib), "testa di prova dalla libreria")
+	var r0: float = (_disk(testa_path) as SegmentShape).radius_x
+	p.edit_library = true
+	p._set_prop(lib, "radius_x", r0 + 0.05)
+	p.edit_library = false
+	p._make_unique()
+	_check(is_equal_approx(lib.radius_x, r0), "Rendi unica: la libreria torna com'era")
+	hist.undo()
+	_check(p.def.get_part("testa").shape == lib and is_equal_approx(lib.radius_x, r0 + 0.05) and p._dirty_shapes.has(testa_path),
+		"annullare Rendi unica restituisce la modifica alla forma di libreria")
+	hist.redo()
+	_check(p.def.get_part("testa").shape != lib and is_equal_approx(lib.radius_x, r0) and not p._dirty_shapes.has(testa_path),
+		"ripetere Rendi unica la toglie di nuovo")
+	# accessorio con una forma di libreria modificata, poi rimosso
+	var tor: SegmentShape = load(torace_path)
+	var z0 := tor.radius_z
+	var arr: Array[NPCAttachment] = p.def.attachments.duplicate()
+	arr.append(NPCLibrary.attachment_from("prova", tor))
+	p._set_prop(p.def, "attachments", arr)
+	p.edit_library = true
+	p._set_prop(tor, "radius_z", z0 + 0.05)
+	p.edit_library = false
+	p._selected_acc = p.def.attachments.size() - 1
+	p._remove_acc()
+	_check(is_equal_approx(tor.radius_z, z0) and not p._dirty_shapes.has(torace_path), "accessorio rimosso: la sua forma di libreria torna com'era")
+	hist.undo()
+	_check(is_equal_approx(tor.radius_z, z0 + 0.05) and p._dirty_shapes.has(torace_path), "annullando la rimozione torna anche la modifica")
+	hist.redo()
+	EditorInterface.save_scene()
+	await _frames(2)
+	_check(is_equal_approx((_disk(testa_path) as SegmentShape).radius_x, r0) and is_equal_approx((_disk(torace_path) as SegmentShape).radius_z, z0),
+		"Ctrl+S non salva le modifiche di forme non più usate")
+
+
+## Salvare sopra un file già caricato (come ruiz.tres usato da un livello): si aggiorna
+## l'oggetto che tutti usano, invece di crearne un secondo.
+func _test_overwrite_cached() -> void:
+	var cached: NPCDefinition = load(prova_path)
+	p.revert_unsaved()
+	p.new_npc(NPCDefinition.Archetype.TECNICO, 7)
+	var nome: String = p.def.display_name
+	_check(p.save_to(prova_path) == OK and p.def == cached and cached.display_name == nome and not p.dirty,
+		"NPC nuovo salvato sopra un file aperto: aggiorna quell'oggetto")
+	var elite_path := TMP.path_join("prova_elite.tres")
+	var elite: NPCDefinition = load(elite_path)
+	p._set_prop(p.def, "height", 1.66)
+	p._dialog_mode = "save"
+	p._on_file_selected(elite_path)
+	_check(p.def == elite and is_equal_approx(elite.height, 1.66) and elite.display_name == nome, "Salva come sopra un file aperto: aggiorna quell'oggetto")
+
+
+## Cambiando NPC la cronologia globale riparte: un Ctrl+Z non tocca quello chiuso.
+func _test_history_on_switch() -> void:
+	var d: NPCDefinition = p.def
+	var acc: NPCAttachment = d.attachments[0]
+	var l0 := acc.length
+	ur.create_action("Imposta length")
+	ur.add_do_property(acc, "length", l0 + 0.3)
+	ur.add_undo_property(acc, "length", l0)
+	ur.commit_action()
+	p.save()
+	p.open_definition(load(prova_path))
+	await _frames(2)
+	hist.undo()
+	_check(is_equal_approx(acc.length, l0 + 0.3) and not hist.has_undo(), "dopo aver cambiato NPC il Ctrl+Z non tocca quello chiuso")
 
 
 func _test_existing_characters() -> void:

@@ -59,12 +59,14 @@ func _edit(object: Object) -> void:
 ## Chiudendo l'editor con un NPC modificato, Godot chiede se salvarlo.
 func _get_unsaved_status(for_scene: String) -> String:
 	if for_scene == "" and is_instance_valid(panel) and panel.dirty and panel.def != null:
+		if panel.def_path == "":
+			return "L'NPC «%s» non è mai stato salvato e andrebbe perso: Annulla e usa Salva nella scheda NPC." % panel.def.display_name
 		return "Salvare le modifiche all'NPC «%s»?" % panel.def.display_name
 	return ""
 
 
-## Ctrl+S, avvio del gioco, chiusura con salvataggio: salva anche l'NPC aperto, ma solo
-## se ha già il suo file e non tocca forme condivise (vedi save_on_editor_save).
+## Ctrl+S, avvio del gioco, chiusura con salvataggio: salva anche l'NPC aperto (se ha già
+## il suo file) e le forme di libreria modificate (vedi save_on_editor_save).
 func _save_external_data() -> void:
 	if is_instance_valid(panel):
 		panel.save_on_editor_save()
