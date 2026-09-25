@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_4vegk"]
+
+[sub_resource type="Curve" id="Curve_iy3qo"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.31428567, 1, 1, Vector2(1, 0.8), -0.31428567, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_v17ao"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.31428567, 1, 1, Vector2(1, 0.8), -0.31428567, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "braccio"
+script = ExtResource("1_4vegk")
+category = 5
+tags = PackedStringArray()
+width_curve = SubResource("Curve_v17ao")
+depth_curve = SubResource("Curve_iy3qo")
+radius_x = 0.05
+radius_z = 0.054
+extend_start = 0.18
+extend_end = 0.1
+cap_start = true
+section = PackedFloat32Array()

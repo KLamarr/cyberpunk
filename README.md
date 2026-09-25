@@ -111,6 +111,77 @@ di ventilazione con un ramo segreto.
 - **Renderer Compatibility** (OpenGL 3.3): gira ovunque; poche luci con ombre nella hall
   e nel laboratorio, il resto a zone.
 
+## Creatore di NPC
+
+![Creatore di NPC](docs/screenshots/npc_creator.png)
+
+Plugin dell'editor (`addons/npc_creator`, già attivo): scheda **NPC** nella barra in alto,
+accanto a 2D, 3D e Script. A sinistra le schede con i controlli, a destra l'anteprima 3D
+che gira nello stesso SubViewport 640×360 con dithering del gioco (disattivabile), con
+le pose Riposo, Cammina, Corri, Mira e A terra, una luce regolabile per vedere l'NPC al buio
+e uno sfondo a scelta (buio come in gioco, grigio, chiaro, due colori di contrasto o
+personalizzato, con o senza pavimento): sugli NPC scuri uno sfondo chiaro fa leggere la sagoma.
+
+- **Corpo**: nome, archetipo, fazione; altezza, corporatura, spalle, fianchi, braccia,
+  gambe, testa, collo, postura; i 7 colori della tavolozza (pelle, uniforme, secondario,
+  armatura, stivali e guanti, capelli, luce di visore e impianto CALMA).
+- **Forme**: le 11 parti del corpo (testa, collo, torace, addome, bacino, braccio,
+  avambraccio, mano, coscia, stinco, piede). Per ognuna: la forma della libreria, un morph
+  verso una seconda forma, lo spessore, la **sezione** (trascini i vertici dell'anello,
+  con simmetria) e sotto, nell'Inspector integrato, le **curve di profilo** (larghezza,
+  profondità, sporgenza in avanti) con l'editor di curve di Godot, raggi, anelli, lati,
+  sovrapposizione alle articolazioni, materiale.
+- **Accessori**: casco, visore, impianto CALMA, colletto, spallacci, cintura, pistola,
+  capelli, berretto, cuffia, falda del camice... ognuno agganciato a un osso, con
+  posizione, direzione, lunghezza e specchiatura sui due lati.
+- **Gameplay**: vista, cono visivo, prontezza, udito, salute, precisione, danno, tempo di
+  reazione, velocità; se va a controllare i rumori, se dà l'allarme per un corpo, se
+  risponde agli allarmi, se chiama rinforzi.
+- **Inventario**: munizioni, crediti, medipatch, tessera; battute di ronda.
+
+In alto: **Nuovo** (NPC casuale dell'archetipo), **Apri**, **Salva**, **Salva come**,
+**Duplica**, **Seme** e **Casuale** (stesso seme = stesso aspetto). Un clic su una parte
+nell'anteprima la seleziona. Ogni modifica si annulla con Ctrl+Z. Aprire un file
+`.tres` di un NPC dal FileSystem lo carica nel creatore.
+
+**Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC:
+modificare una forma di libreria cambia tutti quelli che la usano (e viene salvata insieme
+all'NPC). **Rendi unica** ne fa una copia dentro l'NPC; **Salva in libreria** la
+trasforma in un nuovo file riutilizzabile. Gli NPC sono `NPCDefinition` in
+`assets/npc/characters/`. Il generatore casuale pesca fra le forme della libreria
+(quelle con un tag d'archetipo, es. `guardia`, restano all'uniforme giusta), quindi una
+forma nuova entra subito nel mescolamento.
+
+![NPC generati](docs/screenshots/npc_lineup.png)
+
+**Come è fatto il corpo.** Scheletro di 17 ossa calcolato dalle proporzioni (rotazione di
+riposo nulla: la stessa animazione vale per ogni corporatura). Ogni segmento è un loft di
+anelli low-poly lungo il proprio osso, con pesi rigidi e sovrapposizione alle
+articolazioni come in System Shock 2. Corpo e accessori finiscono in **una sola mesh con
+un solo materiale** condiviso (atlante `npc_atlas.png` in scala di grigi + colori nei
+vertex color; visore e impianto CALMA emissivi, tinti per istanza secondo lo stato della
+guardia). La mesh si genera al caricamento (circa 8 ms per NPC) e resta in cache.
+L'animazione è procedurale sulle ossa, guidata dalla stessa fase dei passi udibili;
+le guardie lontane aggiornano la posa meno spesso.
+
+| Guardie nella hall | draw call con le vecchie primitive | draw call con la mesh unica |
+|---|---|---|
+| 14 | 970 | 406 |
+| 29 | 1558 | 451 |
+| 54 | 2720 | 559 |
+| 104 | 5264 | 788 |
+
+(`--autotest --stress` con un display; restano più draw call per guardia perché il
+renderer Compatibility disegna una passata per ogni luce e ombra che la tocca.)
+
+**Usare un NPC nel livello.** Trascina `scenes/entities/guard.tscn` nel livello e, nella
+proprietà **Definition**, trascina il personaggio da `assets/npc/characters/` (nell'editor
+la guardia prende subito il suo aspetto). La definizione dice chi è (aspetto, sensi,
+bottino, battute); il livello dove sta e che giro fa (**Patrol Route**). Da codice:
+`Guard.new().setup_def(def, posizione, direzione, percorso)`. Per rigenerare libreria e personaggi predefiniti:
+`godot --headless --path . --script tools/npc_seed.gd -- --force`. Per una foto di gruppo:
+`xvfb-run godot --path . --script tools/npc_lineup.gd -- --out=/tmp/npc.png --retro`.
+
 ## Struttura del progetto
 
 ```
@@ -135,14 +206,21 @@ scripts/world/*.gd          porte, luci, pickup, datapad, oggetti fisici, grate,
                             percorsi di ronda, PlayerStart
 scripts/world/props/        PropBox, PropQuad, PropCylinder
 scripts/actors/player.gd    controller, mantle, lean, visibilità, passi, armi, frob, trasporto
-scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi)
+scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi), legge una NPCDefinition
+scripts/npc/*.gd            NPC: definizione, forme, scheletro, costruzione della mesh, corpo animato, libreria
 scripts/actors/security_camera.gd, turret.gd, turret_panel.gd
 scripts/ui/hud.gd           gemma di luce, rumore, salute, arma, prompt, sottotitoli
 scripts/ui/ui_root.gd       menu, PDA, serrature/tastierino, hacking, potenziamento, terminali, fine
 scripts/data/logs.gd        testi dei registri
+addons/npc_creator/         plugin dell'editor: creatore di NPC (scheda "NPC")
+assets/npc/segments/        libreria delle forme dei segmenti (.tres)
+assets/npc/characters/      definizioni degli NPC: Ruiz, Hale, Kovač, Mori (.tres)
+shaders/npc_body.gdshader   materiale unico degli NPC (atlante + vertex color + luce per istanza)
 tools/validate_level.gd     validatore dei livelli (gira anche a ogni F6)
 tools/autotest.gd           test end-to-end
 tools/convert_seraph.gd     il convertitore usato una volta per passare dalla mappa in codice alla scena
+tools/npc_seed.gd           scrive libreria e personaggi predefiniti
+tools/npc_lineup.gd         foto di gruppo degli NPC (verifica visiva)
 tools/gen_textures.py       generatore delle texture (Python + numpy + Pillow)
 tools/gen_sounds.py         generatore degli effetti sonori
 ```
@@ -172,6 +250,10 @@ godot --headless --path . -- --autotest --death    # morte, schermata "segnale p
 godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
+godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache
+NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .   # il creatore nell'editor: controlli, Ctrl+Z,
+                                                   # sezione, accessori, clic sull'anteprima, salva e ricarica
+godot --path . -- --autotest --stress              # 10/25/50/100 guardie: tempi e draw call (non passa/fallisce)
 godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
 ```
 
@@ -184,8 +266,11 @@ Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sound
 ## Limiti noti / prossimi passi
 
 - Niente salvataggio/caricamento (il classico quicksave F5/F9 è il prossimo pezzo naturale).
-- Guardie e armi sono modelli a primitive con animazione procedurale: vanno sostituiti con
-  modelli low-poly animati.
+- Le guardie sono modelli low-poly skinnati generati dal creatore di NPC, ma l'animazione
+  è ancora procedurale (passo, corsa, mira, respiro, caduta): mancano clip vere (colpito,
+  perquisizione, reazioni) e le armi in prima persona sono ancora primitive.
+- Il creatore modella i segmenti con curve e sezione; mancano le maniglie per trascinare
+  gli anelli direttamente nella vista 3D.
 - Il suono si attenua con raycast diretti; il Dark Engine propagava il suono lungo le stanze
   (portali): con le zone già presenti si può fare un grafo stanza→stanza.
 - Una sola arma da fuoco e nessun tipo di munizione alternativo.

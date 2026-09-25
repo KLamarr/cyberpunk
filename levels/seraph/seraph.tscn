@@ -80,6 +80,10 @@
 [ext_resource type="Script" path="res://scripts/world/waypoint.gd" id="78_sejiq"]
 [ext_resource type="PackedScene" path="res://scenes/entities/guard.tscn" id="79_iiovw"]
 [ext_resource type="Script" path="res://scripts/actors/guard.gd" id="80_lbouq"]
+[ext_resource type="Resource" path="res://assets/npc/characters/ruiz.tres" id="npc_ruiz"]
+[ext_resource type="Resource" path="res://assets/npc/characters/hale.tres" id="npc_hale"]
+[ext_resource type="Resource" path="res://assets/npc/characters/kovac.tres" id="npc_kovac"]
+[ext_resource type="Resource" path="res://assets/npc/characters/mori.tres" id="npc_mori"]
 [ext_resource type="PackedScene" path="res://scenes/entities/trigger_zone.tscn" id="81_q6lpp"]
 [ext_resource type="Script" path="res://scripts/world/trigger_zone.gd" id="82_domvx"]
 [ext_resource type="Script" path="res://scripts/world/player_start.gd" id="83_dcp3n"]
@@ -1446,37 +1450,26 @@ wait = 2.5
 [node name="Ruiz" type="CharacterBody3D" parent="Guardie" unique_id=716362955 instance=ExtResource("79_iiovw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -3.5)
 script = ExtResource("80_lbouq")
-guard_name = "Ag. Ruiz"
+definition = ExtResource("npc_ruiz")
 patrol_route = NodePath("../Percorsi/PercorsoRuiz")
-loot_ammo = 6
-loot_credits = 30
-loot_keycard_id = "sicurezza"
-loot_keycard_name = "Tessera Sicurezza"
 
 [node name="Hale" type="CharacterBody3D" parent="Guardie" unique_id=773771718 instance=ExtResource("79_iiovw")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -16.3, 0, 0.6)
 script = ExtResource("80_lbouq")
-guard_name = "Op. Hale"
-loot_ammo = 4
-loot_credits = 20
-loot_medpatch = 1
+definition = ExtResource("npc_hale")
 
 [node name="Kovač" type="CharacterBody3D" parent="Guardie" unique_id=1112690560 instance=ExtResource("79_iiovw")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -2.8, 0, -19.5)
 script = ExtResource("80_lbouq")
-guard_name = "Ag. Kovač"
+definition = ExtResource("npc_kovac")
 patrol_route = NodePath("../Percorsi/PercorsoKovač")
-loot_ammo = 6
-loot_credits = 15
 
 [node name="Mori" type="CharacterBody3D" parent="Guardie" unique_id=999528447 instance=ExtResource("79_iiovw")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 6, 0, 12.5)
 script = ExtResource("80_lbouq")
-guard_name = "Ag. Mori"
+definition = ExtResource("npc_mori")
 patrol_route = NodePath("../Percorsi/PercorsoMori")
 dormant = true
-loot_ammo = 8
-loot_credits = 10
 
 [node name="Trigger" type="Node3D" parent="." unique_id=970617146]
 

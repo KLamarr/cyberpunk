@@ -6,12 +6,11 @@ extends CharacterBody3D
 ## cioè dalla luce) e udito (eventi di rumore di Game.emit_noise, attenuati dai muri).
 ## Stati: PATROL → INVESTIGATE (sospetto) → COMBAT → SEARCH → PATROL, oppure DOWN.
 ## Un colpo di chiave alle spalle di una guardia non in allerta la mette KO.
+## Aspetto e parametri (sensi, mira, velocità, comportamento, bottino, battute) vengono
+## da una NPCDefinition, creata con il creatore di NPC dell'editor (vedi setup_def).
 
 enum S { PATROL, INVESTIGATE, COMBAT, SEARCH, DOWN }
 
-const SIGHT_RANGE := 20.0
-const WALK_SPEED := 1.8
-const RUN_SPEED := 4.0
 const GRAVITY := 18.0
 const LOS_MASK := 1 | 8   # mondo + porte (il vetro non blocca la vista)
 
@@ -26,23 +25,46 @@ const BARK_ALARM := ["Allarme! Mi muovo!", "Ricevuto, controllo il settore."]
 const BARK_HURT := ["Argh! Mi hanno colpito!", "Ah! Maledetto!"]
 const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.", "Il server ronza più forte stanotte.", "Chissà se Okafor è ancora in laboratorio.", "Mi fa male la testa. Sempre dopo l'aggiornamento."]
 
-## Nome mostrato nei sottotitoli.
-@export var guard_name := "Guardia"
+## Chi è: aspetto, sensi, mira, velocità, bottino e battute. Trascina qui un personaggio
+## di assets/npc/characters (si creano nella scheda NPC in alto). Vuoto = una guardia
+## generica, con un aspetto generato dal nome (sempre lo stesso).
+@export var definition: NPCDefinition:
+	set(v):
+		definition = v
+		_editor_rebuild()
+		update_configuration_warnings()
+## Nome mostrato nei sottotitoli. Vuoto = quello della definizione.
+@export var guard_name := ""
 ## Nodo PatrolRoute con i Waypoint da percorrere. Vuoto = resta di guardia
 ## nel punto in cui l'hai messa, guardando verso -Z locale.
 @export var patrol_route: NodePath
-@export var max_hp := 60.0
 ## Inattiva e invisibile finché uno script non chiama activate() (es. rinforzi).
 @export var dormant := false
 
-@export_group("Bottino")
-@export var loot_ammo := 0
-@export var loot_credits := 0
-@export var loot_medpatch := 0
+## Usato solo se la guardia non ha una Definition (altrimenti vale quello del personaggio).
+@export_group("Bottino (senza definizione)")
+@export var loot_ammo := 0:
+	set(v):
+		loot_ammo = v
+		update_configuration_warnings()
+@export var loot_credits := 0:
+	set(v):
+		loot_credits = v
+		update_configuration_warnings()
+@export var loot_medpatch := 0:
+	set(v):
+		loot_medpatch = v
+		update_configuration_warnings()
 ## Tessera che porta con sé (si ottiene perquisendola o borseggiandola).
-@export var loot_keycard_id := ""
+@export var loot_keycard_id := "":
+	set(v):
+		loot_keycard_id = v
+		update_configuration_warnings()
 @export var loot_keycard_name := ""
 
+var sight_range := 20.0
+var walk_speed := 1.8
+var run_speed := 4.0
 var waypoints: Array[Vector3] = []
 var waits: Array[float] = []
 var post_pos := Vector3.ZERO
@@ -60,13 +82,9 @@ var carried := false
 var can_see_player := false
 
 var _agent: NavigationAgent3D
-var _model: Node3D
-var _leg_l: Node3D
-var _leg_r: Node3D
-var _arm_l: Node3D
-var _arm_r: Node3D
-var _muzzle: Node3D
-var _visor_mat: StandardMaterial3D
+var _model: NPCBody
+var _eye_h := 1.72
+var _head_h := 1.55
 var _icon: Label3D
 var _shape_node: CollisionShape3D
 var _wp := 0
@@ -89,8 +107,19 @@ var _last_nav_target := Vector3(INF, INF, INF)
 var _stuck_timer := 0.0
 var _last_pos := Vector3.ZERO
 var _last_step_idx := 0
+var _last_glow := Color(-1, -1, -1)
 
 
+## Guardia da una definizione (.tres del creatore di NPC). Il bottino è quello della
+## definizione, a meno di passarne uno diverso.
+func setup_def(def: NPCDefinition, pos: Vector3, yaw_deg: float, route: Array = [], loot_override: Variant = null) -> Guard:
+	_apply_definition(def)
+	var lt: Dictionary = def.loot() if loot_override == null else loot_override
+	return setup(def.display_name, pos, yaw_deg, route, lt)
+
+
+## Versione senza definizione: aspetto generato a caso (ma sempre uguale) dal nome
+## (vedi _generic_definition, applicata in _ready).
 func setup(n: String, pos: Vector3, yaw_deg: float, route: Array = [], loot_table := {}) -> Guard:
 	guard_name = n
 	position = pos
@@ -104,14 +133,30 @@ func setup(n: String, pos: Vector3, yaw_deg: float, route: Array = [], loot_tabl
 	return self
 
 
+func _apply_definition(def: NPCDefinition) -> void:
+	definition = def
+	if guard_name == "":
+		guard_name = def.display_name
+	hp = def.max_health
+	sight_range = def.sight_range
+	walk_speed = def.walk_speed
+	run_speed = def.run_speed
+	_eye_h = def.eye_height()
+	_head_h = def.head_height()
+
+
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_build_model()
 		return
-	hp = max_hp
+	# piazzata nell'editor: parametri dalla definizione (o da una generica, dal nome)
+	var from_def := definition != null
+	_apply_definition(definition if from_def else _generic_definition())
 	post_pos = global_position
 	post_yaw = global_rotation.y
-	if loot.is_empty():
+	if loot.is_empty() and from_def:
+		loot = definition.loot()
+	elif loot.is_empty():
 		if loot_ammo > 0:
 			loot["ammo"] = loot_ammo
 		if loot_credits > 0:
@@ -134,16 +179,16 @@ func _ready() -> void:
 	floor_snap_length = 0.3
 	var cap := CapsuleShape3D.new()
 	cap.radius = 0.3
-	cap.height = 1.8
+	cap.height = clampf(definition.top_height() + 0.02, 1.5, 2.1)
 	_shape_node = CollisionShape3D.new()
 	_shape_node.shape = cap
-	_shape_node.position.y = 0.9
+	_shape_node.position.y = cap.height * 0.5
 	add_child(_shape_node)
 	_agent = NavigationAgent3D.new()
 	_agent.path_desired_distance = 0.5
 	_agent.target_desired_distance = 0.6
 	_agent.radius = 0.4
-	_agent.height = 1.8
+	_agent.height = cap.height
 	_agent.path_max_distance = 3.0
 	add_child(_agent)
 	_build_model()
@@ -184,44 +229,33 @@ func activate() -> void:
 
 
 func _build_model() -> void:
-	_model = Node3D.new()
+	_model = NPCBody.new()
+	_model.name = "Body"
+	_model.definition = definition if definition != null else _generic_definition()
 	add_child(_model)
-	var armor_t := Util.mat("armor", {"fit": Vector3(0.46, 0.6, 0.26)})
-	var armor_l := Util.mat("armor", {"fit": Vector3(0.15, 0.88, 0.17)})
-	var dark := Util.color_mat(Color(0.09, 0.1, 0.12))
-	var helmet := Util.color_mat(Color(0.17, 0.18, 0.21))
-	_visor_mat = StandardMaterial3D.new()
-	_visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_visor_mat.albedo_color = Color(0.3, 0.9, 1.0)
-	Util.box(_model, Vector3(0.46, 0.6, 0.26), Vector3(0, 1.27, 0), armor_t)
-	Util.box(_model, Vector3(0.38, 0.28, 0.05), Vector3(0, 1.36, -0.14), dark)
-	Util.box(_model, Vector3(0.3, 0.34, 0.14), Vector3(0, 1.3, 0.19), helmet)
-	Util.box(_model, Vector3(0.4, 0.16, 0.24), Vector3(0, 0.92, 0), dark)
-	Util.box(_model, Vector3(0.12, 0.08, 0.12), Vector3(0, 1.6, 0), dark)
-	Util.box(_model, Vector3(0.24, 0.27, 0.26), Vector3(0, 1.76, 0), helmet)
-	var visor := Util.box(_model, Vector3(0.22, 0.07, 0.03), Vector3(0, 1.78, -0.135), _visor_mat)
-	visor.set_meta("keep_layers", true)
-	visor.set_meta("no_highlight", true)
-	_leg_l = _limb(Vector3(-0.11, 0.9, 0), Vector3(0.15, 0.88, 0.17), armor_l, dark, true)
-	_leg_r = _limb(Vector3(0.11, 0.9, 0), Vector3(0.15, 0.88, 0.17), armor_l, dark, true)
-	_arm_l = _limb(Vector3(-0.3, 1.5, 0), Vector3(0.12, 0.58, 0.13), armor_l, dark, false)
-	_arm_r = _limb(Vector3(0.3, 1.5, 0), Vector3(0.12, 0.58, 0.13), armor_l, dark, false)
-	Util.box(_arm_r, Vector3(0.06, 0.3, 0.1), Vector3(0, -0.72, -0.05), dark)
-	_muzzle = Node3D.new()
-	_muzzle.position = Vector3(0, -0.88, -0.05)
-	_arm_r.add_child(_muzzle)
 
 
-func _limb(pivot: Vector3, size: Vector3, m: Material, end_mat: Material, is_leg: bool) -> Node3D:
-	var p := Node3D.new()
-	p.position = pivot
-	_model.add_child(p)
-	Util.box(p, size, Vector3(0, -size.y * 0.5, 0), m)
-	if is_leg:
-		Util.box(p, Vector3(0.16, 0.1, 0.25), Vector3(0, -size.y + 0.02, -0.04), end_mat)
-	else:
-		Util.box(p, Vector3(0.1, 0.1, 0.1), Vector3(0, -size.y - 0.04, 0), end_mat)
-	return p
+## Guardia senza definizione: aspetto casuale ma stabile, dal nome (o dal nome del nodo).
+func _generic_definition() -> NPCDefinition:
+	var key := guard_name if guard_name != "" else String(name)
+	return NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, hash(key))
+
+
+## Nell'editor il modello segue la Definition scelta nell'Inspector.
+func _editor_rebuild() -> void:
+	if not (Engine.is_editor_hint() and is_inside_tree()):
+		return
+	if _model != null and is_instance_valid(_model):
+		remove_child(_model)
+		_model.queue_free()
+	_build_model()
+
+
+func _get_configuration_warnings() -> PackedStringArray:
+	var w := PackedStringArray()
+	if definition != null and (loot_ammo > 0 or loot_credits > 0 or loot_medpatch > 0 or loot_keycard_id != ""):
+		w.append("Con una Definition il bottino è quello del personaggio: i valori in 'Bottino (senza definizione)' sono ignorati.")
+	return w
 
 
 func is_active() -> bool:
@@ -262,6 +296,7 @@ func _physics_process(delta: float) -> void:
 	if _zone_timer <= 0.0 and Game.level:
 		_zone_timer = 0.3
 		Util.set_layers_recursive(_model, Game.level.zone_mask_at(global_position + Vector3.UP))
+		_update_anim_lod()
 
 
 # --- movimento -------------------------------------------------------------------
@@ -326,7 +361,7 @@ func _nav_to(target: Vector3, speed: float, delta: float) -> bool:
 
 # --- percezione ------------------------------------------------------------------
 func _eye() -> Vector3:
-	return global_position + Vector3.UP * 1.72
+	return global_position + Vector3.UP * _eye_h
 
 
 func _perceive(dt: float) -> void:
@@ -337,12 +372,12 @@ func _perceive(dt: float) -> void:
 		var target: Vector3 = p.get_aim_point()
 		var to := target - eye
 		var dist := to.length()
-		if dist < SIGHT_RANGE:
+		if dist < sight_range:
 			var fwd := -global_basis.z
 			var flat := Vector3(to.x, 0.0, to.z)
 			var ang := rad_to_deg(fwd.angle_to(flat)) if flat.length() > 0.01 else 0.0
 			var fov := 0.0
-			if ang < 55.0:
+			if ang < definition.fov_deg:
 				fov = 1.0
 			elif ang < 100.0 and dist < 7.0:
 				fov = 0.4
@@ -357,8 +392,8 @@ func _perceive(dt: float) -> void:
 				if seen:
 					can_see_player = true
 					var vis: float = p.visibility
-					var df := 1.0 - dist / SIGHT_RANGE
-					var rate := vis * fov * (0.3 + 3.2 * df * df)
+					var df := 1.0 - dist / sight_range
+					var rate := vis * fov * (0.3 + 3.2 * df * df) * definition.perception
 					match state:
 						S.COMBAT, S.SEARCH:
 							rate *= 2.2
@@ -381,7 +416,7 @@ func _perceive(dt: float) -> void:
 		elif awareness >= 0.35 and state == S.INVESTIGATE:
 			target_pos = _snap(last_known)
 			_arrived = false
-	if state == S.PATROL or state == S.INVESTIGATE:
+	if (state == S.PATROL or state == S.INVESTIGATE) and definition.reacts_to_bodies:
 		_check_bodies()
 
 
@@ -410,16 +445,16 @@ func hear(pos: Vector3, radius: float, kind: String, source: Node, info := {}) -
 		return
 	var eye := _eye()
 	var d := eye.distance_to(pos)
-	if d > radius:
+	if d > radius * maxf(definition.hearing, 1.0):
 		return
 	var occluded := not Util.ray_clear(get_world_3d().direct_space_state, eye, pos + Vector3.UP * 0.3, LOS_MASK, [get_rid()])
-	var eff := radius * (0.5 if occluded else 1.0)
+	var eff := radius * (0.5 if occluded else 1.0) * definition.hearing
 	if d > eff:
 		return
 	var loud := 1.0 - d / eff
 	match kind:
 		"step", "door", "body":
-			if state == S.COMBAT:
+			if state == S.COMBAT or not definition.investigates_noises:
 				return
 			awareness = minf(awareness + 0.12 + 0.45 * loud, 0.95)
 			if state == S.SEARCH:
@@ -427,7 +462,7 @@ func hear(pos: Vector3, radius: float, kind: String, source: Node, info := {}) -
 			elif awareness >= 0.35:
 				_investigate(pos, false)
 		"impact", "clang", "glass", "grate":
-			if state == S.COMBAT:
+			if state == S.COMBAT or not definition.investigates_noises:
 				return
 			awareness = maxf(awareness, 0.45)
 			if state == S.SEARCH:
@@ -451,10 +486,10 @@ func _do_patrol(delta: float) -> void:
 	_idle_bark -= delta
 	if _idle_bark <= 0.0:
 		_idle_bark = randf_range(30.0, 60.0)
-		_bark(BARK_IDLE)
+		_bark(Array(definition.idle_barks) if not definition.idle_barks.is_empty() else BARK_IDLE)
 	if waypoints.is_empty():
 		if Vector2(global_position.x - post_pos.x, global_position.z - post_pos.z).length() > 0.6:
-			_nav_to(post_pos, WALK_SPEED, delta)
+			_nav_to(post_pos, walk_speed, delta)
 		else:
 			_halt(delta)
 			rotation.y = lerp_angle(rotation.y, post_yaw, clampf(delta * 3.0, 0.0, 1.0))
@@ -463,7 +498,7 @@ func _do_patrol(delta: float) -> void:
 		_wait -= delta
 		_halt(delta)
 		return
-	if _nav_to(waypoints[_wp], WALK_SPEED, delta):
+	if _nav_to(waypoints[_wp], walk_speed, delta):
 		_wait = waits[_wp]
 		_wp = (_wp + 1) % waypoints.size()
 
@@ -485,7 +520,7 @@ func _do_investigate(delta: float) -> void:
 		_halt(delta)
 		return
 	if not _arrived:
-		if _nav_to(target_pos, WALK_SPEED * 1.2, delta):
+		if _nav_to(target_pos, walk_speed * 1.2, delta):
 			_arrived = true
 			_look_timer = 5.0
 			_look_base = rotation.y
@@ -507,11 +542,12 @@ func _enter_combat() -> void:
 	state = S.COMBAT
 	awareness = 1.3
 	alertness = 1.0
-	_reaction = randf_range(0.5, 0.9)
+	_reaction = randf_range(definition.reaction_time - 0.2, definition.reaction_time + 0.2)
 	_lost_timer = 0.0
 	_bark(BARK_COMBAT, true)
-	Sfx.play_3d("radio", global_position + Vector3.UP * 1.6, -2.0)
-	Game.emit_noise(global_position, 22.0, "shout", self, {"target": last_known})
+	if definition.calls_for_help:
+		Sfx.play_3d("radio", global_position + Vector3.UP * 1.6, -2.0)
+		Game.emit_noise(global_position, 22.0, "shout", self, {"target": last_known})
 
 
 func _do_combat(delta: float) -> void:
@@ -529,7 +565,7 @@ func _do_combat(delta: float) -> void:
 		_reaction -= delta
 		_shoot_cd -= delta
 		if dist > 9.0:
-			_nav_to(p.global_position, RUN_SPEED * 0.6, delta)
+			_nav_to(p.global_position, run_speed * 0.6, delta)
 		else:
 			_halt(delta)
 		_face_dir(to, delta, 10.0)
@@ -537,14 +573,14 @@ func _do_combat(delta: float) -> void:
 			_shoot(p, dist)
 			_shoot_cd = randf_range(0.8, 1.3)
 	else:
-		if _nav_to(last_known, RUN_SPEED, delta) or _lost_timer > 6.0:
+		if _nav_to(last_known, run_speed, delta) or _lost_timer > 6.0:
 			_enter_search(last_known)
 
 
 func _shoot(p: Node, dist: float) -> void:
-	var from := _muzzle.global_position
+	var from := _model.muzzle_position()
 	var aim: Vector3 = p.get_aim_point()
-	var chance := 0.8 - dist * 0.022
+	var chance := definition.accuracy - dist * 0.022
 	var hs := Vector2(p.velocity.x, p.velocity.z).length()
 	if hs > 4.0:
 		chance -= 0.25
@@ -560,7 +596,7 @@ func _shoot(p: Node, dist: float) -> void:
 	var space := get_world_3d().direct_space_state
 	if randf() < chance:
 		Effects.tracer(from, aim)
-		p.take_damage(randf_range(8.0, 13.0), aim, (aim - from).normalized(), "bullet")
+		p.take_damage(randf_range(definition.damage_min, definition.damage_max), aim, (aim - from).normalized(), "bullet")
 	else:
 		var miss := aim + Vector3(randf_range(-1.2, 1.2), randf_range(-0.5, 1.0), randf_range(-1.2, 1.2))
 		var dir := (miss - from).normalized()
@@ -596,7 +632,7 @@ func _set_search_point(pos: Vector3) -> void:
 func _do_search(delta: float) -> void:
 	_search_timer -= delta
 	if not _arrived:
-		if _nav_to(target_pos, RUN_SPEED * 0.75, delta):
+		if _nav_to(target_pos, run_speed * 0.75, delta):
 			_arrived = true
 			_look_timer = randf_range(1.5, 3.0)
 			_look_base = rotation.y
@@ -615,7 +651,7 @@ func _do_search(delta: float) -> void:
 
 
 func on_alarm(pos: Vector3) -> void:
-	if state == S.DOWN or state == S.COMBAT:
+	if state == S.DOWN or state == S.COMBAT or not definition.responds_to_alarms:
 		return
 	_bark(BARK_ALARM)
 	_enter_search(pos)
@@ -649,7 +685,7 @@ func knock_out() -> void:
 func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, kind: String) -> void:
 	if state == S.DOWN:
 		return
-	if hit_pos.y - global_position.y > 1.55:
+	if hit_pos.y - global_position.y > _head_h:
 		amount *= 2.2
 	hp -= amount
 	Effects.sparks(hit_pos, Color(0.45, 0.02, 0.02), 10, 2.0)
@@ -679,11 +715,12 @@ func _go_down(killed: bool) -> void:
 	_shape_node.shape = bs
 	_shape_node.position = Vector3(0, 0.15, 0.9)
 	_icon.visible = false
-	_visor_mat.albedo_color = Color(0.05, 0.05, 0.06) if killed else Color(0.1, 0.25, 0.35)
+	_model.set_glow(Color(0.05, 0.05, 0.06) if killed else _model.default_glow() * 0.35)
+	_model.set_down(true)
+	_model.lod_interval = 0.0
 	var tw := create_tween()
 	tw.tween_property(_model, "rotation:x", PI * 0.5, 0.55).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(_model, "position:y", 0.14, 0.55)
-	_arm_r.rotation.x = 0.0
 	Sfx.play_3d("body_fall", global_position, 0.0)
 	Game.emit_noise(global_position, 6.0, "body", self)
 
@@ -772,7 +809,7 @@ func _bark(lines: Array, force := false) -> void:
 func _update_icon() -> void:
 	var txt := ""
 	var c := Color.WHITE
-	var visor := Color(0.3, 0.9, 1.0)
+	var visor := _model.default_glow()
 	match state:
 		S.COMBAT:
 			txt = "!"
@@ -793,11 +830,12 @@ func _update_icon() -> void:
 	_icon.visible = txt != ""
 	_icon.text = txt
 	_icon.modulate = c
-	_visor_mat.albedo_color = visor
+	if visor != _last_glow:
+		_last_glow = visor
+		_model.set_glow(visor)
 
 
 func _animate(delta: float) -> void:
-	var k := clampf(_speed_now / RUN_SPEED, 0.0, 1.0)
 	if _speed_now > 0.1:
 		_phase += delta * (5.0 + _speed_now * 1.6)
 		# passi udibili: fondamentali per giocare d'orecchio
@@ -810,12 +848,14 @@ func _animate(delta: float) -> void:
 			Sfx.play_3d("step_" + surf, global_position + Vector3.UP * 0.05, -4.0 if _speed_now > 3.0 else -8.0, 0.1, 22.0)
 	else:
 		_phase = lerpf(_phase, round(_phase / PI) * PI, clampf(delta * 5.0, 0.0, 1.0))
-	var swing := sin(_phase) * (0.35 + 0.35 * k)
-	_leg_l.rotation.x = swing
-	_leg_r.rotation.x = -swing
-	_arm_l.rotation.x = -swing * 0.7
-	var aim := state == S.COMBAT
-	var target_r := 1.45 if aim else swing * 0.7
-	_arm_r.rotation.x = lerpf(_arm_r.rotation.x, target_r, clampf(delta * 10.0, 0.0, 1.0))
-	# respiro
-	_model.position.y = sin(Time.get_ticks_msec() * 0.002) * 0.008
+	# animazione dello scheletro, guidata dalla stessa fase dei passi
+	_model.update_motion(delta, _speed_now, _phase, 1.0 if state == S.COMBAT else 0.0, run_speed)
+
+
+## Le guardie lontane dalla camera aggiornano la posa meno spesso.
+func _update_anim_lod() -> void:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	var d := cam.global_position.distance_to(global_position)
+	_model.lod_interval = 0.0 if d < 14.0 else (0.05 if d < 26.0 else 0.12)

@@ -235,7 +235,14 @@ Gli altri pezzi d'arredo: `prop_quad.tscn` per insegne, poster e schermi appoggi
    dei figli nell'albero.
 2. **La guardia.** Trascina `guard.tscn` su `Guardie`, rinominala `Rossi`: **Position**
    `(-1.2, 0, -6.5)`, **Guard Name** `Ag. Rossi`, **Patrol Route**: *Assign…* e scegli
-   `PercorsoRossi`. Nel gruppo **Bottino**: **Loot Credits** `20`.
+   `PercorsoRossi`. Nel gruppo **Bottino (senza definizione)**: **Loot Credits** `20`.
+
+Qui la guardia non ha una **Definition**, quindi è una guardia generica: il suo aspetto è
+generato dal nome (sempre lo stesso) e il bottino è quello che scrivi tu. Per usare un
+personaggio vero trascina nella proprietà **Definition** un file di
+`assets/npc/characters/` (per esempio `ruiz.tres`): nell'editor la guardia cambia subito
+aspetto, e sensi, mira, velocità, bottino e battute diventano quelli del personaggio. I
+personaggi si creano e si modificano nella scheda **NPC** in alto (il creatore di NPC).
 
 Tieni le tappe ad almeno 0.6 m da muri e mobili: la guardia è larga 80 cm. Senza percorso
 una guardia resta ferma di piantone, guardando verso la sua -Z.
@@ -270,7 +277,7 @@ spiegazione nel tooltip dell'Inspector.
 | `datapad.tscn` | registro da leggere | Log Id, Wall Terminal | base; il terminale a muro guarda verso +Z |
 | `pickup.tscn` | oggetto da raccogliere | Kind, Amount, Item Id, Secret Id | base |
 | `throwable.tscn` | lattina, bottiglia, scatola, cassa pesante | Kind | centro, poco sopra il piano |
-| `guard.tscn` | guardia | Guard Name, Patrol Route, Dormant, *Bottino* | a terra; guarda verso -Z |
+| `guard.tscn` | guardia | Definition (un personaggio di `assets/npc/characters`), Guard Name, Patrol Route, Dormant, *Bottino (senza definizione)* | a terra; guarda verso -Z |
 | `patrol_route.tscn` + `waypoint.tscn` | percorso di ronda | Wait (sulle tappe) | tappe a terra |
 | `security_camera.tscn` | telecamera che fa scattare l'allarme | Sweep, Period, Pitch, Cam Range | guarda verso -Z |
 | `turret.tscn` + `turret_panel.tscn` | torretta e suo pannello di manutenzione | Sweep, T Range, Start Disabled; il pannello ha Turret Path | la torretta guarda verso -Z |

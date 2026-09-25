@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_oei7j"]
+
+[sub_resource type="Curve" id="Curve_6rwm8"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 1, 1, Vector2(1, 1), 0.0, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_jemfc"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 1, 1, Vector2(1, 1), 0.0, 0.0, 1, 1]
+point_count = 2
+
+[resource]
+resource_name = "visore"
+script = ExtResource("1_oei7j")
+tags = PackedStringArray("guardia")
+width_curve = SubResource("Curve_jemfc")
+depth_curve = SubResource("Curve_6rwm8")
+radius_x = 0.106
+radius_z = 0.124
+rings = 2
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+smooth = false
+section = PackedFloat32Array(0.8, 0.84, 1, 1.03, 1.03, 1.03, 1, 0.84)
+band = 6
+color_slot = 6
+attach_offset = Vector3(0, 0.112, -0.002)
+attach_length = 0.036

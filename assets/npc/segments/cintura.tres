@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_m6bgx"]
+
+[sub_resource type="Curve" id="Curve_iuaja"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 1, 1, Vector2(1, 1), 0.0, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_jspri"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 1, 1, Vector2(1, 1), 0.0, 0.0, 1, 1]
+point_count = 2
+
+[resource]
+resource_name = "cintura"
+script = ExtResource("1_m6bgx")
+tags = PackedStringArray()
+width_curve = SubResource("Curve_jspri")
+depth_curve = SubResource("Curve_iuaja")
+radius_x = 0.17
+radius_z = 0.116
+rings = 2
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+smooth = false
+section = PackedFloat32Array(0.98, 1.05, 1, 1.04, 1, 1.04, 1, 1.05)
+band = 4
+color_slot = 4
+attach_bone = "hips"
+attach_length = 0.055

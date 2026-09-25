@@ -1,0 +1,163 @@
+[gd_resource type="Resource" script_class="NPCDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/npc_attachment.gd" id="1_i2jr2"]
+[ext_resource type="Resource" path="res://assets/npc/segments/casco.tres" id="2_qy6gm"]
+[ext_resource type="Resource" path="res://assets/npc/segments/visore.tres" id="3_ouc7h"]
+[ext_resource type="Resource" path="res://assets/npc/segments/impianto_calma.tres" id="4_83jbw"]
+[ext_resource type="Resource" path="res://assets/npc/segments/colletto.tres" id="5_0v8rn"]
+[ext_resource type="Resource" path="res://assets/npc/segments/spallaccio.tres" id="6_ou0xq"]
+[ext_resource type="Resource" path="res://assets/npc/segments/cintura.tres" id="7_fmwvy"]
+[ext_resource type="Resource" path="res://assets/npc/segments/pistola.tres" id="8_farle"]
+[ext_resource type="Script" path="res://scripts/npc/npc_part.gd" id="9_6ya2r"]
+[ext_resource type="Resource" path="res://assets/npc/segments/testa.tres" id="10_q2ecb"]
+[ext_resource type="Resource" path="res://assets/npc/segments/collo.tres" id="11_msyil"]
+[ext_resource type="Resource" path="res://assets/npc/segments/torace_armatura.tres" id="12_sioae"]
+[ext_resource type="Resource" path="res://assets/npc/segments/addome_pancia.tres" id="13_uf7r4"]
+[ext_resource type="Resource" path="res://assets/npc/segments/bacino.tres" id="14_xs4o3"]
+[ext_resource type="Resource" path="res://assets/npc/segments/braccio_muscoloso.tres" id="15_xv6rb"]
+[ext_resource type="Resource" path="res://assets/npc/segments/avambraccio_guanto.tres" id="16_yyu06"]
+[ext_resource type="Resource" path="res://assets/npc/segments/mano_guanto.tres" id="17_frgxl"]
+[ext_resource type="Resource" path="res://assets/npc/segments/coscia_robusta.tres" id="18_qloyv"]
+[ext_resource type="Resource" path="res://assets/npc/segments/stinco_stivale.tres" id="19_wa0m6"]
+[ext_resource type="Resource" path="res://assets/npc/segments/piede_stivale.tres" id="20_moq2a"]
+[ext_resource type="Script" path="res://scripts/npc/npc_definition.gd" id="21_px6dl"]
+
+[sub_resource type="Resource" id="Resource_d0jhn"]
+script = ExtResource("1_i2jr2")
+label = "Casco"
+shape = ExtResource("2_qy6gm")
+offset = Vector3(0, -0.012, 0.004)
+length = 0.24
+
+[sub_resource type="Resource" id="Resource_0rufi"]
+script = ExtResource("1_i2jr2")
+label = "Visore"
+shape = ExtResource("3_ouc7h")
+offset = Vector3(0, 0.112, -0.002)
+length = 0.036
+
+[sub_resource type="Resource" id="Resource_tn2s4"]
+script = ExtResource("1_i2jr2")
+label = "Impianto CALMA"
+shape = ExtResource("4_83jbw")
+offset = Vector3(0, 0.07, 0.095)
+rotation_deg = Vector3(90, 0, 0)
+length = 0.032
+
+[sub_resource type="Resource" id="Resource_3atgy"]
+script = ExtResource("1_i2jr2")
+label = "Colletto"
+shape = ExtResource("5_0v8rn")
+bone = "neck"
+offset = Vector3(0, -0.02, 0)
+length = 0.07
+
+[sub_resource type="Resource" id="Resource_2a6hd"]
+script = ExtResource("1_i2jr2")
+label = "Spallaccio"
+shape = ExtResource("6_ou0xq")
+bone = "upperarm_l"
+mirror = true
+offset = Vector3(-0.012, 0.05, 0)
+rotation_deg = Vector3(180, 0, 0)
+length = 0.12
+
+[sub_resource type="Resource" id="Resource_5axle"]
+script = ExtResource("1_i2jr2")
+label = "Cintura"
+shape = ExtResource("7_fmwvy")
+bone = "hips"
+length = 0.055
+
+[sub_resource type="Resource" id="Resource_q1nd4"]
+script = ExtResource("1_i2jr2")
+label = "Pistola"
+shape = ExtResource("8_farle")
+bone = "hand_r"
+offset = Vector3(0, -0.08, -0.012)
+rotation_deg = Vector3(180, 0, 0)
+length = 0.17
+
+[sub_resource type="Resource" id="Resource_cv3yi"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("10_q2ecb")
+thickness = 1.03
+
+[sub_resource type="Resource" id="Resource_2xcaw"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("11_msyil")
+thickness = 0.93
+
+[sub_resource type="Resource" id="Resource_hm0jo"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("12_sioae")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_p8b1g"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("13_uf7r4")
+thickness = 0.96
+
+[sub_resource type="Resource" id="Resource_bgyb2"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("14_xs4o3")
+
+[sub_resource type="Resource" id="Resource_e5om8"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("15_xv6rb")
+thickness = 1.03
+
+[sub_resource type="Resource" id="Resource_oe1ec"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("16_yyu06")
+thickness = 0.99
+
+[sub_resource type="Resource" id="Resource_y3hdo"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("17_frgxl")
+thickness = 0.9500000000000001
+
+[sub_resource type="Resource" id="Resource_2eq0g"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("18_qloyv")
+thickness = 1.02
+
+[sub_resource type="Resource" id="Resource_6jc7v"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("19_wa0m6")
+thickness = 1.01
+
+[sub_resource type="Resource" id="Resource_ud8j1"]
+script = ExtResource("9_6ya2r")
+shape = ExtResource("20_moq2a")
+thickness = 0.9400000000000001
+
+[resource]
+script = ExtResource("21_px6dl")
+display_name = "Ag. Kovač"
+random_seed = 1403
+height = 1.9
+mass = 1.15
+shoulders = 1.12
+hips = 0.99
+arm_length = 0.97
+leg_length = 0.98
+neck_length = 0.89
+posture = 0.2
+palette = PackedColorArray(0.86, 0.66, 0.52, 1, 0.1694952, 0.18943581, 0.23928733, 1, 0.104764976, 0.11524147, 0.13619447, 1, 0.2849442, 0.30529737, 0.35618025, 1, 0.06943633, 0.06943633, 0.0793558, 1, 0.55, 0.42, 0.25, 1, 0.3, 0.9, 1, 1)
+parts = Dictionary[String, ExtResource("9_6ya2r")]({
+"addome": SubResource("Resource_p8b1g"),
+"avambraccio": SubResource("Resource_oe1ec"),
+"bacino": SubResource("Resource_bgyb2"),
+"braccio": SubResource("Resource_e5om8"),
+"collo": SubResource("Resource_2xcaw"),
+"coscia": SubResource("Resource_2eq0g"),
+"mano": SubResource("Resource_y3hdo"),
+"piede": SubResource("Resource_ud8j1"),
+"stinco": SubResource("Resource_6jc7v"),
+"testa": SubResource("Resource_cv3yi"),
+"torace": SubResource("Resource_hm0jo")
+})
+attachments = Array[ExtResource("1_i2jr2")]([SubResource("Resource_d0jhn"), SubResource("Resource_0rufi"), SubResource("Resource_tn2s4"), SubResource("Resource_3atgy"), SubResource("Resource_2a6hd"), SubResource("Resource_5axle"), SubResource("Resource_q1nd4")])
+credits = 15
+idle_barks = PackedStringArray()

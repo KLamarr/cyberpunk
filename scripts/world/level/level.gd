@@ -70,6 +70,17 @@ func find_marker(marker_name: String) -> Node3D:
 	return find_child(marker_name, true, false) as Node3D
 
 
+## Aggiunge a partita iniziata un oggetto creato da codice (es. guardie di rinforzo),
+## nella cartella indicata se esiste, con il render layer della sua zona.
+func spawn(n: Node3D, folder := "") -> Node3D:
+	var parent: Node = get_node_or_null(folder) if folder != "" else null
+	(parent if parent != null else self).add_child(n)
+	if n is VisualInstance3D and not n.has_meta("keep_layers"):
+		(n as VisualInstance3D).layers = zone_mask_at(n.global_position)
+	_assign_zone_layers(n)
+	return n
+
+
 ## Ogni oggetto visibile prende come render layer la zona in cui si trova.
 func _assign_zone_layers(n: Node) -> void:
 	for c in n.get_children():

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_dt1if"]
+
+[sub_resource type="Curve" id="Curve_pxjds"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.42857134, 1, 1, Vector2(1, 0.72), -0.42857134, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_1eg0t"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.42857134, 1, 1, Vector2(1, 0.72), -0.42857134, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "avambraccio"
+script = ExtResource("1_dt1if")
+category = 6
+tags = PackedStringArray()
+width_curve = SubResource("Curve_1eg0t")
+depth_curve = SubResource("Curve_pxjds")
+radius_x = 0.041
+radius_z = 0.044
+extend_start = 0.1
+extend_end = 0.04
+section = PackedFloat32Array()

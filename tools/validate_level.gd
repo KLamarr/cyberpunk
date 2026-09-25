@@ -191,8 +191,9 @@ func _check_doors() -> void:
 		if pk.kind == "keycard":
 			cards[pk.item_id] = "raccolta in " + _path(pk)
 	for g in _all(func(n): return n is Guard):
-		if g.loot_keycard_id != "":
-			cards[g.loot_keycard_id] = "addosso a " + String(g.guard_name)
+		# bottino già risolto dalla guardia (dalla sua definizione o dai campi "Bottino")
+		if g.loot.has("keycard"):
+			cards[String(g.loot.keycard[0])] = "addosso a " + String(g.guard_name)
 	var texts := ""
 	for d in _all(func(n): return n is Datapad):
 		if Logs.ENTRIES.has(d.log_id):

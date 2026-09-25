@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_texyt"]
+
+[sub_resource type="Curve" id="Curve_sv1hd"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0.1), 0.0, 0.44444448, 1, 1, Vector2(0.45, 0.3), 0.44444448, -0.40000004, 1, 1, Vector2(1, 0.08), -0.40000004, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_n2x6a"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.11111101, 1, 1, Vector2(0.45, 1.05), 0.11111101, -0.18181811, 1, 1, Vector2(1, 0.95), -0.18181811, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_5kdi6"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.11111101, 1, 1, Vector2(0.45, 1.05), 0.11111101, -0.18181811, 1, 1, Vector2(1, 0.95), -0.18181811, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "addome_pancia"
+script = ExtResource("1_texyt")
+category = 3
+tags = PackedStringArray()
+width_curve = SubResource("Curve_5kdi6")
+depth_curve = SubResource("Curve_n2x6a")
+bulge_curve = SubResource("Curve_sv1hd")
+radius_x = 0.17
+radius_z = 0.12
+sides = 8
+extend_start = 0.12
+extend_end = 0.12
+section = PackedFloat32Array()
