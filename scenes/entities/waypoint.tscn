@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bnm5xubeprmj2"]
 
-[ext_resource type="Script" path="res://scripts/world/waypoint.gd" id="1"]
+[ext_resource type="Script" uid="uid://cffuweaqy1k2i" path="res://scripts/world/waypoint.gd" id="1"]
 
-[node name="Tappa" type="Marker3D"]
+[node name="Tappa" type="Marker3D" unique_id=1260111084]
 script = ExtResource("1")

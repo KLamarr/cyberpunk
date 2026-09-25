@@ -642,7 +642,12 @@ func _items() -> void:
 ## Chi sono (aspetto, sensi, bottino, battute) sta nelle definizioni fatte col creatore di
 ## NPC (assets/npc/characters); qui si decide solo dove stanno e che giro fanno.
 func _npc(id: String) -> NPCDefinition:
-	return load(NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres"))
+	var path := NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres")
+	var d: NPCDefinition = load(path) if ResourceLoader.exists(path) else null
+	if d == null:
+		push_error("Manca %s: uso una guardia generica" % path)
+		d = NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, hash(id))
+	return d
 
 
 func _guards() -> void:

@@ -120,11 +120,23 @@ const CURVE_MAX := 1.6
 
 @export_group("Aggancio predefinito (accessori)")
 ## Dove va l'accessorio quando lo si aggiunge dal creatore (poi è modificabile nell'NPC).
-@export_enum("hips", "spine", "chest", "neck", "head", "upperarm_l", "forearm_l", "hand_l", "upperarm_r", "forearm_r", "hand_r", "thigh_l", "shin_l", "foot_l", "thigh_r", "shin_r", "foot_r") var attach_bone: String = "head"
+## (l'elenco delle ossa viene da NPCRig.BONES, vedi _validate_property)
+@export var attach_bone: String = "head"
 @export var attach_offset := Vector3.ZERO
 @export var attach_rotation := Vector3.ZERO
 @export_range(0.005, 1.5, 0.005, "suffix:m") var attach_length := 0.1
 @export var attach_mirror := false
+## La punta di questa forma è la bocca di un'arma: la guardia spara da lì.
+@export var is_weapon := false:
+	set(v):
+		is_weapon = v
+		emit_changed()
+
+
+func _validate_property(property: Dictionary) -> void:
+	if property.name == "attach_bone":
+		property.hint = PROPERTY_HINT_ENUM
+		property.hint_string = ",".join(NPCRig.BONES)
 
 
 func _swap_curve(old: Curve, new: Curve) -> void:

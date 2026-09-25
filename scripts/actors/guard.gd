@@ -65,6 +65,10 @@ const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.
 var sight_range := 20.0
 var walk_speed := 1.8
 var run_speed := 4.0
+var hearing := 1.0
+var perception := 1.0
+var reaction_time := 0.7
+var accuracy := 0.8
 var waypoints: Array[Vector3] = []
 var waits: Array[float] = []
 var post_pos := Vector3.ZERO
@@ -137,10 +141,16 @@ func _apply_definition(def: NPCDefinition) -> void:
 	definition = def
 	if guard_name == "":
 		guard_name = def.display_name
-	hp = def.max_health
-	sight_range = def.sight_range
-	walk_speed = def.walk_speed
-	run_speed = def.run_speed
+	# i limiti dell'Inspector valgono solo lì: un .tres scritto a mano o da codice può
+	# contenere valori che bloccherebbero l'IA (velocità 0, reazione negativa...)
+	hp = maxf(def.max_health, 1.0)
+	sight_range = maxf(def.sight_range, 1.0)
+	walk_speed = maxf(def.walk_speed, 0.3)
+	run_speed = maxf(def.run_speed, walk_speed)
+	hearing = maxf(def.hearing, 0.1)
+	perception = maxf(def.perception, 0.05)
+	reaction_time = maxf(def.reaction_time, 0.2)
+	accuracy = clampf(def.accuracy, 0.0, 0.85)
 	_eye_h = def.eye_height()
 	_head_h = def.head_height()
 
@@ -393,7 +403,7 @@ func _perceive(dt: float) -> void:
 					can_see_player = true
 					var vis: float = p.visibility
 					var df := 1.0 - dist / sight_range
-					var rate := vis * fov * (0.3 + 3.2 * df * df) * definition.perception
+					var rate := vis * fov * (0.3 + 3.2 * df * df) * perception
 					match state:
 						S.COMBAT, S.SEARCH:
 							rate *= 2.2
@@ -445,10 +455,10 @@ func hear(pos: Vector3, radius: float, kind: String, source: Node, info := {}) -
 		return
 	var eye := _eye()
 	var d := eye.distance_to(pos)
-	if d > radius * maxf(definition.hearing, 1.0):
+	if d > radius * maxf(hearing, 1.0):
 		return
 	var occluded := not Util.ray_clear(get_world_3d().direct_space_state, eye, pos + Vector3.UP * 0.3, LOS_MASK, [get_rid()])
-	var eff := radius * (0.5 if occluded else 1.0) * definition.hearing
+	var eff := radius * (0.5 if occluded else 1.0) * hearing
 	if d > eff:
 		return
 	var loud := 1.0 - d / eff
@@ -542,7 +552,7 @@ func _enter_combat() -> void:
 	state = S.COMBAT
 	awareness = 1.3
 	alertness = 1.0
-	_reaction = randf_range(definition.reaction_time - 0.2, definition.reaction_time + 0.2)
+	_reaction = randf_range(maxf(reaction_time - 0.2, 0.15), reaction_time + 0.2)
 	_lost_timer = 0.0
 	_bark(BARK_COMBAT, true)
 	if definition.calls_for_help:
@@ -580,7 +590,7 @@ func _do_combat(delta: float) -> void:
 func _shoot(p: Node, dist: float) -> void:
 	var from := _model.muzzle_position()
 	var aim: Vector3 = p.get_aim_point()
-	var chance := definition.accuracy - dist * 0.022
+	var chance := accuracy - dist * 0.022
 	var hs := Vector2(p.velocity.x, p.velocity.z).length()
 	if hs > 4.0:
 		chance -= 0.25

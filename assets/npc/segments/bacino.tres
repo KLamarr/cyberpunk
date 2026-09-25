@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SegmentShape" format=3]
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://bmdhy7b5lowf7"]
 
-[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_jrf2i"]
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_jrf2i"]
 
 [sub_resource type="Curve" id="Curve_6q2jk"]
 _limits = [0.0, 1.6, 0.0, 1.0]

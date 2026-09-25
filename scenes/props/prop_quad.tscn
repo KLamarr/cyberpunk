@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bmc4gyayhbc5f"]
 
-[ext_resource type="Script" path="res://scripts/world/props/prop_quad.gd" id="1"]
+[ext_resource type="Script" uid="uid://dwkt7cmhndl12" path="res://scripts/world/props/prop_quad.gd" id="1"]
 
-[node name="Pannello" type="MeshInstance3D"]
+[sub_resource type="QuadMesh" id="QuadMesh_qxvnh"]
+
+[node name="Pannello" type="MeshInstance3D" unique_id=1425714551]
+cast_shadow = 0
+mesh = SubResource("QuadMesh_qxvnh")
 script = ExtResource("1")

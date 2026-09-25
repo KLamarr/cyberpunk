@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://chvuw0lephtxf"]
 
-[ext_resource type="Script" path="res://scripts/world/patrol_route.gd" id="1"]
+[ext_resource type="Script" uid="uid://rsacw87gdqsg" path="res://scripts/world/patrol_route.gd" id="1"]
 
-[node name="Percorso" type="Node3D"]
+[node name="Percorso" type="Node3D" unique_id=748840329]
 script = ExtResource("1")

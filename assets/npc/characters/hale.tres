@@ -1,25 +1,25 @@
-[gd_resource type="Resource" script_class="NPCDefinition" format=3]
+[gd_resource type="Resource" script_class="NPCDefinition" format=3 uid="uid://d0wrmbe226co2"]
 
-[ext_resource type="Script" path="res://scripts/npc/npc_attachment.gd" id="1_io7ta"]
-[ext_resource type="Resource" path="res://assets/npc/segments/impianto_calma.tres" id="2_r6bmv"]
-[ext_resource type="Resource" path="res://assets/npc/segments/colletto.tres" id="3_irpxs"]
-[ext_resource type="Resource" path="res://assets/npc/segments/cintura.tres" id="4_7swvs"]
-[ext_resource type="Resource" path="res://assets/npc/segments/pistola.tres" id="5_jyy3b"]
-[ext_resource type="Resource" path="res://assets/npc/segments/capelli.tres" id="6_puu7q"]
-[ext_resource type="Resource" path="res://assets/npc/segments/cuffia.tres" id="7_xsptx"]
-[ext_resource type="Script" path="res://scripts/npc/npc_part.gd" id="8_gm7ey"]
-[ext_resource type="Resource" path="res://assets/npc/segments/testa.tres" id="9_c4wf8"]
-[ext_resource type="Resource" path="res://assets/npc/segments/collo.tres" id="10_llp55"]
-[ext_resource type="Resource" path="res://assets/npc/segments/torace_armatura.tres" id="11_ro85c"]
-[ext_resource type="Resource" path="res://assets/npc/segments/addome_pancia.tres" id="12_0wd8d"]
-[ext_resource type="Resource" path="res://assets/npc/segments/bacino.tres" id="13_rjc06"]
-[ext_resource type="Resource" path="res://assets/npc/segments/braccio.tres" id="14_gn7rv"]
-[ext_resource type="Resource" path="res://assets/npc/segments/avambraccio_guanto.tres" id="15_lkfbh"]
-[ext_resource type="Resource" path="res://assets/npc/segments/mano_guanto.tres" id="16_csleg"]
-[ext_resource type="Resource" path="res://assets/npc/segments/coscia.tres" id="17_s5ml0"]
-[ext_resource type="Resource" path="res://assets/npc/segments/stinco_stivale.tres" id="18_1ub3q"]
-[ext_resource type="Resource" path="res://assets/npc/segments/piede_stivale.tres" id="19_7seao"]
-[ext_resource type="Script" path="res://scripts/npc/npc_definition.gd" id="20_y6oyq"]
+[ext_resource type="Script" uid="uid://3vcwgw3tqtln" path="res://scripts/npc/npc_attachment.gd" id="1_io7ta"]
+[ext_resource type="Resource" uid="uid://sjrqwk0c42yn" path="res://assets/npc/segments/impianto_calma.tres" id="2_r6bmv"]
+[ext_resource type="Resource" uid="uid://m5ge5dyfqu30" path="res://assets/npc/segments/colletto.tres" id="3_irpxs"]
+[ext_resource type="Resource" uid="uid://d3luscxqj8k2y" path="res://assets/npc/segments/cintura.tres" id="4_7swvs"]
+[ext_resource type="Resource" uid="uid://tbriihhbitpw" path="res://assets/npc/segments/pistola.tres" id="5_jyy3b"]
+[ext_resource type="Resource" uid="uid://cido3t5t8tqi4" path="res://assets/npc/segments/capelli.tres" id="6_puu7q"]
+[ext_resource type="Resource" uid="uid://cxdwb087k20f6" path="res://assets/npc/segments/cuffia.tres" id="7_xsptx"]
+[ext_resource type="Script" uid="uid://bsiq7gnh1mh5j" path="res://scripts/npc/npc_part.gd" id="8_gm7ey"]
+[ext_resource type="Resource" uid="uid://cy1sh7fqnohii" path="res://assets/npc/segments/testa.tres" id="9_c4wf8"]
+[ext_resource type="Resource" uid="uid://dbtasnd1y8ykm" path="res://assets/npc/segments/collo.tres" id="10_llp55"]
+[ext_resource type="Resource" uid="uid://n5tudw3mpk8j" path="res://assets/npc/segments/torace_armatura.tres" id="11_ro85c"]
+[ext_resource type="Resource" uid="uid://bqj8fy8wjcjt" path="res://assets/npc/segments/addome_pancia.tres" id="12_0wd8d"]
+[ext_resource type="Resource" uid="uid://bmdhy7b5lowf7" path="res://assets/npc/segments/bacino.tres" id="13_rjc06"]
+[ext_resource type="Resource" uid="uid://dihmy2tyu2kdt" path="res://assets/npc/segments/braccio.tres" id="14_gn7rv"]
+[ext_resource type="Resource" uid="uid://cinbsofeoyanf" path="res://assets/npc/segments/avambraccio_guanto.tres" id="15_lkfbh"]
+[ext_resource type="Resource" uid="uid://c4luhm1400xbw" path="res://assets/npc/segments/mano_guanto.tres" id="16_csleg"]
+[ext_resource type="Resource" uid="uid://c8c3isi26cmbm" path="res://assets/npc/segments/coscia.tres" id="17_s5ml0"]
+[ext_resource type="Resource" uid="uid://drxwt8y4psjhp" path="res://assets/npc/segments/stinco_stivale.tres" id="18_1ub3q"]
+[ext_resource type="Resource" uid="uid://dlfsjy5rrk6si" path="res://assets/npc/segments/piede_stivale.tres" id="19_7seao"]
+[ext_resource type="Script" uid="uid://cpdsyegnlysl1" path="res://scripts/npc/npc_definition.gd" id="20_y6oyq"]
 
 [sub_resource type="Resource" id="Resource_rjn45"]
 script = ExtResource("1_io7ta")
@@ -70,25 +70,15 @@ offset = Vector3(-0.078, 0.11, 0)
 rotation_deg = Vector3(0, 0, 90)
 length = 0.03
 
-[sub_resource type="Resource" id="Resource_sw03m"]
-script = ExtResource("8_gm7ey")
-shape = ExtResource("9_c4wf8")
-thickness = 1.04
-
-[sub_resource type="Resource" id="Resource_3jua5"]
-script = ExtResource("8_gm7ey")
-shape = ExtResource("10_llp55")
-thickness = 0.96
-
-[sub_resource type="Resource" id="Resource_duw3g"]
-script = ExtResource("8_gm7ey")
-shape = ExtResource("11_ro85c")
-thickness = 0.9400000000000001
-
 [sub_resource type="Resource" id="Resource_fq3nd"]
 script = ExtResource("8_gm7ey")
 shape = ExtResource("12_0wd8d")
 thickness = 1.11
+
+[sub_resource type="Resource" id="Resource_twurm"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("15_lkfbh")
+thickness = 0.95
 
 [sub_resource type="Resource" id="Resource_hv5cn"]
 script = ExtResource("8_gm7ey")
@@ -100,30 +90,40 @@ script = ExtResource("8_gm7ey")
 shape = ExtResource("14_gn7rv")
 thickness = 0.99
 
-[sub_resource type="Resource" id="Resource_twurm"]
+[sub_resource type="Resource" id="Resource_3jua5"]
 script = ExtResource("8_gm7ey")
-shape = ExtResource("15_lkfbh")
-thickness = 0.9500000000000001
-
-[sub_resource type="Resource" id="Resource_3xxck"]
-script = ExtResource("8_gm7ey")
-shape = ExtResource("16_csleg")
-thickness = 0.98
+shape = ExtResource("10_llp55")
+thickness = 0.96
 
 [sub_resource type="Resource" id="Resource_fg5qc"]
 script = ExtResource("8_gm7ey")
 shape = ExtResource("17_s5ml0")
 thickness = 1.04
 
-[sub_resource type="Resource" id="Resource_ea8wf"]
+[sub_resource type="Resource" id="Resource_3xxck"]
 script = ExtResource("8_gm7ey")
-shape = ExtResource("18_1ub3q")
-thickness = 1.04
+shape = ExtResource("16_csleg")
+thickness = 0.98
 
 [sub_resource type="Resource" id="Resource_2ggne"]
 script = ExtResource("8_gm7ey")
 shape = ExtResource("19_7seao")
 thickness = 1.02
+
+[sub_resource type="Resource" id="Resource_ea8wf"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("18_1ub3q")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_sw03m"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("9_c4wf8")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_duw3g"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("11_ro85c")
+thickness = 0.94
 
 [resource]
 script = ExtResource("20_y6oyq")

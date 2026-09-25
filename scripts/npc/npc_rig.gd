@@ -46,7 +46,7 @@ class Layout:
 	var scale := 1.0
 	var pos := {}          ## osso → posizione globale di riposo
 	var segments: Array[Segment] = []
-	var radial := {}       ## osso → scala radiale (per gli accessori)
+	var radial := {}       ## osso → scala radiale (x, z) del segmento, anche per gli accessori
 	var lengthscale := {}  ## osso → scala delle lunghezze (per gli accessori)
 	var eye_height := 1.72
 	var neck_top := 1.55
@@ -66,10 +66,10 @@ static func layout(def: NPCDefinition) -> Layout:
 	if not c.is_empty() and c[0] == def.revision:
 		return c[1]
 	var l := compute(def)
-	if _cache.size() > 64:
-		for k in _cache.keys():
-			if not is_instance_id_valid(k):
-				_cache.erase(k)
+	# le definizioni liberate (livello riavviato, NPC chiusi) escono subito dalla cache
+	for k in _cache.keys():
+		if not is_instance_id_valid(k):
+			_cache.erase(k)
 	_cache[key] = [def.revision, l]
 	return l
 
@@ -145,7 +145,7 @@ static func compute(def: NPCDefinition) -> Layout:
 		sg.radial = sd[4] * (s * thick * (1.0 if head_part else def.mass))
 		sg.left = sg.bone.ends_with("_l")
 		l.segments.append(sg)
-		l.radial[sg.bone] = s * thick * (hs if head_part else def.mass)
+		l.radial[sg.bone] = sg.radial
 		l.lengthscale[sg.bone] = s * (hs if head_part else 1.0)
 	l.eye_height = (head + head_len * 0.58) * s
 	l.neck_top = (head - 0.02) * s

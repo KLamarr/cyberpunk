@@ -10,6 +10,13 @@ signal section_edited(section: PackedFloat32Array)
 signal section_committed(old_section: PackedFloat32Array, section: PackedFloat32Array)
 
 var symmetric := true
+## false = solo da guardare (forma di libreria protetta).
+var editable := true:
+	set(v):
+		editable = v
+		_hover = -1
+		_drag = -1
+		queue_redraw()
 var _shape: SegmentShape
 var _vals := PackedFloat32Array()
 var _start := PackedFloat32Array()
@@ -99,6 +106,9 @@ func _draw() -> void:
 		draw_circle(p, 5.0 if i == _hover or i == _drag else 4.0, col)
 	if _hover >= 0:
 		draw_string(font, Vector2(6, size.y - 6), "×%.2f" % _vals[_hover], HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, Color(1, 1, 1, 0.7))
+	if not editable:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.35))
+		draw_string(font, Vector2(8, 18), "forma condivisa: bloccata", HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, Color(1, 0.8, 0.4, 0.9))
 
 
 func _nearest(pos: Vector2) -> int:
@@ -113,7 +123,7 @@ func _nearest(pos: Vector2) -> int:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if _shape == null:
+	if _shape == null or not editable:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		var mb := event as InputEventMouseButton

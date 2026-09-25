@@ -158,7 +158,7 @@ static func builtin_shapes() -> Dictionary:
 	d["pistola"] = _acc(SegmentShape.create(C.ACCESSORIO, 0.02, 0.05, [Vector2(0, 1.0), Vector2(0.4, 0.95), Vector2(1, 0.8)],
 		[Vector2(0, 1.0), Vector2(0.38, 1.0), Vector2(0.42, 0.62), Vector2(1, 0.58)],
 		{"rings": 3, "sides": 4, "band": B.METALLO, "color_slot": S.SECONDARIO, "cap_start": true, "cap_end": true,
-		"smooth": false, "extend_start": 0.0, "extend_end": 0.0}),
+		"smooth": false, "extend_start": 0.0, "extend_end": 0.0, "is_weapon": true}),
 		&"hand_r", Vector3(0, -0.08, -0.012), Vector3(180, 0, 0), 0.17, false)
 	var hair_opts := {"rings": 4, "sides": 8, "band": B.CAPELLI, "color_slot": S.CAPELLI, "cap_end": true,
 		"extend_start": 0.0, "extend_end": 0.0}
@@ -240,7 +240,57 @@ static func shape_name_of(s: SegmentShape) -> String:
 ## Da chiamare quando si aggiungono o tolgono file dalla libreria.
 static func invalidate() -> void:
 	_list_cache.clear()
+	_users_cache.clear()
 	version += 1
+
+
+static var _users_cache := {}
+
+
+## Nomi dei personaggi (file in CHARACTERS_DIR) che usano la forma di libreria `path`.
+static func shape_users(path: String) -> PackedStringArray:
+	if _users_cache.has(path):
+		return _users_cache[path]
+	var out := PackedStringArray()
+	var dir := DirAccess.open(CHARACTERS_DIR)
+	if dir != null:
+		for f in dir.get_files():
+			var fn := f.trim_suffix(".remap")
+			if not fn.ends_with(".tres"):
+				continue
+			for dep in ResourceLoader.get_dependencies(CHARACTERS_DIR.path_join(fn)):
+				if dep.ends_with(path) or dep.contains(path + "::") or dep.split("::")[-1] == path:
+					out.append(fn.get_basename())
+					break
+	_users_cache[path] = out
+	return out
+
+
+# --- copia e ripristino ---------------------------------------------------------------
+## Copia tutte le proprietà salvate (quelle che finiscono nel .tres) da una risorsa a
+## un'altra dello stesso tipo, comprese quelle al valore predefinito.
+static func copy_storage(from: Resource, to: Resource) -> void:
+	for p in from.get_property_list():
+		var pn: String = p.name
+		if p.usage & PROPERTY_USAGE_STORAGE and pn != "script" and not pn.begins_with("resource_"):
+			to.set(pn, from.get(pn))
+
+
+## Riporta una risorsa (definizione o forma) com'è su disco, anche nelle proprietà al
+## valore predefinito: ResourceLoader.CACHE_MODE_REPLACE non le tocca perché nel .tres
+## non sono scritte. Gli oggetti in memoria restano gli stessi, quindi chi li usa (le
+## guardie di un livello aperto, gli altri NPC) vede subito la versione su disco.
+static func restore_from_disk(res: Resource) -> bool:
+	if res == null:
+		return false
+	var path := res.resource_path
+	if path == "" or path.contains("::") or not ResourceLoader.exists(path):
+		return false
+	var fresh := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if fresh == null or fresh.get_script() != res.get_script():
+		return false
+	copy_storage(fresh, res)
+	return true
 
 
 ## Tutte le forme della libreria su disco, ordinate per nome: [[nome, forma], ...].
@@ -437,7 +487,7 @@ static func randomize_appearance(d: NPCDefinition, rseed: int, rename := false) 
 
 
 static func _category_of(part: String) -> int:
-	return ["testa", "collo", "torace", "addome", "bacino", "braccio", "avambraccio", "mano", "coscia", "stinco", "piede"].find(part)
+	return NPCDefinition.PART_NAMES.find(part)
 
 
 static func _has_shape(acc: Array, shape_name: String) -> bool:

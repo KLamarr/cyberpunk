@@ -127,8 +127,8 @@ var revision := 0
 	set(v):
 		hearing = v
 		_touch()
-## Probabilità base di colpire (scende con distanza, movimento e buio).
-@export_range(0.1, 1.0, 0.01) var accuracy := 0.8:
+## Probabilità base di colpire (scende con distanza, movimento e buio; al massimo 85%).
+@export_range(0.1, 0.85, 0.01) var accuracy := 0.8:
 	set(v):
 		accuracy = v
 		_touch()

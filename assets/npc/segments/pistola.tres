@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SegmentShape" format=3]
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://tbriihhbitpw"]
 
-[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_ei6ak"]
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_ei6ak"]
 
 [sub_resource type="Curve" id="Curve_w7i2q"]
 _limits = [0.0, 1.6, 0.0, 1.0]
@@ -34,3 +34,4 @@ attach_bone = "hand_r"
 attach_offset = Vector3(0, -0.08, -0.012)
 attach_rotation = Vector3(180, 0, 0)
 attach_length = 0.17
+is_weapon = true

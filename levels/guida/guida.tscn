@@ -1,35 +1,25 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://lim0pvgs188g"]
 
-[ext_resource type="Script" path="res://scripts/world/level/level.gd" id="1_5uc4r"]
-[ext_resource type="Script" path="res://scripts/world/level/level_geometry.gd" id="2_hamu4"]
+[ext_resource type="Script" uid="uid://ochgls1vug2y" path="res://scripts/world/level/level.gd" id="1_5uc4r"]
+[ext_resource type="Script" uid="uid://bo2xdbr24pe03" path="res://scripts/world/level/level_geometry.gd" id="2_hamu4"]
 [ext_resource type="Material" path="res://assets/materials/solido_invisibile.tres" id="3_67fkj"]
-[ext_resource type="Script" path="res://scripts/world/level/zone.gd" id="4_6weqc"]
-[ext_resource type="Script" path="res://scripts/world/level/brush.gd" id="5_ka028"]
+[ext_resource type="Script" uid="uid://iv8uw62bj1k2" path="res://scripts/world/level/zone.gd" id="4_6weqc"]
+[ext_resource type="Script" uid="uid://gh0lnuke85um" path="res://scripts/world/level/brush.gd" id="5_ka028"]
 [ext_resource type="Resource" path="res://assets/surfaces/hall.tres" id="6_vctxv"]
 [ext_resource type="Resource" path="res://assets/surfaces/magazzino.tres" id="7_mjyy2"]
 [ext_resource type="Resource" path="res://assets/surfaces/cornice.tres" id="8_m4ela"]
-[ext_resource type="PackedScene" path="res://scenes/props/prop_box.tscn" id="9_wxu0l"]
-[ext_resource type="Script" path="res://scripts/world/props/prop_box.gd" id="10_o86wf"]
-[ext_resource type="Texture2D" path="res://assets/textures/desk.png" id="11_6sa0m"]
-[ext_resource type="Texture2D" path="res://assets/textures/crate.png" id="12_4o81n"]
-[ext_resource type="PackedScene" path="res://scenes/entities/light.tscn" id="13_0a6ro"]
-[ext_resource type="Script" path="res://scripts/world/light_fixture.gd" id="14_ycudv"]
-[ext_resource type="PackedScene" path="res://scenes/entities/door.tscn" id="15_w8e0d"]
-[ext_resource type="Script" path="res://scripts/world/sliding_door.gd" id="16_hehy3"]
-[ext_resource type="PackedScene" path="res://scenes/entities/datapad.tscn" id="17_trr40"]
-[ext_resource type="Script" path="res://scripts/world/datapad.gd" id="18_l4t57"]
-[ext_resource type="PackedScene" path="res://scenes/entities/pickup.tscn" id="19_ewa73"]
-[ext_resource type="Script" path="res://scripts/world/pickup.gd" id="20_mglt1"]
-[ext_resource type="PackedScene" path="res://scenes/entities/throwable.tscn" id="21_kpmw7"]
-[ext_resource type="Script" path="res://scripts/world/throwable.gd" id="22_05a3m"]
-[ext_resource type="PackedScene" path="res://scenes/entities/patrol_route.tscn" id="23_frv4s"]
-[ext_resource type="Script" path="res://scripts/world/patrol_route.gd" id="24_006tx"]
-[ext_resource type="PackedScene" path="res://scenes/entities/waypoint.tscn" id="25_1y441"]
-[ext_resource type="Script" path="res://scripts/world/waypoint.gd" id="26_135fl"]
-[ext_resource type="PackedScene" path="res://scenes/entities/guard.tscn" id="27_cswlh"]
-[ext_resource type="Script" path="res://scripts/actors/guard.gd" id="28_x02s4"]
-[ext_resource type="PackedScene" path="res://scenes/entities/player_start.tscn" id="29_dmhyk"]
-[ext_resource type="Script" path="res://scripts/world/player_start.gd" id="30_5353a"]
+[ext_resource type="PackedScene" uid="uid://bgsi37hl071nh" path="res://scenes/props/prop_box.tscn" id="9_wxu0l"]
+[ext_resource type="Texture2D" uid="uid://cuorpvqcfs6i3" path="res://assets/textures/desk.png" id="11_6sa0m"]
+[ext_resource type="Texture2D" uid="uid://31q5xach03mi" path="res://assets/textures/crate.png" id="12_4o81n"]
+[ext_resource type="PackedScene" uid="uid://cfch13lccxy3l" path="res://scenes/entities/light.tscn" id="13_0a6ro"]
+[ext_resource type="PackedScene" uid="uid://bjgiru1qs30co" path="res://scenes/entities/door.tscn" id="15_w8e0d"]
+[ext_resource type="PackedScene" uid="uid://dqy7seabs2eru" path="res://scenes/entities/datapad.tscn" id="17_trr40"]
+[ext_resource type="PackedScene" uid="uid://tfksnhrrsnty" path="res://scenes/entities/pickup.tscn" id="19_ewa73"]
+[ext_resource type="PackedScene" uid="uid://dgkcll7mxtce3" path="res://scenes/entities/throwable.tscn" id="21_kpmw7"]
+[ext_resource type="PackedScene" uid="uid://chvuw0lephtxf" path="res://scenes/entities/patrol_route.tscn" id="23_frv4s"]
+[ext_resource type="PackedScene" uid="uid://bnm5xubeprmj2" path="res://scenes/entities/waypoint.tscn" id="25_1y441"]
+[ext_resource type="PackedScene" uid="uid://d1h18oc5cgj6r" path="res://scenes/entities/guard.tscn" id="27_cswlh"]
+[ext_resource type="PackedScene" uid="uid://1ddisw60invf" path="res://scenes/entities/player_start.tscn" id="29_dmhyk"]
 
 [sub_resource type="Environment" id="Environment_rsdoj"]
 background_mode = 1
@@ -87,45 +77,39 @@ extra_zones = 1
 
 [node name="Arredo" type="Node3D" parent="." unique_id=1534021142]
 
-[node name="Tavolo" type="StaticBody3D" parent="Arredo" unique_id=1541085708 instance=ExtResource("9_wxu0l")]
+[node name="Tavolo" parent="Arredo" unique_id=1541085708 instance=ExtResource("9_wxu0l")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.4, 2.8)
-script = ExtResource("10_o86wf")
 size = Vector3(1.2, 0.8, 0.7)
 texture = ExtResource("11_6sa0m")
 uv_mode = 1
 
-[node name="Cassa1" type="StaticBody3D" parent="Arredo" unique_id=1885682895 instance=ExtResource("9_wxu0l")]
+[node name="Cassa1" parent="Arredo" unique_id=1885682895 instance=ExtResource("9_wxu0l")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.45, -10.3)
-script = ExtResource("10_o86wf")
 size = Vector3(0.9, 0.9, 0.9)
 texture = ExtResource("12_4o81n")
 
-[node name="Cassa2" type="StaticBody3D" parent="Arredo" unique_id=425156116 instance=ExtResource("9_wxu0l")]
+[node name="Cassa2" parent="Arredo" unique_id=425156116 instance=ExtResource("9_wxu0l")]
 transform = Transform3D(0.9848077, 0, 0.17364818, 0, 1, 0, -0.17364818, 0, 0.9848077, -2.3, 1.35, -10.3)
-script = ExtResource("10_o86wf")
 size = Vector3(0.9, 0.9, 0.9)
 texture = ExtResource("12_4o81n")
 
 [node name="Luci" type="Node3D" parent="." unique_id=1005530229]
 
-[node name="Luce1" type="StaticBody3D" parent="Luci" unique_id=1987966075 instance=ExtResource("13_0a6ro")]
+[node name="Luce1" parent="Luci" unique_id=1987966075 instance=ExtResource("13_0a6ro")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, 0)
-script = ExtResource("14_ycudv")
 energy = 2.2
 light_range = 8.0
 
-[node name="Luce2" type="StaticBody3D" parent="Luci" unique_id=1453542841 instance=ExtResource("13_0a6ro")]
+[node name="Luce2" parent="Luci" unique_id=1453542841 instance=ExtResource("13_0a6ro")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, -8)
-script = ExtResource("14_ycudv")
 energy = 2.0
 light_range = 7.0
 flicker = 0.3
 
 [node name="Porte" type="Node3D" parent="." unique_id=448699352]
 
-[node name="PortaMagazzino" type="Node3D" parent="Porte" unique_id=961039907 instance=ExtResource("15_w8e0d")]
+[node name="PortaMagazzino" parent="Porte" unique_id=961039907 instance=ExtResource("15_w8e0d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
-script = ExtResource("16_hehy3")
 locked = true
 lock_title = "Magazzino"
 code = "2468"
@@ -135,51 +119,41 @@ bypass_zones = 2
 
 [node name="Oggetti" type="Node3D" parent="." unique_id=957980699]
 
-[node name="DatapadCodice" type="StaticBody3D" parent="Oggetti" unique_id=1003970532 instance=ExtResource("17_trr40")]
+[node name="DatapadCodice" parent="Oggetti" unique_id=1003970532 instance=ExtResource("17_trr40")]
 transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, 2.5, 0.81, 2.8)
-script = ExtResource("18_l4t57")
 log_id = "codice_magazzino"
 
-[node name="Medipatch1" type="StaticBody3D" parent="Oggetti" unique_id=1009878950 instance=ExtResource("19_ewa73")]
+[node name="Medipatch1" parent="Oggetti" unique_id=1009878950 instance=ExtResource("19_ewa73")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0.02, -10.4)
-script = ExtResource("20_mglt1")
 
-[node name="Lattina1" type="RigidBody3D" parent="Oggetti" unique_id=1971515476 instance=ExtResource("21_kpmw7")]
+[node name="Lattina1" parent="Oggetti" unique_id=1971515476 instance=ExtResource("21_kpmw7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0.1, 3.2)
-script = ExtResource("22_05a3m")
 
 [node name="Guardie" type="Node3D" parent="." unique_id=1317878183]
 
-[node name="PercorsoRossi" type="Node3D" parent="Guardie" unique_id=939356778 instance=ExtResource("23_frv4s")]
-script = ExtResource("24_006tx")
+[node name="PercorsoRossi" parent="Guardie" unique_id=939356778 instance=ExtResource("23_frv4s")]
 
-[node name="Tappa1" type="Marker3D" parent="Guardie/PercorsoRossi" unique_id=1674723948 instance=ExtResource("25_1y441")]
+[node name="Tappa1" parent="Guardie/PercorsoRossi" unique_id=1674723948 instance=ExtResource("25_1y441")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, -6.5)
-script = ExtResource("26_135fl")
 wait = 3.0
 
-[node name="Tappa2" type="Marker3D" parent="Guardie/PercorsoRossi" unique_id=82770094 instance=ExtResource("25_1y441")]
+[node name="Tappa2" parent="Guardie/PercorsoRossi" unique_id=82770094 instance=ExtResource("25_1y441")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, -6.5)
-script = ExtResource("26_135fl")
 
-[node name="Tappa3" type="Marker3D" parent="Guardie/PercorsoRossi" unique_id=1766731133 instance=ExtResource("25_1y441")]
+[node name="Tappa3" parent="Guardie/PercorsoRossi" unique_id=1766731133 instance=ExtResource("25_1y441")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, -9)
-script = ExtResource("26_135fl")
 wait = 3.0
 
-[node name="Tappa4" type="Marker3D" parent="Guardie/PercorsoRossi" unique_id=1617899860 instance=ExtResource("25_1y441")]
+[node name="Tappa4" parent="Guardie/PercorsoRossi" unique_id=1617899860 instance=ExtResource("25_1y441")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, -9)
-script = ExtResource("26_135fl")
 
-[node name="Rossi" type="CharacterBody3D" parent="Guardie" unique_id=389221743 instance=ExtResource("27_cswlh")]
+[node name="Rossi" parent="Guardie" unique_id=389221743 instance=ExtResource("27_cswlh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, -6.5)
-script = ExtResource("28_x02s4")
 guard_name = "Ag. Rossi"
 patrol_route = NodePath("../PercorsoRossi")
 loot_credits = 20
 
 [node name="Trigger" type="Node3D" parent="." unique_id=879253950]
 
-[node name="PartenzaPlayer" type="Marker3D" parent="." unique_id=2105907867 instance=ExtResource("29_dmhyk")]
+[node name="PartenzaPlayer" parent="." unique_id=2105907867 instance=ExtResource("29_dmhyk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
-script = ExtResource("30_5353a")

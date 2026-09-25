@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://cek8guk2vyj3f"]
 
-[ext_resource type="Script" path="res://scripts/world/upgrade_station.gd" id="1"]
+[ext_resource type="Script" uid="uid://cej617mnll271" path="res://scripts/world/upgrade_station.gd" id="1"]
 
-[node name="StazionePotenziamento" type="StaticBody3D"]
+[node name="StazionePotenziamento" type="StaticBody3D" unique_id=215610821]
+collision_layer = 65
+collision_mask = 0
 script = ExtResource("1")

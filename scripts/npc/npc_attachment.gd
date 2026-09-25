@@ -21,8 +21,10 @@ extends Resource
 		if v != null and not v.changed.is_connected(emit_changed):
 			v.changed.connect(emit_changed)
 		emit_changed()
-## Osso a cui è agganciato (vedi NPCRig.BONES). Con mirror, un osso "_l"/"_r" vale per i due lati.
-@export_enum("hips", "spine", "chest", "neck", "head", "upperarm_l", "forearm_l", "hand_l", "upperarm_r", "forearm_r", "hand_r", "thigh_l", "shin_l", "foot_l", "thigh_r", "shin_r", "foot_r") var bone: String = "head":
+## Osso a cui è agganciato (vedi NPCRig.BONES). Con mirror, un osso "_l"/"_r" vale per i
+## due lati; su un osso centrale (testa, torace...) si aggiunge la copia speculare
+## rispetto al centro del corpo (per esempio le due cuffie).
+@export var bone: String = "head":
 	set(v):
 		bone = v
 		emit_changed()
@@ -44,6 +46,19 @@ extends Resource
 	set(v):
 		length = v
 		emit_changed()
+
+
+## Nel creatore di NPC le forme di libreria sono bloccate finché non si attiva
+## «Modifica la libreria»: nell'Inspector la forma resta visibile ma non modificabile.
+static var library_locked := true
+
+
+func _validate_property(property: Dictionary) -> void:
+	if property.name == "bone":
+		property.hint = PROPERTY_HINT_ENUM
+		property.hint_string = ",".join(NPCRig.BONES)
+	if property.name == "shape" and library_locked and NPCDefinition.is_library_shape(shape):
+		property.usage |= PROPERTY_USAGE_READ_ONLY
 
 
 static func create(lbl: String, s: SegmentShape, b: String, off: Vector3, rot: Vector3, len: float, mir := false) -> NPCAttachment:

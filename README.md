@@ -142,12 +142,19 @@ personalizzato, con o senza pavimento): sugli NPC scuri uno sfondo chiaro fa leg
 In alto: **Nuovo** (NPC casuale dell'archetipo), **Apri**, **Salva**, **Salva come**,
 **Duplica**, **Seme** e **Casuale** (stesso seme = stesso aspetto). Un clic su una parte
 nell'anteprima la seleziona. Ogni modifica si annulla con Ctrl+Z. Aprire un file
-`.tres` di un NPC dal FileSystem lo carica nel creatore.
+`.tres` di un NPC dal FileSystem lo carica nel creatore. Prima di lasciare un NPC con
+modifiche non salvate il creatore chiede **Salva / Scarta / Annulla**; **Scarta** lo
+riporta esattamente com'è su disco. **Salva come** lascia il file di prima com'era (con
+i livelli che lo usano) e continua sulla copia. Il Ctrl+S dell'editor salva anche l'NPC
+aperto, ma solo se ha già il suo file e non tocca forme condivise; negli altri casi
+avvisa nell'Output.
 
-**Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC:
-modificare una forma di libreria cambia tutti quelli che la usano (e viene salvata insieme
-all'NPC). **Rendi unica** ne fa una copia dentro l'NPC; **Salva in libreria** la
-trasforma in un nuovo file riutilizzabile. Gli NPC sono `NPCDefinition` in
+**Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC,
+e nel creatore sono **bloccate**: la nota dice quali personaggi usano la forma.
+**Rendi unica** ne fa una copia dentro l'NPC, da modificare liberamente; **Salva in
+libreria** la trasforma in un nuovo file riutilizzabile (la forma di partenza resta com'è).
+Per cambiare davvero una forma per tutti si attiva **Modifica la libreria**: la forma
+viene salvata nel suo file insieme all'NPC. Gli NPC sono `NPCDefinition` in
 `assets/npc/characters/`. Il generatore casuale pesca fra le forme della libreria
 (quelle con un tag d'archetipo, es. `guardia`, restano all'uniforme giusta), quindi una
 forma nuova entra subito nel mescolamento.
@@ -160,7 +167,7 @@ anelli low-poly lungo il proprio osso, con pesi rigidi e sovrapposizione alle
 articolazioni come in System Shock 2. Corpo e accessori finiscono in **una sola mesh con
 un solo materiale** condiviso (atlante `npc_atlas.png` in scala di grigi + colori nei
 vertex color; visore e impianto CALMA emissivi, tinti per istanza secondo lo stato della
-guardia). La mesh si genera al caricamento (circa 8 ms per NPC) e resta in cache.
+guardia). La mesh si genera al caricamento (circa 5 ms per NPC) e resta in cache.
 L'animazione è procedurale sulle ossa, guidata dalla stessa fase dei passi udibili;
 le guardie lontane aggiornano la posa meno spesso.
 
@@ -252,8 +259,10 @@ godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
 godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache
 NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .   # il creatore nell'editor: controlli, Ctrl+Z,
-                                                   # sezione, accessori, clic sull'anteprima, salva e ricarica
-godot --path . -- --autotest --stress              # 10/25/50/100 guardie: tempi e draw call (non passa/fallisce)
+                                                   # forme bloccate, Rendi unica, Salva come, Scarta, Ctrl+S,
+                                                   # cronologia della scena (scrive solo in user://)
+godot --path . -- --autotest --stress              # 10/25/50/100 guardie: tempo di frame (media e 95%)
+                                                   # e draw call (non passa/fallisce)
 godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
 ```
 

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ux1w6kjgnvio"]
 
-[ext_resource type="Script" path="res://scripts/actors/turret.gd" id="1"]
+[ext_resource type="Script" uid="uid://cph4e225jfml6" path="res://scripts/actors/turret.gd" id="1"]
 
-[node name="Torretta" type="Node3D"]
+[node name="Torretta" type="Node3D" unique_id=685795366]
 script = ExtResource("1")

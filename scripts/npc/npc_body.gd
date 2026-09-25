@@ -44,6 +44,8 @@ var _t := 0.0
 var _phase := 0.0
 var _aim := 0.0
 var _lod_acc := 0.0
+var _k := 0.0      ## intensità della corsa, smorzata
+var _move := 0.0   ## 0 = fermo, 1 = in movimento, smorzato (niente scatti alla posa neutra)
 var _down := false
 var _rebuild_queued := false
 var _glow := Color(0.3, 0.9, 1.0)
@@ -116,7 +118,7 @@ func rebuild() -> void:
 	if _down:
 		_apply_down_pose()
 	else:
-		_apply_pose(0.0, 0.0, 0.0)
+		_apply_pose(0.0, 0.0, 0.0, 0.0)
 
 
 func bone_index(bone_name: String) -> int:
@@ -146,12 +148,17 @@ func muzzle_position() -> Vector3:
 func update_motion(delta: float, speed: float, phase: float, aim: float, run_speed := 4.0) -> void:
 	_t += delta
 	_aim = move_toward(_aim, aim, delta * 5.0)
+	# ampiezza del passo e piegamento smorzati: fermandosi (o alternando fermo/cammino,
+	# come in combattimento) la posa rallenta invece di scattare
+	var moving := speed > 0.1
+	_move = move_toward(_move, 1.0 if moving else 0.0, delta * 4.0)
+	_k = move_toward(_k, clampf(speed / maxf(run_speed, 0.1), 0.0, 1.0) if moving else 0.0, delta * 3.0)
 	if lod_interval > 0.0:
 		_lod_acc += delta
 		if _lod_acc < lod_interval:
 			return
 		_lod_acc = 0.0
-	_apply_pose(clampf(speed / maxf(run_speed, 0.1), 0.0, 1.0) if speed > 0.1 else 0.0, phase, _aim, speed > 0.1)
+	_apply_pose(_k, phase, _aim, _move)
 
 
 func set_down(on: bool) -> void:
@@ -161,38 +168,40 @@ func set_down(on: bool) -> void:
 	if on:
 		_apply_down_pose()
 	else:
-		_apply_pose(0.0, 0.0, 0.0)
+		_apply_pose(0.0, 0.0, 0.0, 0.0)
 
 
 func _rot(bone: String, e: Vector3) -> void:
 	skeleton.set_bone_pose_rotation(_bi[bone], Quaternion.from_euler(e))
 
 
-func _apply_pose(k: float, phase: float, aim: float, moving := true) -> void:
+const _LEGS := [["thigh_l", "shin_l", "foot_l"], ["thigh_r", "shin_r", "foot_r"]]
+
+
+## move: 0 = fermo, 1 = in movimento (valori intermedi mentre parte o si ferma).
+func _apply_pose(k: float, phase: float, aim: float, move: float) -> void:
 	if skeleton == null:
 		return
 	var post := definition.posture if definition != null else 0.0
-	var amp := (0.24 + 0.3 * k) if moving else 0.0
+	var amp := (0.24 + 0.3 * k) * move
 	var swing := sin(phase) * amp
 	var breath := sin(_t * 2.0) * 0.015
 	# gambe: la coscia oscilla, il ginocchio si piega quando la gamba torna avanti
-	for side in [0, 1]:
-		var sfx := "_l" if side == 0 else "_r"
+	for side in 2:
+		var leg: Array = _LEGS[side]
 		var ph := phase + (0.0 if side == 0 else PI)
 		var th := sin(ph) * amp
-		var knee := 0.0
-		if moving:
-			knee = -(0.06 + (0.4 + 0.7 * k) * maxf(0.0, sin(ph + 1.1)))
-		_rot("thigh" + sfx, Vector3(th, 0, 0))
-		_rot("shin" + sfx, Vector3(knee, 0, 0))
-		_rot("foot" + sfx, Vector3(-(th + knee) * 0.6, 0, 0))
+		var knee := -(0.06 + (0.4 + 0.7 * k) * maxf(0.0, sin(ph + 1.1))) * move
+		_rot(leg[0], Vector3(th, 0, 0))
+		_rot(leg[1], Vector3(knee, 0, 0))
+		_rot(leg[2], Vector3(-(th + knee) * 0.6, 0, 0))
 	# busto: postura, inclinazione in corsa, respiro
 	_rot("spine", Vector3(-post * 0.16 - 0.1 * k + breath * 0.5, sin(phase) * 0.05 * k, 0))
 	_rot("chest", Vector3(-post * 0.1 + breath, -sin(phase) * 0.08 * k * (1.0 - aim), 0))
 	_rot("neck", Vector3(post * 0.18 + 0.06 * k, 0, 0))
 	_rot("head", Vector3(post * 0.08, 0, 0))
 	var hip := _bi["hips"] as int
-	skeleton.set_bone_pose_position(hip, _rest[hip] + Vector3(0, -absf(sin(phase)) * 0.035 * k - 0.01 * (1.0 if moving else 0.0), 0))
+	skeleton.set_bone_pose_position(hip, _rest[hip] + Vector3(0, -absf(sin(phase)) * 0.035 * k - 0.01 * move, 0))
 	# braccia: oscillano in controfase alle gambe; in mira il destro punta, il sinistro sostiene
 	var elbow := 0.12 + 0.75 * k
 	_rot("upperarm_l", Vector3(lerpf(-swing * 0.7, 1.18, aim), lerpf(0.0, -0.25, aim), lerpf(-0.09, 0.62, aim)))

@@ -40,10 +40,10 @@ static func get_mesh(def: NPCDefinition, opts := {}) -> ArrayMesh:
 	if not c.is_empty() and c[0] == def.revision:
 		return c[1]
 	var m := build_mesh(def)
-	if _cache.size() > 64:
-		for k in _cache.keys():
-			if not is_instance_id_valid(k):
-				_cache.erase(k)
+	# le definizioni liberate (livello riavviato, NPC chiusi) escono subito dalla cache
+	for k in _cache.keys():
+		if not is_instance_id_valid(k):
+			_cache.erase(k)
 	_cache[key] = [def.revision, m]
 	return m
 
@@ -66,15 +66,19 @@ static func build_mesh(def: NPCDefinition, opts := {}, stats: Stats = null) -> A
 		if a == null or not a.enabled or a.shape == null or not lay.pos.has(String(a.bone)):
 			ai += 1
 			continue
-		var targets: Array[String] = [String(a.bone)]
-		if a.mirror and NPCRig.mirror_bone(a.bone) != String(a.bone):
-			targets.append(NPCRig.mirror_bone(a.bone))
-		for b in targets:
-			var frame := attachment_frame(lay, a, b)
+		# [osso, copia speculare?]: sulle ossa con lato la copia va sull'altro lato,
+		# su quelle centrali sullo stesso osso, dall'altra parte del centro del corpo
+		var targets: Array = [[String(a.bone), false]]
+		if a.mirror:
+			targets.append([NPCRig.mirror_bone(a.bone), true])
+		for tg in targets:
+			var b: String = tg[0]
+			var mirrored: bool = tg[1]
+			var frame := attachment_frame(lay, a, b, mirrored)
 			var ls: float = lay.lengthscale.get(b, lay.scale)
-			var rs: float = lay.radial.get(b, lay.scale)
-			_loft(ctx, a.shape, null, 0.0, frame, a.length * ls, Vector2(rs, rs),
-				lay.bone_index(b), b != String(a.bone), hl == "acc%d" % ai)
+			var rs: Vector2 = lay.radial.get(b, Vector2(lay.scale, lay.scale))
+			_loft(ctx, a.shape, null, 0.0, frame, a.length * ls, rs,
+				lay.bone_index(b), mirrored, hl == "acc%d" % ai)
 		ai += 1
 	if ctx.verts == 0:
 		return ArrayMesh.new()
@@ -105,8 +109,7 @@ static func segment_frame(from: Vector3, to: Vector3) -> Transform3D:
 	return Transform3D(Basis(x, y, z), from)
 
 
-static func attachment_frame(lay: NPCRig.Layout, a: NPCAttachment, bone: String) -> Transform3D:
-	var mirrored := bone != String(a.bone)
+static func attachment_frame(lay: NPCRig.Layout, a: NPCAttachment, bone: String, mirrored := false) -> Transform3D:
 	var off := a.offset
 	var rot := a.rotation_deg
 	if mirrored:
@@ -123,9 +126,9 @@ static func attachment_frame(lay: NPCRig.Layout, a: NPCAttachment, bone: String)
 static func muzzle_local(def: NPCDefinition) -> Array:
 	var lay := NPCRig.layout(def)
 	for a in def.attachments:
-		var is_gun := a != null and a.shape != null and (NPCLibrary.shape_name_of(a.shape).begins_with("pistol") or a.label.to_lower().contains("pistol"))
+		var is_gun := a != null and a.shape != null and a.shape.is_weapon
 		if is_gun and a.enabled and String(a.bone) == "hand_r":
-			var f := attachment_frame(lay, a, "hand_r")
+			var f := attachment_frame(lay, a, "hand_r", false)
 			var tip: Vector3 = f.origin + f.basis.y * (a.length * float(lay.lengthscale.get("hand_r", lay.scale)))
 			return ["hand_r", tip - lay.pos["hand_r"]]
 	for seg in lay.segments:
@@ -207,11 +210,15 @@ static func _loft(ctx: Dictionary, a: SegmentShape, b: SegmentShape, morph: floa
 			_tri(ctx, [p00, p11, p10], [Vector2(u0, v0), Vector2(u1, v1), Vector2(u0, v1)], outward, col, sg, bones, weights)
 	# tappi
 	var dir := frame.basis.y
+	# i tappi seguono la regola dei fianchi: seconda banda solo se l'ultimo (o il primo)
+	# tratto è oltre split; con split = 1 (nessuna seconda banda) mai
 	if a.cap_start:
-		_cap(ctx, ring_pos[0], axis[0], -dir, _v(a.band, 0.0), _slot_color(def, a.color_slot, highlight), bones, weights, n)
+		var sb := a.split <= 0.001
+		_cap(ctx, ring_pos[0], axis[0], -dir, _v(a.band_b if sb else a.band, 0.0),
+			_slot_color(def, a.color_slot_b if sb else a.color_slot, highlight), bones, weights, n)
 	if a.cap_end:
 		var last := ts.size() - 1
-		var ub := ts[last] >= a.split
+		var ub := (ts[last - 1] + ts[last]) * 0.5 >= a.split
 		_cap(ctx, ring_pos[last], axis[last], dir, _v(a.band_b if ub else a.band, 1.0),
 			_slot_color(def, a.color_slot_b if ub else a.color_slot, highlight), bones, weights, n)
 

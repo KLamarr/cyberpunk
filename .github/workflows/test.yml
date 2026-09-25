@@ -40,22 +40,25 @@ jobs:
         run: godot --headless --path . --import
 
       - name: Test end-to-end (63 controlli)
-        run: godot --headless --path . -- --autotest
+        run: timeout 300 godot --headless --path . -- --autotest
 
       - name: Test morte e riavvio
-        run: godot --headless --path . -- --autotest --death
+        run: timeout 300 godot --headless --path . -- --autotest --death
 
       - name: Test bottoni UI
-        run: godot --headless --path . -- --autotest --ui
+        run: timeout 300 godot --headless --path . -- --autotest --ui
 
       - name: Test generatore di NPC
-        run: godot --headless --path . -- --autotest --npc
+        run: timeout 300 godot --headless --path . -- --autotest --npc
 
       - name: Test del creatore di NPC nell'editor
-        run: NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .
+        run: |
+          # timeout: se il plugin non si carica l'editor resterebbe aperto fino al limite del job
+          NPC_CREATOR_SELFTEST=1 timeout 300 godot --headless --editor --path . 2>&1 | tee selftest.log
+          grep -q "RISULTATO CREATORE NPC: .*, 0 fail" selftest.log
 
       - name: Test del livello della guida all'editor
-        run: godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+        run: timeout 300 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 
       - name: Validazione dei livelli
         run: |
