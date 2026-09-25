@@ -1,7 +1,11 @@
 extends Node
 ## Autoload "Game": stato globale della missione.
 ## Skill, inventario, obiettivi, registri letti, sistema del rumore, allarmi,
-## statistiche. Gli altri script comunicano soprattutto tramite i segnali qui sotto.
+## statistiche, impostazioni e lingua. Gli altri script comunicano soprattutto
+## tramite i segnali qui sotto.
+##
+## Testi: notify() e say() ricevono testi già tradotti (tr()); gli obiettivi invece
+## si salvano in inglese e si traducono quando vengono mostrati.
 
 signal message(text: String, color: Color)
 signal subtitle(speaker: String, text: String, duration: float)
@@ -17,19 +21,30 @@ signal log_read(id: String)
 
 enum State { MENU, PLAYING, PANEL, DEAD, COMPLETE }
 
+# --- lingua e impostazioni ---------------------------------------------------
+## Lingue del gioco. L'inglese è la lingua sorgente: i testi scritti nel codice e
+## nelle scene sono in inglese e passano da tr(); le altre lingue sono traduzioni
+## in locale/<codice>.po. Una frase senza traduzione resta in inglese.
+const LANGUAGES := {"en": "English", "it": "Italiano"}
+## Impostazioni del giocatore (lingua, grafica, audio, mouse).
+const SETTINGS_PATH := "user://settings.cfg"
+
 # --- skill -------------------------------------------------------------------
 const SKILLS := ["hacking", "armi", "forza", "furtivita"]
+## Nomi e descrizioni in inglese: usali con skill_name() e skill_desc(), che li traducono.
+# i18n
 const SKILL_NAMES := {
 	"hacking": "HACKING",
-	"armi": "ARMI DA FUOCO",
-	"forza": "FORZA",
-	"furtivita": "FURTIVITÀ",
+	"armi": "FIREARMS",
+	"forza": "STRENGTH",
+	"furtivita": "STEALTH",
 }
+# i18n
 const SKILL_DESC := {
-	"hacking": "Sblocca porte, terminali e torrette. Ogni dispositivo richiede un livello minimo; ogni livello in più alza le probabilità di successo per nodo.",
-	"armi": "Pistola più precisa (-25% dispersione per livello), più danno e ricarica più rapida.",
-	"forza": "+10 salute massima e più danno in mischia per livello. Livello 1: rimuovi le grate a mano, in silenzio. Lanci più lontano.",
-	"furtivita": "-12% visibilità e -15% rumore dei passi per livello. Ti muovi più veloce da accovacciato.",
+	"hacking": "Lets you hack doors, terminals and turrets. Each device requires a minimum level; every extra level raises the success chance per node.",
+	"armi": "More accurate pistol (-25% spread per level), more damage and faster reloads.",
+	"forza": "+10 max health and more melee damage per level. Level 1: remove grates by hand, quietly. Level 2: lift heavy crates. You throw farther.",
+	"furtivita": "-12% visibility and -15% footstep noise per level. You move faster while crouched.",
 }
 const SKILL_MAX := 4
 const START_POINTS := 4
@@ -91,11 +106,18 @@ var ui: Node = null
 var hud: Node = null
 
 var settings := {
+	"language": "en",
 	"pixel_scale": 2,
 	"dither": true,
 	"sensitivity": 0.12,
 	"volume": 0.8,
 }
+## false = non legge e non scrive user://settings.cfg (test e strumenti di sviluppo,
+## così partono sempre dalle impostazioni predefinite).
+var persist_settings := true
+var settings_path := SETTINGS_PATH
+## Lingua da salvare quando quella attiva viene da --lang= (che vale solo per la sessione).
+var _saved_language := ""
 
 
 func _ready() -> void:
@@ -104,6 +126,97 @@ func _ready() -> void:
 	for s in SKILLS:
 		start_alloc[s] = 0
 	reset_state()
+	_init_settings()
+
+
+# --- impostazioni e lingua ------------------------------------------------------
+## Al primo avvio il gioco è in inglese; poi usa la lingua salvata dal giocatore.
+## Da riga di comando: -- --lang=it (vale solo per quella sessione).
+func _init_settings() -> void:
+	var args := OS.get_cmdline_user_args()
+	for a in args:
+		if a in ["--autotest", "--validate", "--convert-seraph", "--write-input-map"] or a.begins_with("--tool="):
+			persist_settings = false
+	if "--script" in OS.get_cmdline_args() or "-s" in OS.get_cmdline_args():
+		persist_settings = false   # strumenti lanciati con --script (tools/i18n.gd, npc_seed.gd...)
+	if persist_settings:
+		load_settings()
+	var lang: String = settings.language
+	for a in args:
+		if a.begins_with("--lang="):
+			_saved_language = settings.language
+			lang = a.substr(7)
+	set_language(lang, false)
+
+
+func load_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(settings_path) != OK:
+		return
+	for k in settings:
+		var v: Variant = cfg.get_value("settings", k, settings[k])
+		var t := typeof(settings[k])
+		if typeof(v) == TYPE_FLOAT and not is_finite(v):
+			continue   # nan/inf in un file modificato a mano
+		if typeof(v) == t or (t == TYPE_FLOAT and typeof(v) == TYPE_INT):
+			settings[k] = v
+	if not LANGUAGES.has(settings.language):
+		settings.language = "en"
+	settings.pixel_scale = clampi(int(settings.pixel_scale), 1, 4)
+	settings.sensitivity = clampf(float(settings.sensitivity), 0.03, 0.4)
+	settings.volume = clampf(float(settings.volume), 0.0, 1.0)
+
+
+func save_settings() -> void:
+	if not persist_settings:
+		return
+	var cfg := ConfigFile.new()
+	for k in settings:
+		cfg.set_value("settings", k, settings[k])
+	if _saved_language != "":
+		cfg.set_value("settings", "language", _saved_language)
+	if cfg.save(settings_path) != OK:
+		push_warning("Impossibile salvare le impostazioni in " + settings_path)
+
+
+## Cambia lingua: i testi mostrati da qui in poi usano la nuova lingua.
+func set_language(code: String, persist := true) -> void:
+	if not LANGUAGES.has(code):
+		push_warning("Lingua sconosciuta '%s': uso l'inglese" % code)
+		code = "en"
+	settings.language = code
+	TranslationServer.set_locale(code)
+	get_window().title = tr("Seraph Protocol (Vertical Slice)")
+	settings_changed.emit()
+	if persist:
+		_saved_language = ""   # scelta del giocatore: da ora vale anche per le prossime partite
+		save_settings()
+
+
+func cycle_language() -> void:
+	var codes: Array = LANGUAGES.keys()
+	set_language(codes[(codes.find(settings.language) + 1) % codes.size()])
+
+
+func language_name() -> String:
+	return LANGUAGES.get(settings.language, settings.language)
+
+
+func skill_name(s: String) -> String:
+	return tr(SKILL_NAMES.get(s, s))
+
+
+func skill_desc(s: String) -> String:
+	return tr(SKILL_DESC.get(s, ""))
+
+
+## Nome di un personaggio con il titolo tradotto: "Ofc. Rossi" -> "Ag. Rossi".
+## I titoli (la parola che finisce col punto) sono in locale/it.po con contesto "title".
+func person_name(full: String) -> String:
+	var sp := full.find(" ")
+	if sp > 1 and full[sp - 1] == ".":
+		return tr(full.substr(0, sp), "title") + full.substr(sp)
+	return tr(full)
 
 
 static func ensure_input_map() -> void:
@@ -188,7 +301,7 @@ func _process(delta: float) -> void:
 			alarm_time = 0.0
 			Sfx.set_alarm(false)
 			alarm_changed.emit(false)
-			notify("Allarme rientrato.", Color(0.6, 0.9, 0.8))
+			notify(tr("Alarm cleared."), Color(0.6, 0.9, 0.8))
 
 
 # --- skill --------------------------------------------------------------------
@@ -216,13 +329,25 @@ func try_upgrade(s: String) -> bool:
 
 
 # --- inventario ---------------------------------------------------------------
-func give_keycard(id: String, display_name: String) -> void:
+## display_name: nome della tessera in inglese, come scritto nel livello
+## (vuoto = "<Id> Keycard"). Viene tradotto quando lo si mostra.
+func give_keycard(id: String, display_name := "") -> void:
 	keycards[id] = display_name
 	inventory_changed.emit()
 
 
 func has_keycard(id: String) -> bool:
 	return keycards.has(id)
+
+
+## Nome tradotto di una tessera posseduta.
+func keycard_name(id: String) -> String:
+	return keycard_label(id, keycards.get(id, ""))
+
+
+## Nome tradotto di una tessera: display_name in inglese, oppure "<Id> Keycard".
+func keycard_label(id: String, display_name := "") -> String:
+	return tr(display_name) if display_name != "" else tr("%s Keycard") % id.capitalize()
 
 
 func add_modules(n: int) -> void:
@@ -258,7 +383,7 @@ func found_secret(id: String) -> void:
 	if id in secrets_found:
 		return
 	secrets_found.append(id)
-	notify("Hai trovato un segreto!", Color(1.0, 0.85, 0.3))
+	notify(tr("You found a secret!"), Color(1.0, 0.85, 0.3))
 
 
 # --- registri -----------------------------------------------------------------
@@ -268,13 +393,14 @@ func read_log(id: String, open_reader := true) -> void:
 		logs_read.append(id)
 		Sfx.play_ui("datapad")
 		var title: String = Logs.ENTRIES.get(id, {}).get("title", id)
-		notify("Registro aggiunto al PDA: " + title, Color(0.5, 0.9, 1.0))
+		notify(tr("Log added to PDA: %s") % tr(title), Color(0.5, 0.9, 1.0))
 		log_read.emit(id)
 	if open_reader and ui:
 		ui.show_log(id)
 
 
 # --- obiettivi ----------------------------------------------------------------
+## text in inglese: viene tradotto quando lo si mostra (l'italiano va in locale/it.po).
 func add_objective(id: String, text: String, optional := false) -> void:
 	for o in objectives:
 		if o.id == id:
@@ -304,9 +430,9 @@ func complete_objective(id: String, reward_modules := 0) -> void:
 	var extra := ""
 	if reward_modules > 0:
 		modules += reward_modules
-		extra = "  (+%d cyber-moduli)" % reward_modules
+		extra = "  " + tr("(cyber-modules +%d)") % reward_modules
 		inventory_changed.emit()
-	notify("OBIETTIVO COMPLETATO: " + o.text + extra, Color(0.4, 1.0, 0.6))
+	notify(tr("OBJECTIVE COMPLETE: %s") % tr(o.text) + extra, Color(0.4, 1.0, 0.6))
 	objectives_changed.emit()
 
 
@@ -315,7 +441,7 @@ func fail_objective(id: String) -> void:
 	if o.is_empty() or o.state != "active":
 		return
 	o.state = "failed"
-	notify("OBIETTIVO FALLITO: " + o.text, Color(1.0, 0.35, 0.3))
+	notify(tr("OBJECTIVE FAILED: %s") % tr(o.text), Color(1.0, 0.35, 0.3))
 	objectives_changed.emit()
 
 
@@ -342,6 +468,7 @@ func emit_noise(pos: Vector3, radius: float, kind: String, source: Node = null, 
 
 
 # --- allarmi / eventi ---------------------------------------------------------
+## source_name: testo già tradotto (es. tr("Spotted by the cameras.")).
 func raise_alarm(pos: Vector3, source_name := "") -> void:
 	if state != State.PLAYING:
 		return
@@ -352,8 +479,8 @@ func raise_alarm(pos: Vector3, source_name := "") -> void:
 		fail_objective("noalarm")
 		Sfx.set_alarm(true)
 		alarm_changed.emit(true)
-		notify("ALLARME! " + source_name, Color(1.0, 0.3, 0.25))
-		say("SISTEMA PA", "Allarme di sicurezza nel settore 14. Personale di vigilanza, convergere.", 4.0)
+		notify((tr("ALARM! %s") % source_name).strip_edges(), Color(1.0, 0.3, 0.25))
+		say(tr("PA SYSTEM"), tr("Security alert in sector 14. All security personnel, respond."), 4.0)
 	for g in get_tree().get_nodes_in_group("guards"):
 		if g.has_method("on_alarm"):
 			g.on_alarm(pos)
@@ -363,13 +490,13 @@ func disable_security() -> void:
 	security_disabled = true
 	for c in get_tree().get_nodes_in_group("security_cameras"):
 		c.set_disabled(true)
-	notify("Telecamere disattivate.", Color(0.5, 1.0, 0.6))
+	notify(tr("Cameras disabled."), Color(0.5, 1.0, 0.6))
 
 
 func disable_turrets() -> void:
 	for t in get_tree().get_nodes_in_group("turrets"):
 		t.set_disabled(true)
-	notify("Torrette disattivate.", Color(0.5, 1.0, 0.6))
+	notify(tr("Turrets disabled."), Color(0.5, 1.0, 0.6))
 
 
 func on_player_spotted() -> void:
@@ -412,30 +539,51 @@ func on_player_died() -> void:
 
 func rating() -> String:
 	if stats.kills == 0 and stats.alarms == 0 and stats.detections == 0 and stats.kos == 0:
-		return "SPETTRO — nessuno sa che sei stato qui"
+		return tr("SPECTER — nobody knows you were here")
 	if stats.kills == 0 and stats.alarms == 0 and stats.detections == 0:
-		return "FANTASMA"
+		return tr("SHADOW")
 	if stats.kills == 0:
-		return "PROFESSIONISTA NON LETALE"
+		return tr("NON-LETHAL PROFESSIONAL")
 	if stats.kills >= 3:
-		return "MACELLAIO DI SERAPH"
-	return "OPERATIVO"
+		return tr("BUTCHER OF SERAPH")
+	return tr("OPERATIVE")
 
 
 func cycle_pixel_scale() -> void:
 	settings.pixel_scale = settings.pixel_scale % 4 + 1
 	settings_changed.emit()
-	var names := ["1280x720 (nativa)", "640x360", "427x240", "320x180"]
-	notify("Risoluzione interna: " + names[settings.pixel_scale - 1])
+	save_settings()
+	notify(tr("Internal resolution: %s") % pixel_scale_name(settings.pixel_scale))
+
+
+func pixel_scale_name(scale: int) -> String:
+	match scale:
+		1: return tr("1280x720 (native)")
+		2: return tr("640x360 (default)")
+		3: return "427x240"
+	return "320x180"
 
 
 func toggle_dither() -> void:
 	settings.dither = not settings.dither
 	settings_changed.emit()
-	notify("Dithering: " + ("attivo" if settings.dither else "disattivo"))
+	save_settings()
+	notify(tr("Dithering: %s") % (tr("ON") if settings.dither else tr("OFF")))
+
+
+## Esce dal gioco salvando le impostazioni.
+func quit_game() -> void:
+	save_settings()
+	get_tree().quit()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		save_settings()   # finestra chiusa: salva i cursori della pausa
 
 
 func restart() -> void:
+	save_settings()
 	Sfx.set_alarm(false)
 	reset_state()
 	get_tree().paused = false

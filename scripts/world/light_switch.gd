@@ -33,7 +33,7 @@ func _ready() -> void:
 
 
 func get_frob_text() -> String:
-	return "Interruttore luci (" + ("spegni" if is_on else "accendi") + ")"
+	return tr("Light switch (turn off)") if is_on else tr("Light switch (turn on)")
 
 
 func frob(_player: Node) -> void:

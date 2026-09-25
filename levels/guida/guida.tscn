@@ -111,7 +111,7 @@ flicker = 0.3
 [node name="PortaMagazzino" parent="Porte" unique_id=961039907 instance=ExtResource("15_w8e0d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
 locked = true
-lock_title = "Magazzino"
+lock_title = "Storeroom"
 code = "2468"
 bypass_zones = 2
 
@@ -149,7 +149,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, -9)
 
 [node name="Rossi" parent="Guardie" unique_id=389221743 instance=ExtResource("27_cswlh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, -6.5)
-guard_name = "Ag. Rossi"
+guard_name = "Ofc. Rossi"
 patrol_route = NodePath("../PercorsoRossi")
 loot_credits = 20
 

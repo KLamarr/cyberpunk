@@ -540,7 +540,7 @@ func _test_existing_characters() -> void:
 	var ruiz: NPCDefinition = load(NPCLibrary.CHARACTERS_DIR.path_join("ruiz.tres"))
 	p.open_definition(ruiz)
 	await _frames(3)
-	_check(p.def == ruiz and p.name_edit.text == "Ag. Ruiz" and p.keycard_id_edit.text == "sicurezza", "apre ruiz.tres (nome e tessera nei campi)")
+	_check(p.def == ruiz and p.name_edit.text == "Ofc. Ruiz" and p.keycard_id_edit.text == "sicurezza", "apre ruiz.tres (nome e tessera nei campi)")
 	var h_disk := ruiz.height
 	p._set_prop(ruiz, "height", h_disk + 0.2)
 	p.revert_unsaved()

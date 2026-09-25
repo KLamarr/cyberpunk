@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 func get_frob_text() -> String:
 	if taken:
 		return ""
-	return "Estrai il nucleo SERAPH-7"
+	return tr("Extract the SERAPH-7 core")
 
 
 func frob(_player: Node) -> void:
@@ -56,6 +56,6 @@ func frob(_player: Node) -> void:
 	Sfx.play_3d("whisper", global_position + Vector3.UP * 1.2, 4.0)
 	Game.give_item("core")
 	Game.complete_objective("core", 2)
-	Game.add_objective("extract", "Torna all'ascensore di servizio con il nucleo.")
-	Game.say("???", "...non spegnermi... portami fuori...", 3.5)
+	Game.add_objective("extract", "Get back to the service elevator with the core.")
+	Game.say("???", tr("...don't shut me down... get me out..."), 3.5)
 	get_tree().create_timer(3.8, false).timeout.connect(Game.start_lockdown)

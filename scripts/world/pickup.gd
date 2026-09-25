@@ -15,7 +15,8 @@ extends StaticBody3D
 	set(v):
 		item_id = v
 		_editor_rebuild()
-## Nome mostrato. Vuoto = nome predefinito del tipo.
+## Nome mostrato, in inglese (la traduzione va in locale/it.po).
+## Vuoto = nome predefinito del tipo.
 @export var display := ""
 ## Se non vuoto, raccoglierlo conta come segreto trovato (id univoco).
 @export var secret_id := ""
@@ -47,15 +48,15 @@ func _editor_rebuild() -> void:
 func _default_name() -> String:
 	match kind:
 		"medpatch":
-			return "Medipatch"
+			return tr("Medipatch")
 		"ammo":
-			return "Munizioni 9mm (%d)" % amount
+			return tr("9mm ammo (%d)") % amount
 		"module":
-			return "Cyber-modulo"
+			return tr("Cyber-module")
 		"credits":
-			return "Chip di credito (%d ¢)" % amount
+			return tr("Credit chip (%d ¢)") % amount
 		"keycard":
-			return "Tessera " + item_id
+			return Game.keycard_label(item_id)
 	return kind
 
 
@@ -95,12 +96,13 @@ func _build() -> void:
 		_built.append(get_child(i))
 
 
+## Nome tradotto.
 func get_display() -> String:
-	return display if display != "" else _default_name()
+	return tr(display) if display != "" else _default_name()
 
 
 func get_frob_text() -> String:
-	return "Raccogli: " + get_display()
+	return tr("Pick up: %s") % get_display()
 
 
 func frob(_player: Node) -> void:
@@ -114,9 +116,9 @@ func frob(_player: Node) -> void:
 		"credits":
 			Game.add_credits(amount)
 		"keycard":
-			Game.give_keycard(item_id, get_display())
+			Game.give_keycard(item_id, display)
 	Sfx.play_ui("pickup")
-	Game.notify("Raccolto: " + get_display())
+	Game.notify(tr("Picked up: %s") % get_display())
 	if secret_id != "":
 		Game.found_secret(secret_id)
 	queue_free()

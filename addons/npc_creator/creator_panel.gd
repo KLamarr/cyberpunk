@@ -194,6 +194,8 @@ func _build_body_tab() -> void:
 	var v := _tab("Corpo")
 	_header(v, "Identità")
 	name_edit = _line(v, "Nome", "display_name")
+	name_edit.placeholder_text = "in inglese, es. Ofc. Rossi"
+	name_edit.tooltip_text = "Nome mostrato nel gioco, in inglese (la lingua sorgente).\nIl titolo (Ofc., Tech., Dr., Dir., Op.) viene tradotto: in italiano «Ag. Rossi»."
 	arch_opt = OptionButton.new()
 	for a in NPCLibrary.ARCH_LABELS:
 		arch_opt.add_item(a)
@@ -358,8 +360,8 @@ func _build_inventory_tab() -> void:
 	keycard_id_edit = _line(v, "Tessera (id)", "keycard_id")
 	keycard_id_edit.placeholder_text = "es. sicurezza, lab"
 	keycard_name_edit = _line(v, "Nome tessera", "keycard_name")
-	keycard_name_edit.placeholder_text = "es. Tessera Sicurezza"
-	_header(v, "Battute di ronda (una per riga)")
+	keycard_name_edit.placeholder_text = "in inglese, es. Security Keycard"
+	_header(v, "Battute di ronda (una per riga, in inglese)")
 	barks_edit = TextEdit.new()
 	barks_edit.custom_minimum_size = Vector2(0, 180)
 	barks_edit.placeholder_text = "Vuoto = battute standard delle guardie"
@@ -940,7 +942,7 @@ func _fs_update(path: String) -> void:
 
 func _duplicate() -> void:
 	var d := def.clone()
-	d.display_name = def.display_name + " (copia)"
+	d.display_name = def.display_name + " (copy)"   # è un testo del gioco: in inglese
 	# l'originale torna com'è su disco: le modifiche non salvate passano nella copia
 	var had_changes := dirty
 	var old := def

@@ -2,52 +2,55 @@ class_name Logs
 extends RefCounted
 ## Testi dei registri (datapad, terminali, messaggi). Aggiungi qui nuove voci:
 ## la chiave è l'id usato da Datapad/terminali e da Game.read_log().
+## Titolo, autore e testo sono in inglese e vengono tradotti quando si mostrano:
+## l'italiano va in locale/it.po (tools/i18n.gd aggiunge da sé le voci nuove).
 
+# i18n
 const ENTRIES := {
 	"vesper": {
-		"title": "Vesper — Briefing",
-		"author": "VESPER (canale cifrato)",
-		"text": "Sei dentro. Livello 14 dell'arcologia Nysa, ala laboratori della Seraph Biotek.\n\nIl nucleo SERAPH-7 è nel server del Laboratorio C, a nord della hall. Estrailo e torna a quest'ascensore di servizio: resta al piano finché non hai il pacco.\n\nLa sicurezza è ridotta al turno di notte: un paio di guardie, telecamere nella hall e una torretta davanti al laboratorio. Come ci arrivi è affar tuo. Ma ricorda: meno cadaveri lasci, meno domande faranno a me.\n\n— V.",
+		"title": "Vesper — briefing",
+		"author": "VESPER (encrypted channel)",
+		"text": "You're in. Level 14 of the Nysa Arcology, Seraph Biotek's lab wing.\n\nThe SERAPH-7 core is in the Lab C server, north of the lobby. Extract it and come back to this service elevator. Don't leave this floor until you have the package.\n\nSecurity is thin on the night shift: a couple of guards, cameras in the lobby and a turret outside the lab. How you get there is your business. But remember: the fewer bodies you leave, the fewer questions they'll ask me.\n\n— V.",
 	},
 	"turni": {
-		"title": "Promemoria turni",
-		"author": "M. RUIZ, vigilanza",
-		"text": "Ragazzi, qualcuno continua a lasciare aperta la sala sicurezza.\n\nIl codice del tastierino è ancora 0451 (sì, lo so: sempre quello). Hale dice che lo cambierà \"appena ha tempo\", quindi mai.\n\nE chi ha finito le lattine di Kaffa-Nova si ricordi di rifornire il distributore. Non ce la faccio a fare il turno di notte senza.",
+		"title": "Memo to all shifts",
+		"author": "M. RUIZ, security",
+		"text": "Guys, somebody keeps leaving the security room open.\n\nThe keypad code is still 0451 (yeah, I know, same as ever). Hale says he'll change it \"as soon as he has time\", so never.\n\nAnd whoever finished the Kaffa-Nova cans, remember to restock the vending machine. I can't get through the night shift without that stuff.",
 	},
 	"okafor1": {
-		"title": "Circolare interna — impianti CALMA",
-		"author": "Dr. E. OKAFOR, direzione scientifica",
-		"text": "A tutto il personale di vigilanza del livello 14.\n\nDa lunedì riceverete l'aggiornamento obbligatorio dell'impianto neurale CALMA v2. Gli effetti collaterali — emicrania, sogni ricorrenti, un leggero ronzio percepito, la sensazione di \"essere osservati\" — sono temporanei e previsti.\n\nVi preghiamo di non discuterne con personale esterno. CALMA vi rende più lucidi, più sereni, più sicuri.\n\nSeraph Biotek. Il futuro è calmo.",
+		"title": "Internal memo — CALMA implants",
+		"author": "Dr. E. OKAFOR, scientific director",
+		"text": "To all Level 14 security personnel.\n\nStarting Monday you will receive the mandatory update to the CALMA v2 neural implant. The side effects — migraines, recurring dreams, the perception of a faint hum, the feeling of \"being watched\" — are temporary and expected.\n\nPlease do not discuss this with outside personnel. CALMA makes you sharper, calmer, safer.\n\nSeraph Biotek. The future is calm.",
 	},
 	"manutenzione": {
-		"title": "Ticket #2291 — Manutenzione",
-		"author": "Squadra tecnica, turno B",
-		"text": "La grata del condotto di ventilazione nella SALA RELAX è quasi staccata: con un minimo di forza si toglie a mano. Il condotto porta dritto al Laboratorio C, quindi SIGILLATELA prima che qualcuno se ne accorga.\n\nNota a margine: la torretta del corridoio usa ancora i vecchi sensori ottici. Se salta la luce lì dentro è cieca come una talpa. Abbiamo chiesto il ricambio tre volte.",
+		"title": "Ticket #2291 — maintenance",
+		"author": "Maintenance crew, B shift",
+		"text": "The vent grate in the BREAK ROOM is barely hanging on. Anyone with a bit of strength can pull it off by hand. The duct leads straight to Lab C, so SEAL IT before somebody notices.\n\nSide note: the corridor turret still uses the old optical sensors. If the lights go out in there it's blind as a bat. We've asked for the replacement three times.",
 	},
 	"sicurezza": {
-		"title": "Registro turno — sala sicurezza",
+		"title": "Shift log — security room",
 		"author": "Op. J. HALE",
-		"text": "02:10 — Kovač di nuovo in laboratorio da solo. Dice che \"il server lo chiama\". Gli ho detto di smetterla con le battute.\n\n02:40 — Tessera del Laboratorio C riposta nell'armadietto, come da procedura.\n\n03:15 — Ricordarsi: telecamere e torretta si gestiscono da questo terminale. NON spegnerle per sbaglio come la settimana scorsa.\n\n03:50 — Il ronzio è più forte stanotte. Anche Ruiz lo sente.",
+		"text": "02:10 — Kovač alone in the lab again. Says \"the server's calling me.\" Told him to knock it off with the jokes.\n\n02:40 — Lab C keycard put back in the locker, as per procedure.\n\n03:15 — Remember: cameras and turret are controlled from this terminal. Do NOT switch them off by mistake like last week.\n\n03:50 — The hum is louder tonight. Ruiz hears it too.",
 	},
 	"okafor2": {
-		"title": "Diario personale — voce 17",
+		"title": "Personal journal — entry 17",
 		"author": "Dr. E. OKAFOR",
-		"text": "SERAPH-7 non è un archivio. È un'impronta.\n\nOgni impianto CALMA trasmette al nucleo una copia dei pattern neurali di chi lo porta. Le guardie non lo sanno, ma una parte di loro vive già lì dentro. Per questo si fermano, a volte, e ascoltano.\n\nStanotte ho aggiunto il mio. Il corpo nella capsula è solo un corpo.\n\nSe qualcuno sta leggendo queste righe: il nucleo non è vuoto. Io sono ancora qui dentro. E non sono solo.",
+		"text": "SERAPH-7 is not an archive. It's an imprint.\n\nEvery CALMA implant transmits a copy of its wearer's neural patterns to the core. The guards don't know it, but part of them already lives in there. That's why they stop, sometimes, and listen.\n\nTonight I added mine. The body in the capsule is just a body.\n\nIf anyone is reading this: the core is not empty. I'm still in here. And I'm not alone.",
 	},
 	"intruso": {
-		"title": "Datapad incrinato",
-		"author": "firmato \"K.\"",
-		"text": "Terzo giorno nel condotto.\n\nLe guardie non parlano più tra loro: si fermano, ascoltano il ronzio del server e poi riprendono il giro come se nulla fosse.\n\nLascio qui il modulo che ho rubato: a me non serve più. Se sei un altro corriere di Vesper, fai il lavoro e vattene.\n\nE qualunque cosa succeda: non ascoltare il nucleo.",
+		"title": "Cracked datapad",
+		"author": "signed \"K.\"",
+		"text": "Third day in the duct.\n\nThe guards don't talk to each other anymore: they stop, listen to the server's hum and then carry on with their rounds as if nothing happened.\n\nI'm leaving you the module I stole. I don't need it anymore. If you're another one of Vesper's couriers, do the job and get out.\n\nAnd whatever happens, don't listen to the core.",
 	},
 	"magazzino": {
-		"title": "Bolla di carico SB-14",
-		"author": "Logistica Seraph",
-		"text": "Consegna: 12 casse componenti, 2 kit medipatch, 1 cassa munizioni 9mm per vigilanza.\n\nNOTA: le casse leggere si possono spostare a mano. Quelle marcate SB-14 pesano 40 kg: usare il carrello.\n\nFirmato: nessuno, come al solito.",
+		"title": "SB-14 delivery note",
+		"author": "Seraph Logistics",
+		"text": "Delivery: 12 crates of components, 2 medipatch kits, 1 crate of 9mm ammo for security.\n\nNOTE: the light crates can be moved by hand. The ones marked SB-14 weigh 40 kg: use the cart.\n\nSigned: nobody, as usual.",
 	},
 	# --- livello di esempio della guida (levels/guida): copia questo blocco per i tuoi registri
 	"codice_magazzino": {
-		"title": "Post-it",
-		"author": "qualcuno del turno di notte",
-		"text": "Il nuovo codice del magazzino è 2468.\n\nNon scriverlo su un post-it.\n\n...ops.",
+		"title": "Sticky note",
+		"author": "someone on the night shift",
+		"text": "The new storeroom code is 2468.\n\nDon't write it on a sticky note.\n\n...oops.",
 	},
 }

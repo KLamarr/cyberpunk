@@ -504,11 +504,48 @@ def sign(name, text, w=128, h=16, fg=(80, 230, 220), bg=(10, 18, 22)):
     img = base(w, h, bg)
     img += grain(w, h, 6)[:, :, None]
     bevel_rect(img, 0, 0, w, h, 1.8, 0.4)
-    draw_text_centered(img, text, (h - 7) // 2, fg, shadow=np.array(fg) * 0.3)
+    sp = 1 if text_width(text) <= w - 2 else 0   # scritta lunga: lettere attaccate, per non tagliarla
+    draw_text(img, text, (w - text_width(text, sp)) // 2, (h - 7) // 2, fg, spacing=sp, shadow=np.array(fg) * 0.3)
     save(name, img)
 
 
+# Insegne con scritte. La versione inglese (lingua del gioco) ha il nome base; la
+# variante _it la sceglie Godot quando la lingua è l'italiano (project.godot,
+# [internationalization] locale/translation_remaps). Le due versioni hanno lo
+# stesso rumore, e generarle consuma il generatore casuale come una sola: le
+# altre texture restano identiche.
+SIGNS = [  # nome, inglese, italiano (None = uguale), larghezza, colore
+    ("sign_seraph", "SERAPH BIOTEK", None, 128, (80, 230, 220)),
+    ("sign_lab", "LAB C > SERAPH-7", None, 128, (240, 90, 80)),
+    ("sign_sec", "SECURITY", "SICUREZZA", 64, (240, 200, 80)),
+    ("sign_relax", "BREAK ROOM", "SALA RELAX", 64, (120, 230, 140)),
+    ("sign_store", "STOREROOM", "MAGAZZINO", 64, (200, 200, 200)),
+    ("sign_lift", "SERVICE 14", "SERVIZIO 14", 64, (80, 200, 240)),
+]
+
+
+def _localized(make_en, make_it):
+    """Genera la versione inglese e quella italiana con lo stesso rumore."""
+    state = rng.bit_generator.state
+    make_en()
+    if make_it is not None:
+        after = rng.bit_generator.state
+        rng.bit_generator.state = state
+        make_it()
+        rng.bit_generator.state = after
+
+
+def signs():
+    for name, en, it, w, fg in SIGNS:
+        _localized(lambda: sign(name, en, w, 16, fg),
+                   (lambda: sign(name + "_it", it, w, 16, fg)) if it else None)
+
+
 def poster():
+    _localized(lambda: _poster("poster", "THE", "FUTURE", 7), lambda: _poster("poster_it", "IL", "FUTURO", 11))
+
+
+def _poster(name, top, bottom, top_x):
     w, h = 32, 64
     img = base(w, h, (180, 186, 190))
     img[0:40] = (24, 40, 60)
@@ -516,10 +553,10 @@ def poster():
     for i in range(12):
         img[10 + i, 16 - i // 2:17 + i] = (120, 220, 230) if i % 3 else (240, 250, 250)
     img[24:26, 6:26] = (240, 250, 250)
-    draw_text(img, "IL", 11, 44, (30, 40, 50))
-    draw_text(img, "FUTURO", 0, 52, (30, 40, 50), spacing=0)
+    draw_text(img, top, top_x, 44, (30, 40, 50))
+    draw_text(img, bottom, 0, 52, (30, 40, 50), spacing=0)
     grime(img, 0.35, 8)
-    save("poster", img)
+    save(name, img)
 
 
 def vending():
@@ -725,12 +762,7 @@ def main():
     screen("screen_blue", (6, 14, 34), (80, 170, 255), lines=False)
     screen("screen_amber", (20, 12, 2), (255, 176, 40))
     server(); vent_grate(); light_panel(); rust_metal(); armor()
-    sign("sign_seraph", "SERAPH BIOTEK", 128, 16)
-    sign("sign_lab", "LAB C > SERAPH-7", 128, 16, (240, 90, 80))
-    sign("sign_sec", "SICUREZZA", 64, 16, (240, 200, 80))
-    sign("sign_relax", "SALA RELAX", 64, 16, (120, 230, 140))
-    sign("sign_store", "MAGAZZINO", 64, 16, (200, 200, 200))
-    sign("sign_lift", "SERVIZIO 14", 64, 16, (80, 200, 240))
+    signs()
     poster(); vending(); keypad(); graffiti(); locker(); desk(); glass_blue(); pipes(); skin_face()
     npc_atlas()
     print("texture generate in", os.path.normpath(OUT))

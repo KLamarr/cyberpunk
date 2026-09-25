@@ -26,6 +26,8 @@ extends MeshInstance3D
 
 func _ready() -> void:
 	_rebuild()
+	if not Engine.is_editor_hint():
+		Game.settings_changed.connect(_rebuild)   # insegne con scritte: cambia la lingua
 
 
 func _rebuild() -> void:

@@ -134,7 +134,7 @@ thickness = 1.04
 
 [resource]
 script = ExtResource("21_px6dl")
-display_name = "Ag. Kovač"
+display_name = "Ofc. Kovač"
 random_seed = 1403
 height = 1.9
 mass = 1.15

@@ -4,6 +4,7 @@ extends Node
 ##   xvfb-run godot --path . -- --autotest --shots   (anche screenshot)
 ##   godot --path . -- --autotest --npc      (generatore di NPC: libreria, mesh, scheletro, pose)
 ##   godot --path . -- --autotest --stress   (10/25/50/100 guardie nella hall: tempi e draw call)
+##   aggiungi --lang=it per fare gli stessi test con i testi in italiano
 ## Stampa OK/FAIL per ogni controllo ed esce con codice 0 se tutto passa.
 
 var fails := 0
@@ -82,6 +83,11 @@ func _find_button(n: Node, prefix: String) -> Button:
 	return null
 
 
+## Inizio del testo tradotto di un bottone, fino al primo segnaposto (%d, %s).
+func _label(msg: String) -> String:
+	return tr(msg).get_slice("%", 0)
+
+
 func _press(prefix: String) -> bool:
 	var b := _find_button(Game.ui.root, prefix)
 	if b == null or b.disabled:
@@ -98,8 +104,17 @@ func run_ui() -> void:
 	p.god_mode = true
 	Game.ui.show_start()
 	await frames(2)
+	# lingua dal menu iniziale: il menu si ridisegna nell'altra lingua e poi torna com'era
+	var lang: String = Game.settings.language
+	check(_press(_label("Language: %s")), "menu: bottone lingua")
+	await frames(2)
+	check(Game.settings.language != lang and Game.ui.current_kind == "start" and _find_button(Game.ui.root, _label("START (unspent points: %d)")) != null,
+		"menu ridisegnato in %s" % Game.language_name())
+	check(_press(_label("Language: %s")), "menu: di nuovo la lingua")
+	await frames(2)
+	check(Game.settings.language == lang and _find_button(Game.ui.root, _label("START (unspent points: %d)")) != null, "menu tornato in %s" % Game.language_name())
 	check(_press(" + "), "menu: + su una skill")
-	check(_press("INIZIA"), "menu: inizia")
+	check(_press(_label("START (unspent points: %d)")), "menu: inizia")
 	await wait(0.3)
 	check(Game.state == Game.State.PLAYING, "partita avviata dal bottone")
 	Game.add_modules(3)
@@ -108,7 +123,7 @@ func run_ui() -> void:
 	var before := 0
 	for sk in Game.SKILLS:
 		before += Game.skill(sk)
-	check(_press("POTENZIA"), "upgrade: bottone potenzia")
+	check(_press(_label("UPGRADE (cost: %d)")), "upgrade: bottone potenzia")
 	await frames(2)
 	var after := 0
 	for sk in Game.SKILLS:
@@ -118,17 +133,24 @@ func run_ui() -> void:
 	p.health = 50.0
 	Game.ui.open_pda(2)
 	await frames(2)
-	check(_press("Usa"), "PDA: usa medipatch")
+	check(_press(tr("Use")), "PDA: usa medipatch")
 	await frames(2)
 	check(p.health > 50.0 and Game.ui.current_kind == "pda", "medipatch usato dal PDA")
 	await close_ui()
 	Game.ui.open_pause()
 	await frames(2)
 	var sc: int = Game.settings.pixel_scale
-	check(_press("Risoluzione interna"), "pausa: risoluzione")
+	check(_press(_label("Internal resolution: %s  [F2]")), "pausa: risoluzione")
 	check(Game.settings.pixel_scale != sc, "risoluzione cambiata")
-	check(_press("Dithering"), "pausa: dithering")
-	check(_press("Riprendi"), "pausa: riprendi")
+	check(_press(_label("15-bit dithering: %s  [F3]")), "pausa: dithering")
+	check(_press(_label("Language: %s")), "pausa: lingua")
+	await frames(2)
+	check(Game.settings.language != lang and Game.ui.current_kind == "pause" and _find_button(Game.ui.root, tr("Resume")) != null,
+		"pausa ridisegnata in %s" % Game.language_name())
+	check(_press(_label("Language: %s")), "pausa: di nuovo la lingua")
+	await frames(2)
+	check(Game.settings.language == lang, "lingua tornata com'era")
+	check(_press(tr("Resume")), "pausa: riprendi")
 	await frames(2)
 	check(Game.state == Game.State.PLAYING, "ripreso")
 	# tastierino: 0 4 5 1 OK
@@ -168,7 +190,7 @@ func run_guida() -> void:
 	var door: Node = lvl.find_child("PortaMagazzino", true, false)
 	check(door != null and door.locked, "guida: porta del magazzino chiusa")
 	check(not door.try_code("0000") and door.try_code("2468"), "guida: il codice 2468 apre la porta")
-	var rossi := guard("Ag. Rossi")
+	var rossi := guard("Ofc. Rossi")
 	var from: Vector3 = rossi.global_position
 	await wait(6.0)
 	check(rossi.global_position.distance_to(from) > 1.0, "guida: la guardia fa la ronda (%.1f m)" % rossi.global_position.distance_to(from))
@@ -197,7 +219,7 @@ func run_npc() -> void:
 		check(not NPCLibrary.list_shapes(cat).is_empty(), "libreria: almeno una forma per la parte %s" % NPCDefinition.PART_NAMES[cat])
 	# personaggi della slice: il bottino deve restare quello del livello originale
 	var expected := {
-		"ruiz": {"keycard": ["sicurezza", "Tessera Sicurezza"], "ammo": 6, "credits": 30},
+		"ruiz": {"keycard": ["sicurezza", "Security Keycard"], "ammo": 6, "credits": 30},
 		"hale": {"ammo": 4, "credits": 20, "medpatch": 1},
 		"kovac": {"ammo": 6, "credits": 15},
 		"mori": {"ammo": 8, "credits": 10},
@@ -206,7 +228,7 @@ func run_npc() -> void:
 		var d: NPCDefinition = load(NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres"))
 		check(d != null and d.parts.size() == 11, "%s.tres: 11 parti" % id)
 		check(d != null and d.loot() == expected[id], "%s.tres: bottino %s" % [id, str(d.loot() if d else {})])
-	var g_ruiz := guard("Ag. Ruiz")
+	var g_ruiz := guard("Ofc. Ruiz")
 	check(g_ruiz != null and g_ruiz.definition != null and g_ruiz.definition.resource_path.ends_with("ruiz.tres"), "Ruiz nel livello usa ruiz.tres")
 	var g_hale := guard("Op. Hale")
 	check(g_hale != null and not g_hale.definition.idle_barks.is_empty(), "Hale ha le sue battute di ronda")
@@ -531,6 +553,63 @@ func _nav_path_ok(a: Vector3, b: Vector3) -> bool:
 	return path.size() > 1 and path[path.size() - 1].distance_to(b) < 0.8
 
 
+## Lingua: traduzioni caricate, fallback in inglese, titoli dei nomi, impostazioni.
+func _check_language() -> void:
+	check(not Game.persist_settings, "test: impostazioni non lette né salvate su disco")
+	var it := TranslationServer.get_translation_object("it")
+	check(it != null and String(it.get_message("Resume")) == "Riprendi", "traduzione italiana caricata (locale/it.po)")
+	check(TranslationServer.get_locale().begins_with(Game.settings.language), "lingua attiva: %s" % Game.language_name())
+	if Game.settings.language == "it":
+		check(Game.person_name("Ofc. Rossi") == "Ag. Rossi" and Game.skill_name("forza") == "FORZA", "italiano: titoli e skill tradotti")
+	else:
+		check(Game.person_name("Ofc. Rossi") == "Ofc. Rossi" and Game.skill_name("forza") == "STRENGTH", "inglese: testi sorgente")
+	check(tr("A sentence nobody translated.") == "A sentence nobody translated.", "frase senza traduzione: resta in inglese")
+	# insegne con scritte: seguono la lingua anche a partita in corso
+	var sign: MeshInstance3D = lvl.find_child("Pannello_sign_sec1", true, false)
+	var sign_tex := func() -> String: return (sign.material_override as StandardMaterial3D).albedo_texture.resource_path
+	var lang0: String = Game.settings.language
+	Game.set_language("it", false)
+	var it_path: String = sign_tex.call()
+	Game.set_language("en", false)
+	var en_path: String = sign_tex.call()
+	Game.set_language(lang0, false)
+	check(it_path.ends_with("sign_sec_it.png") and en_path.ends_with("sign_sec.png"), "insegna SECURITY/SICUREZZA segue la lingua")
+	# salva e rilegge da un file di prova (non tocca le impostazioni vere)
+	var saved: Dictionary = Game.settings.duplicate()
+	var other := "it" if saved.language == "en" else "en"
+	Game.settings_path = "user://test_settings.cfg"
+	Game.persist_settings = true
+	Game.settings.volume = 0.33
+	Game.settings.language = other
+	Game.save_settings()
+	Game.settings = saved.duplicate()
+	Game.load_settings()
+	check(is_equal_approx(Game.settings.volume, 0.33) and Game.settings.language == other, "impostazioni salvate e rilette")
+	# --lang=xx vale solo per la sessione: si salva la lingua scelta dal giocatore
+	Game._saved_language = saved.language
+	Game.settings.language = other
+	Game.save_settings()
+	var cfg := ConfigFile.new()
+	cfg.load(Game.settings_path)
+	var kept: bool = cfg.get_value("settings", "language") == saved.language
+	Game.set_language(other)   # ora sceglie il giocatore: questa si salva
+	cfg.load(Game.settings_path)
+	check(kept and cfg.get_value("settings", "language") == other and Game._saved_language == "", "--lang non sovrascrive la lingua salvata")
+	Game.set_language(saved.language, false)
+	var f := FileAccess.open(Game.settings_path, FileAccess.WRITE)
+	f.store_string("[settings]\nlanguage=\"xx\"\nvolume=\"forte\"\npixel_scale=9\nsensitivity=nan\n")
+	f.close()
+	Game.settings = saved.duplicate()
+	Game.load_settings()
+	check(Game.settings.language == "en" and is_equal_approx(Game.settings.volume, saved.volume) and Game.settings.pixel_scale == 4 \
+			and is_equal_approx(Game.settings.sensitivity, saved.sensitivity),
+		"file di impostazioni rovinato: valori non validi ignorati")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Game.settings_path))
+	Game.settings_path = Game.SETTINGS_PATH
+	Game.persist_settings = false
+	Game.settings = saved
+
+
 func guard(n: String) -> Node:
 	for g in get_tree().get_nodes_in_group("guards"):
 		if g.guard_name == n:
@@ -544,6 +623,7 @@ func run() -> void:
 	p = Game.player
 	p.god_mode = true
 	check(lvl != null and p != null, "livello e player creati")
+	_check_language()
 	check(get_tree().get_nodes_in_group("game_lights").size() > 20, "luci registrate: %d" % get_tree().get_nodes_in_group("game_lights").size())
 
 	# --- navigazione
@@ -749,7 +829,7 @@ func run() -> void:
 	p.health = p.max_health
 
 	# --- KO silenzioso alle spalle e perquisizione
-	var kov := guard("Ag. Kovač")
+	var kov := guard("Ofc. Kovač")
 	kov.state = Guard.S.PATROL
 	kov.awareness = 0.0
 	kov._wait = 10.0
@@ -772,13 +852,13 @@ func run() -> void:
 	check(p.carried_body == null and kov.visible, "corpo posato")
 
 	# --- borseggio (Ruiz, alle spalle, al buio)
-	var ruiz := guard("Ag. Ruiz")
+	var ruiz := guard("Ofc. Ruiz")
 	ruiz.state = Guard.S.PATROL
 	ruiz.awareness = 0.0
 	ruiz._wait = 10.0
 	var rb: Vector3 = ruiz.global_position + ruiz.global_basis.z * 0.9
 	await tp(Vector3(rb.x, 0.05, rb.z), rad_to_deg(ruiz.rotation.y), -10)
-	check(ruiz.get_frob_text().begins_with("Borseggia"), "borseggio disponibile alle spalle")
+	check(ruiz.get_frob_text().begins_with(_label("Pickpocket %s")), "borseggio disponibile alle spalle")
 	ruiz.frob(p)
 	check(Game.has_keycard("sicurezza"), "tessera sicurezza borseggiata")
 
@@ -816,7 +896,7 @@ func run() -> void:
 	await frob_expect("nucleo")
 	check(Game.has_item("core") and not Game.is_objective_active("core"), "nucleo estratto")
 	await wait(4.5)
-	check(Game.lockdown and guard("Ag. Mori") != null, "lockdown: rinforzo arrivato")
+	check(Game.lockdown and guard("Ofc. Mori") != null, "lockdown: rinforzo arrivato")
 	await tp(Vector3(0, 0.05, 3), 0, 5)
 	await shot("08_lockdown_hall")
 	if shots:

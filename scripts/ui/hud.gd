@@ -90,6 +90,7 @@ func _ready() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = UITheme.get_theme()
+	root.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # i testi passano già da tr()
 	add_child(root)
 
 	flash = ColorRect.new()
@@ -121,7 +122,7 @@ func _ready() -> void:
 	_place(hp_box, Control.PRESET_BOTTOM_LEFT, Rect2(24, -92, 330, 76))
 	hp_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(hp_box)
-	health_label = UITheme.label("SALUTE 100", 15, UITheme.TEXT)
+	health_label = UITheme.label("", 15, UITheme.TEXT)
 	hp_box.add_child(health_label)
 	health_bar = Bar.new()
 	health_bar.custom_minimum_size = Vector2(240, 12)
@@ -210,7 +211,7 @@ func _on_subtitle(speaker: String, text: String, duration: float) -> void:
 	sub_text.text = text
 	sub_panel.visible = true
 	_sub_timer = duration
-	if speaker == "VESPER" or speaker == "SISTEMA PA":
+	if speaker == tr("VESPER") or speaker == tr("PA SYSTEM"):   # voci via radio
 		Sfx.play_ui("radio", -8.0)
 
 
@@ -237,13 +238,13 @@ func _process(delta: float) -> void:
 	health_bar.value = hp_frac
 	health_bar.col = UITheme.GOOD if hp_frac > 0.5 else (UITheme.ACCENT if hp_frac > 0.25 else UITheme.DANGER)
 	health_bar.queue_redraw()
-	health_label.text = "SALUTE %d / %d" % [int(ceil(p.health)), int(p.max_health)]
-	items_label.text = "MEDIPATCH x%d [H]   MODULI %d   CREDITI %d" % [Game.medpatches, Game.modules, Game.credits]
+	health_label.text = tr("HEALTH %d / %d") % [int(ceil(p.health)), int(p.max_health)]
+	items_label.text = tr("MEDIPATCH x%d [H]   MODULES %d   CREDITS %d") % [Game.medpatches, Game.modules, Game.credits]
 	if p.weapon == 0:
-		weapon_label.text = "CHIAVE INGLESE"
+		weapon_label.text = tr("WRENCH")
 		ammo_label.text = "—"
 	else:
-		weapon_label.text = "PISTOLA 9mm" + ("  (ricarica...)" if p.reloading > 0.0 else "")
+		weapon_label.text = tr("9mm PISTOL") + ("  " + tr("(reloading...)") if p.reloading > 0.0 else "")
 		ammo_label.text = "%d / %d" % [Game.ammo_mag, Game.ammo_reserve]
 	var pr: String = p.get_frob_prompt()
 	prompt.text = pr
@@ -251,10 +252,10 @@ func _process(delta: float) -> void:
 	crosshair.queue_redraw()
 	_blink += delta
 	if Game.alarm_time > 0.0:
-		alarm_label.text = "ALLARME  %ds" % int(ceil(Game.alarm_time))
+		alarm_label.text = tr("ALARM  %ds") % int(ceil(Game.alarm_time))
 		alarm_label.modulate.a = 0.6 + 0.4 * absf(sin(_blink * 5.0))
 	elif Game.lockdown:
-		alarm_label.text = "LOCKDOWN — TORNA ALL'ASCENSORE"
+		alarm_label.text = tr("LOCKDOWN — GET BACK TO THE ELEVATOR")
 		alarm_label.modulate.a = 0.5 + 0.3 * absf(sin(_blink * 2.0))
 	else:
 		alarm_label.text = ""

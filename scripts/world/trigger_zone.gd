@@ -12,6 +12,8 @@ extends Area3D
 			(_shape.shape as BoxShape3D).size = size
 ## Chi parla (es. "VESPER"). Vuoto + testo = messaggio in alto a sinistra.
 @export var speaker := ""
+## Battuta o messaggio, in inglese: la traduzione italiana va in locale/it.po
+## (tools/i18n.gd la aggiunge da sé, vedi la guida).
 @export_multiline var text := ""
 @export var duration := 4.0
 ## Scatta una volta sola.
@@ -60,6 +62,6 @@ func _on_body(b: Node) -> void:
 		callback.call()
 	if text != "":
 		if speaker != "":
-			Game.say(speaker, text, duration)
+			Game.say(Game.person_name(speaker), tr(text), duration)
 		else:
-			Game.notify(text)
+			Game.notify(tr(text))

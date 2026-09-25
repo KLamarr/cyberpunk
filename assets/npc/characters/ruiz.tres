@@ -133,7 +133,7 @@ thickness = 0.97
 
 [resource]
 script = ExtResource("21_sbfv5")
-display_name = "Ag. Ruiz"
+display_name = "Ofc. Ruiz"
 random_seed = 1401
 height = 1.74
 mass = 0.98
@@ -161,5 +161,5 @@ parts = Dictionary[String, ExtResource("9_oudlh")]({
 attachments = Array[ExtResource("1_sjqx8")]([SubResource("Resource_foytp"), SubResource("Resource_3pupy"), SubResource("Resource_rljpe"), SubResource("Resource_lfsqt"), SubResource("Resource_d1tdc"), SubResource("Resource_ixxwo"), SubResource("Resource_qfri3")])
 credits = 30
 keycard_id = "sicurezza"
-keycard_name = "Tessera Sicurezza"
+keycard_name = "Security Keycard"
 idle_barks = PackedStringArray()

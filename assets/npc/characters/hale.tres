@@ -154,4 +154,4 @@ parts = Dictionary[String, ExtResource("8_gm7ey")]({
 attachments = Array[ExtResource("1_io7ta")]([SubResource("Resource_rjn45"), SubResource("Resource_omo4v"), SubResource("Resource_ea3gd"), SubResource("Resource_q0p0f"), SubResource("Resource_gixfo"), SubResource("Resource_yaefb")])
 ammo = 4
 medpatch = 1
-idle_barks = PackedStringArray("Telecamera tre di nuovo in ritardo. Ma chi le ha installate?", "...lo senti anche tu, il ronzio?", "Altre sei ore di turno.", "Mi fa male la testa. Sempre dopo l\'aggiornamento.")
+idle_barks = PackedStringArray("Camera three is lagging again. Who installed these things?", "...you hear that hum too?", "Six more hours to go.", "My head hurts. Always after the update.")

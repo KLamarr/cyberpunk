@@ -58,6 +58,8 @@ var _shape: CollisionShape3D
 
 func _ready() -> void:
 	_rebuild()
+	if not Engine.is_editor_hint():
+		Game.settings_changed.connect(func(): if _mesh != null: _mesh.material_override = build_material())   # lingua delle scritte
 
 
 func build_material() -> Material:

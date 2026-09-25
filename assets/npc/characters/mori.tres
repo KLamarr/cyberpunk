@@ -133,7 +133,7 @@ thickness = 1.01
 
 [resource]
 script = ExtResource("21_8eq0e")
-display_name = "Ag. Mori"
+display_name = "Ofc. Mori"
 random_seed = 1404
 height = 1.76
 mass = 1.16

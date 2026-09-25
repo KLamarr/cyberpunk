@@ -1,0 +1,1303 @@
+# Traduzione italiana dei testi del gioco. Le frasi inglesi (msgid) vengono dal codice e
+# dalle scene: le aggiunge tools/aggiorna_traduzioni.gd, qui si scrive solo msgstr.
+msgid ""
+msgstr ""
+"Project-Id-Version: Seraph Protocol\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: scripts/actors/guard.gd:19
+msgid "Huh? Someone there?"
+msgstr "Eh? C'è qualcuno?"
+
+#: scripts/actors/guard.gd:19
+msgid "Who goes there?"
+msgstr "Chi va là?"
+
+#: scripts/actors/guard.gd:19
+msgid "I saw something over there..."
+msgstr "Ho visto qualcosa laggiù..."
+
+#: scripts/actors/guard.gd:19
+msgid "Hm? A shadow..."
+msgstr "Hm? Un'ombra..."
+
+#: scripts/actors/guard.gd:21
+msgid "What was that noise?"
+msgstr "Cos'era quel rumore?"
+
+#: scripts/actors/guard.gd:21
+msgid "Hm? Better check it out."
+msgstr "Hm? Vado a controllare."
+
+#: scripts/actors/guard.gd:21
+msgid "I hear something..."
+msgstr "Sento qualcosa..."
+
+#: scripts/actors/guard.gd:21
+msgid "Who's there?"
+msgstr "Chi c'è?"
+
+#: scripts/actors/guard.gd:23
+msgid "Must be the CALMA making me hear things."
+msgstr "Sarà stato il CALMA che mi fa sentire le cose."
+
+#: scripts/actors/guard.gd:23
+msgid "Nothing. Back to my rounds."
+msgstr "Niente. Torno al giro."
+
+#: scripts/actors/guard.gd:23
+msgid "Must be imagining things."
+msgstr "Mi sto immaginando tutto."
+
+#: scripts/actors/guard.gd:23
+msgid "Just rats. It's always rats."
+msgstr "Topi. Sempre i topi."
+
+#: scripts/actors/guard.gd:25
+msgid "Intruder!"
+msgstr "Intruso!"
+
+#: scripts/actors/guard.gd:25
+msgid "There you are! Freeze!"
+msgstr "Eccoti! Fermo lì!"
+
+#: scripts/actors/guard.gd:25
+msgid "Contact! Level 14!"
+msgstr "Contatto! Livello 14!"
+
+#: scripts/actors/guard.gd:25
+msgid "I see you!"
+msgstr "Ti ho visto!"
+
+#: scripts/actors/guard.gd:27
+msgid "Where did they go?"
+msgstr "Dov'è finito?"
+
+#: scripts/actors/guard.gd:27
+msgid "I know you're in here."
+msgstr "So che sei qui dentro."
+
+#: scripts/actors/guard.gd:27
+msgid "Come on out. Don't make this worse for yourself."
+msgstr "Esci fuori, non peggiorare le cose."
+
+#: scripts/actors/guard.gd:27
+msgid "Check the corners!"
+msgstr "Controllate gli angoli!"
+
+#: scripts/actors/guard.gd:29
+msgid "Lost them. Staying alert."
+msgstr "L'ho perso. Resto all'erta."
+
+#: scripts/actors/guard.gd:29
+msgid "Damn it, they're gone."
+msgstr "Maledizione, è sparito."
+
+#: scripts/actors/guard.gd:29
+msgid "Back to my post. Eyes open."
+msgstr "Torno in posizione, ma occhi aperti."
+
+#: scripts/actors/guard.gd:31
+msgid "Man down! Man down!"
+msgstr "Uomo a terra! Uomo a terra!"
+
+#: scripts/actors/guard.gd:31
+msgid "Who did this to you?!"
+msgstr "Chi ti ha fatto questo?!"
+
+#: scripts/actors/guard.gd:31
+msgid "Someone's in here!"
+msgstr "C'è qualcuno qui dentro!"
+
+#: scripts/actors/guard.gd:33
+msgid "Alarm's up! On my way!"
+msgstr "Allarme! Mi muovo!"
+
+#: scripts/actors/guard.gd:33
+msgid "Copy that, checking the sector."
+msgstr "Ricevuto, controllo il settore."
+
+#: scripts/actors/guard.gd:35
+msgid "Argh! I'm hit!"
+msgstr "Argh! Mi hanno colpito!"
+
+#: scripts/actors/guard.gd:35
+msgid "Ah! Bastard!"
+msgstr "Ah! Maledetto!"
+
+#: scripts/actors/guard.gd:37
+#: assets/npc/characters/hale.tres:157
+msgid "...you hear that hum too?"
+msgstr "...lo senti anche tu, il ronzio?"
+
+#: scripts/actors/guard.gd:37
+#: assets/npc/characters/hale.tres:157
+msgid "Six more hours to go."
+msgstr "Altre sei ore di turno."
+
+#: scripts/actors/guard.gd:37
+msgid "The server's humming louder tonight."
+msgstr "Il server ronza più forte stanotte."
+
+#: scripts/actors/guard.gd:37
+msgid "Wonder if Okafor's still in the lab."
+msgstr "Chissà se Okafor è ancora in laboratorio."
+
+#: scripts/actors/guard.gd:37
+#: assets/npc/characters/hale.tres:157
+msgid "My head hurts. Always after the update."
+msgstr "Mi fa male la testa. Sempre dopo l'aggiornamento."
+
+#: scripts/actors/guard.gd:764
+#, c-format
+msgid "Search %s (dead)"
+msgstr "Perquisisci %s (morto)"
+
+#: scripts/actors/guard.gd:764
+#, c-format
+msgid "Search %s (unconscious)"
+msgstr "Perquisisci %s (svenuto)"
+
+#: scripts/actors/guard.gd:765
+#, c-format
+msgid "Pick up %s's body"
+msgstr "Solleva il corpo di %s"
+
+#: scripts/actors/guard.gd:767
+#, c-format
+msgid "Pickpocket %s"
+msgstr "Borseggia %s"
+
+#: scripts/actors/guard.gd:791
+#, c-format
+msgid "%d round"
+msgstr "%d munizione"
+
+#: scripts/actors/guard.gd:791
+#, c-format
+msgid "%d rounds"
+msgstr "%d munizioni"
+
+#: scripts/actors/guard.gd:795
+#, c-format
+msgid "%d credit"
+msgstr "%d credito"
+
+#: scripts/actors/guard.gd:795
+#, c-format
+msgid "%d credits"
+msgstr "%d crediti"
+
+#: scripts/actors/guard.gd:798
+msgid "medipatch"
+msgstr "medipatch"
+
+#: scripts/actors/guard.gd:804
+#, c-format
+msgid "Found: %s"
+msgstr "Hai trovato: %s"
+
+#: scripts/actors/player.gd:461
+msgid "[LMB] Throw   [RMB/F] Put down"
+msgstr "[LMB] Lancia   [RMB/F] Posa"
+
+#: scripts/actors/player.gd:463
+msgid "[RMB/F] Put down the body"
+msgstr "[RMB/F] Posa il corpo"
+
+#: scripts/actors/player.gd:513
+msgid "No medipatches."
+msgstr "Nessun medipatch."
+
+#: scripts/actors/player.gd:516
+msgid "You're already at full health."
+msgstr "Sei già in piena salute."
+
+#: scripts/actors/player.gd:674
+msgid "Carrying the body. [RMB/F] to put it down."
+msgstr "Trasporti il corpo. [RMB/F] per posarlo."
+
+#: scripts/actors/security_camera.gd:109
+msgid "Camera destroyed."
+msgstr "Telecamera distrutta."
+
+#: scripts/actors/security_camera.gd:178
+msgid "Spotted by the cameras."
+msgstr "Rilevato dalle telecamere."
+
+#: scripts/actors/turret.gd:134
+msgid "Turret reprogrammed: now targeting guards."
+msgstr "Torretta riprogrammata: ora spara alle guardie."
+
+#: scripts/actors/turret.gd:167
+msgid "Turret destroyed."
+msgstr "Torretta distrutta."
+
+#: scripts/actors/turret_panel.gd:33
+msgid "Turret panel (inactive)"
+msgstr "Pannello torretta (inattiva)"
+
+#: scripts/actors/turret_panel.gd:34
+msgid "Turret maintenance panel"
+msgstr "Pannello di manutenzione torretta"
+
+#: scripts/actors/turret_panel.gd:39
+msgid "The turret is already out of service."
+msgstr "La torretta è già fuori servizio."
+
+#: scripts/actors/turret_panel.gd:46
+msgid "Turret panel C-2"
+msgstr "Pannello torretta C-2"
+
+#: scripts/actors/turret_panel.gd:48
+msgid "Hacking 2: disable it.  Hacking 3: turn it against the guards."
+msgstr "Hacking 2: disattiva.  Hacking 3: riprogramma contro le guardie."
+
+#: scripts/actors/turret_panel.gd:64
+msgid "Turret disabled."
+msgstr "Torretta disattivata."
+
+#: scripts/core/game.gd:37
+msgid "HACKING"
+msgstr "HACKING"
+
+#: scripts/core/game.gd:38
+msgid "FIREARMS"
+msgstr "ARMI DA FUOCO"
+
+#: scripts/core/game.gd:39
+msgid "STRENGTH"
+msgstr "FORZA"
+
+#: scripts/core/game.gd:40
+msgid "STEALTH"
+msgstr "FURTIVITÀ"
+
+#: scripts/core/game.gd:44
+msgid "Lets you hack doors, terminals and turrets. Each device requires a minimum level; every extra level raises the success chance per node."
+msgstr "Sblocca porte, terminali e torrette. Ogni dispositivo richiede un livello minimo; ogni livello in più alza le probabilità di successo per nodo."
+
+#: scripts/core/game.gd:45
+msgid "More accurate pistol (-25% spread per level), more damage and faster reloads."
+msgstr "Pistola più precisa (-25% dispersione per livello), più danno e ricarica più rapida."
+
+#: scripts/core/game.gd:46
+msgid "+10 max health and more melee damage per level. Level 1: remove grates by hand, quietly. Level 2: lift heavy crates. You throw farther."
+msgstr "+10 salute massima e più danno in mischia per livello. Livello 1: rimuovi le grate a mano, quasi in silenzio. Livello 2: sollevi le casse pesanti. Lanci più lontano."
+
+#: scripts/core/game.gd:47
+msgid "-12% visibility and -15% footstep noise per level. You move faster while crouched."
+msgstr "-12% visibilità e -15% rumore dei passi per livello. Ti muovi più veloce da accovacciato."
+
+#: scripts/core/game.gd:189
+msgid "Seraph Protocol (Vertical Slice)"
+msgstr "Protocollo Seraph (Vertical Slice)"
+
+#: scripts/core/game.gd:304
+msgid "Alarm cleared."
+msgstr "Allarme rientrato."
+
+#: scripts/core/game.gd:350
+#, c-format
+msgid "%s Keycard"
+msgstr "Tessera %s"
+
+#: scripts/core/game.gd:386
+msgid "You found a secret!"
+msgstr "Hai trovato un segreto!"
+
+#: scripts/core/game.gd:396
+#, c-format
+msgid "Log added to PDA: %s"
+msgstr "Registro aggiunto al PDA: %s"
+
+#: scripts/core/game.gd:433
+#, c-format
+msgid "(cyber-modules +%d)"
+msgstr "(cyber-moduli +%d)"
+
+#: scripts/core/game.gd:435
+#, c-format
+msgid "OBJECTIVE COMPLETE: %s"
+msgstr "OBIETTIVO COMPLETATO: %s"
+
+#: scripts/core/game.gd:444
+#, c-format
+msgid "OBJECTIVE FAILED: %s"
+msgstr "OBIETTIVO FALLITO: %s"
+
+#: scripts/core/game.gd:482
+#, c-format
+msgid "ALARM! %s"
+msgstr "ALLARME! %s"
+
+#: scripts/core/game.gd:483
+#: scripts/ui/hud.gd:214
+#: levels/seraph/seraph.gd:48
+msgid "PA SYSTEM"
+msgstr "SISTEMA PA"
+
+#: scripts/core/game.gd:483
+msgid "Security alert in sector 14. All security personnel, respond."
+msgstr "Allarme di sicurezza nel settore 14. Personale di vigilanza, convergere."
+
+#: scripts/core/game.gd:493
+msgid "Cameras disabled."
+msgstr "Telecamere disattivate."
+
+#: scripts/core/game.gd:499
+msgid "Turrets disabled."
+msgstr "Torrette disattivate."
+
+#: scripts/core/game.gd:542
+msgid "SPECTER — nobody knows you were here"
+msgstr "SPETTRO — nessuno sa che sei stato qui"
+
+#: scripts/core/game.gd:544
+msgid "SHADOW"
+msgstr "FANTASMA"
+
+#: scripts/core/game.gd:546
+msgid "NON-LETHAL PROFESSIONAL"
+msgstr "PROFESSIONISTA NON LETALE"
+
+#: scripts/core/game.gd:548
+msgid "BUTCHER OF SERAPH"
+msgstr "MACELLAIO DI SERAPH"
+
+#: scripts/core/game.gd:549
+msgid "OPERATIVE"
+msgstr "OPERATIVO"
+
+#: scripts/core/game.gd:556
+#, c-format
+msgid "Internal resolution: %s"
+msgstr "Risoluzione interna: %s"
+
+#: scripts/core/game.gd:561
+msgid "1280x720 (native)"
+msgstr "1280x720 (nativa)"
+
+#: scripts/core/game.gd:562
+msgid "640x360 (default)"
+msgstr "640x360 (predefinita)"
+
+#: scripts/core/game.gd:571
+#, c-format
+msgid "Dithering: %s"
+msgstr "Dithering: %s"
+
+#: scripts/core/game.gd:571
+#: scripts/ui/ui_root.gd:248
+msgid "ON"
+msgstr "SÌ"
+
+#: scripts/core/game.gd:571
+#: scripts/ui/ui_root.gd:248
+msgid "OFF"
+msgstr "NO"
+
+#: scripts/data/logs.gd:11
+msgid "Vesper — briefing"
+msgstr "Vesper — Briefing"
+
+#: scripts/data/logs.gd:12
+msgid "VESPER (encrypted channel)"
+msgstr "VESPER (canale cifrato)"
+
+#: scripts/data/logs.gd:13
+msgid ""
+"You're in. Level 14 of the Nysa Arcology, Seraph Biotek's lab wing.\n"
+"\n"
+"The SERAPH-7 core is in the Lab C server, north of the lobby. Extract it and come back to this service elevator. Don't leave this floor until you have the package.\n"
+"\n"
+"Security is thin on the night shift: a couple of guards, cameras in the lobby and a turret outside the lab. How you get there is your business. But remember: the fewer bodies you leave, the fewer questions they'll ask me.\n"
+"\n"
+"— V."
+msgstr ""
+"Sei dentro. Livello 14 dell'arcologia Nysa, ala laboratori della Seraph Biotek.\n"
+"\n"
+"Il nucleo SERAPH-7 è nel server del Laboratorio C, a nord della hall. Estrailo e torna a quest'ascensore di servizio: resta al piano finché non hai il pacco.\n"
+"\n"
+"La sicurezza è ridotta al turno di notte: un paio di guardie, telecamere nella hall e una torretta davanti al laboratorio. Come ci arrivi è affar tuo. Ma ricorda: meno cadaveri lasci, meno domande faranno a me.\n"
+"\n"
+"— V."
+
+#: scripts/data/logs.gd:16
+msgid "Memo to all shifts"
+msgstr "Promemoria turni"
+
+#: scripts/data/logs.gd:17
+msgid "M. RUIZ, security"
+msgstr "M. RUIZ, vigilanza"
+
+#: scripts/data/logs.gd:18
+msgid ""
+"Guys, somebody keeps leaving the security room open.\n"
+"\n"
+"The keypad code is still 0451 (yeah, I know, same as ever). Hale says he'll change it \"as soon as he has time\", so never.\n"
+"\n"
+"And whoever finished the Kaffa-Nova cans, remember to restock the vending machine. I can't get through the night shift without that stuff."
+msgstr ""
+"Ragazzi, qualcuno continua a lasciare aperta la sala sicurezza.\n"
+"\n"
+"Il codice del tastierino è ancora 0451 (sì, lo so: sempre quello). Hale dice che lo cambierà \"appena ha tempo\", quindi mai.\n"
+"\n"
+"E chi ha finito le lattine di Kaffa-Nova si ricordi di rifornire il distributore. Non ce la faccio a fare il turno di notte senza."
+
+#: scripts/data/logs.gd:21
+msgid "Internal memo — CALMA implants"
+msgstr "Circolare interna — impianti CALMA"
+
+#: scripts/data/logs.gd:22
+msgid "Dr. E. OKAFOR, scientific director"
+msgstr "Dr. E. OKAFOR, direzione scientifica"
+
+#: scripts/data/logs.gd:23
+msgid ""
+"To all Level 14 security personnel.\n"
+"\n"
+"Starting Monday you will receive the mandatory update to the CALMA v2 neural implant. The side effects — migraines, recurring dreams, the perception of a faint hum, the feeling of \"being watched\" — are temporary and expected.\n"
+"\n"
+"Please do not discuss this with outside personnel. CALMA makes you sharper, calmer, safer.\n"
+"\n"
+"Seraph Biotek. The future is calm."
+msgstr ""
+"A tutto il personale di vigilanza del livello 14.\n"
+"\n"
+"Da lunedì riceverete l'aggiornamento obbligatorio dell'impianto neurale CALMA v2. Gli effetti collaterali — emicrania, sogni ricorrenti, un leggero ronzio percepito, la sensazione di \"essere osservati\" — sono temporanei e previsti.\n"
+"\n"
+"Vi preghiamo di non discuterne con personale esterno. CALMA vi rende più lucidi, più sereni, più sicuri.\n"
+"\n"
+"Seraph Biotek. Il futuro è calmo."
+
+#: scripts/data/logs.gd:26
+msgid "Ticket #2291 — maintenance"
+msgstr "Ticket #2291 — Manutenzione"
+
+#: scripts/data/logs.gd:27
+msgid "Maintenance crew, B shift"
+msgstr "Squadra tecnica, turno B"
+
+#: scripts/data/logs.gd:28
+msgid ""
+"The vent grate in the BREAK ROOM is barely hanging on. Anyone with a bit of strength can pull it off by hand. The duct leads straight to Lab C, so SEAL IT before somebody notices.\n"
+"\n"
+"Side note: the corridor turret still uses the old optical sensors. If the lights go out in there it's blind as a bat. We've asked for the replacement three times."
+msgstr ""
+"La grata del condotto di ventilazione nella SALA RELAX è quasi staccata: con un minimo di forza si toglie a mano. Il condotto porta dritto al Laboratorio C, quindi SIGILLATELA prima che qualcuno se ne accorga.\n"
+"\n"
+"Nota a margine: la torretta del corridoio usa ancora i vecchi sensori ottici. Se salta la luce lì dentro è cieca come una talpa. Abbiamo chiesto il ricambio tre volte."
+
+#: scripts/data/logs.gd:31
+msgid "Shift log — security room"
+msgstr "Registro turno — sala sicurezza"
+
+#: scripts/data/logs.gd:32
+msgid "Op. J. HALE"
+msgstr "Op. J. HALE"
+
+#: scripts/data/logs.gd:33
+msgid ""
+"02:10 — Kovač alone in the lab again. Says \"the server's calling me.\" Told him to knock it off with the jokes.\n"
+"\n"
+"02:40 — Lab C keycard put back in the locker, as per procedure.\n"
+"\n"
+"03:15 — Remember: cameras and turret are controlled from this terminal. Do NOT switch them off by mistake like last week.\n"
+"\n"
+"03:50 — The hum is louder tonight. Ruiz hears it too."
+msgstr ""
+"02:10 — Kovač di nuovo in laboratorio da solo. Dice che \"il server lo chiama\". Gli ho detto di smetterla con le battute.\n"
+"\n"
+"02:40 — Tessera del Laboratorio C riposta nell'armadietto, come da procedura.\n"
+"\n"
+"03:15 — Ricordarsi: telecamere e torretta si gestiscono da questo terminale. NON spegnerle per sbaglio come la settimana scorsa.\n"
+"\n"
+"03:50 — Il ronzio è più forte stanotte. Anche Ruiz lo sente."
+
+#: scripts/data/logs.gd:36
+msgid "Personal journal — entry 17"
+msgstr "Diario personale — voce 17"
+
+#: scripts/data/logs.gd:37
+msgid "Dr. E. OKAFOR"
+msgstr "Dr. E. OKAFOR"
+
+#: scripts/data/logs.gd:38
+msgid ""
+"SERAPH-7 is not an archive. It's an imprint.\n"
+"\n"
+"Every CALMA implant transmits a copy of its wearer's neural patterns to the core. The guards don't know it, but part of them already lives in there. That's why they stop, sometimes, and listen.\n"
+"\n"
+"Tonight I added mine. The body in the capsule is just a body.\n"
+"\n"
+"If anyone is reading this: the core is not empty. I'm still in here. And I'm not alone."
+msgstr ""
+"SERAPH-7 non è un archivio. È un'impronta.\n"
+"\n"
+"Ogni impianto CALMA trasmette al nucleo una copia dei pattern neurali di chi lo porta. Le guardie non lo sanno, ma una parte di loro vive già lì dentro. Per questo si fermano, a volte, e ascoltano.\n"
+"\n"
+"Stanotte ho aggiunto il mio. Il corpo nella capsula è solo un corpo.\n"
+"\n"
+"Se qualcuno sta leggendo queste righe: il nucleo non è vuoto. Io sono ancora qui dentro. E non sono solo."
+
+#: scripts/data/logs.gd:41
+msgid "Cracked datapad"
+msgstr "Datapad incrinato"
+
+#: scripts/data/logs.gd:42
+msgid "signed \"K.\""
+msgstr "firmato \"K.\""
+
+#: scripts/data/logs.gd:43
+msgid ""
+"Third day in the duct.\n"
+"\n"
+"The guards don't talk to each other anymore: they stop, listen to the server's hum and then carry on with their rounds as if nothing happened.\n"
+"\n"
+"I'm leaving you the module I stole. I don't need it anymore. If you're another one of Vesper's couriers, do the job and get out.\n"
+"\n"
+"And whatever happens, don't listen to the core."
+msgstr ""
+"Terzo giorno nel condotto.\n"
+"\n"
+"Le guardie non parlano più tra loro: si fermano, ascoltano il ronzio del server e poi riprendono il giro come se nulla fosse.\n"
+"\n"
+"Lascio qui il modulo che ho rubato: a me non serve più. Se sei un altro corriere di Vesper, fai il lavoro e vattene.\n"
+"\n"
+"E qualunque cosa succeda: non ascoltare il nucleo."
+
+#: scripts/data/logs.gd:46
+msgid "SB-14 delivery note"
+msgstr "Bolla di carico SB-14"
+
+#: scripts/data/logs.gd:47
+msgid "Seraph Logistics"
+msgstr "Logistica Seraph"
+
+#: scripts/data/logs.gd:48
+msgid ""
+"Delivery: 12 crates of components, 2 medipatch kits, 1 crate of 9mm ammo for security.\n"
+"\n"
+"NOTE: the light crates can be moved by hand. The ones marked SB-14 weigh 40 kg: use the cart.\n"
+"\n"
+"Signed: nobody, as usual."
+msgstr ""
+"Consegna: 12 casse componenti, 2 kit medipatch, 1 cassa munizioni 9mm per vigilanza.\n"
+"\n"
+"NOTA: le casse leggere si possono spostare a mano. Quelle marcate SB-14 pesano 40 kg: usare il carrello.\n"
+"\n"
+"Firmato: nessuno, come al solito."
+
+#: scripts/data/logs.gd:52
+msgid "Sticky note"
+msgstr "Post-it"
+
+#: scripts/data/logs.gd:53
+msgid "someone on the night shift"
+msgstr "qualcuno del turno di notte"
+
+#: scripts/data/logs.gd:54
+msgid ""
+"The new storeroom code is 2468.\n"
+"\n"
+"Don't write it on a sticky note.\n"
+"\n"
+"...oops."
+msgstr ""
+"Il nuovo codice del magazzino è 2468.\n"
+"\n"
+"Non scriverlo su un post-it.\n"
+"\n"
+"...ops."
+
+#: scripts/npc/npc_library.gd:16
+msgid "Guard"
+msgstr "Guardia"
+
+#: scripts/npc/npc_library.gd:16
+msgid "Technician"
+msgstr "Tecnico"
+
+#: scripts/npc/npc_library.gd:16
+msgid "Scientist"
+msgstr "Scienziato"
+
+#: scripts/npc/npc_library.gd:16
+msgid "Executive"
+msgstr "Dirigente"
+
+#: scripts/npc/npc_library.gd:16
+msgid "Civilian"
+msgstr "Civile"
+
+#: scripts/npc/npc_library.gd:43
+#: levels/guida/guida.tscn:152
+#: assets/npc/characters/kovac.tres:137
+#: assets/npc/characters/mori.tres:136
+#: assets/npc/characters/ruiz.tres:136
+msgctxt "title"
+msgid "Ofc."
+msgstr "Ag."
+
+#: scripts/npc/npc_library.gd:43
+msgctxt "title"
+msgid "Tech."
+msgstr "Tec."
+
+#: scripts/npc/npc_library.gd:43
+msgctxt "title"
+msgid "Dr."
+msgstr "Dr."
+
+#: scripts/npc/npc_library.gd:43
+msgctxt "title"
+msgid "Dir."
+msgstr "Dir."
+
+#: scripts/ui/hud.gd:214
+#: scripts/world/elevator_panel.gd:35
+#: scripts/world/elevator_panel.gd:39
+#: levels/seraph/seraph.gd:31
+#: levels/seraph/seraph.gd:36
+#: levels/seraph/seraph.gd:64
+#: levels/seraph/seraph.tscn:1473
+#: levels/seraph/seraph.tscn:1480
+msgid "VESPER"
+msgstr "VESPER"
+
+#: scripts/ui/hud.gd:241
+#, c-format
+msgid "HEALTH %d / %d"
+msgstr "SALUTE %d / %d"
+
+#: scripts/ui/hud.gd:242
+#, c-format
+msgid "MEDIPATCH x%d [H]   MODULES %d   CREDITS %d"
+msgstr "MEDIPATCH x%d [H]   MODULI %d   CREDITI %d"
+
+#: scripts/ui/hud.gd:244
+msgid "WRENCH"
+msgstr "CHIAVE INGLESE"
+
+#: scripts/ui/hud.gd:247
+msgid "9mm PISTOL"
+msgstr "PISTOLA 9mm"
+
+#: scripts/ui/hud.gd:247
+msgid "(reloading...)"
+msgstr "(ricarica...)"
+
+#: scripts/ui/hud.gd:255
+#, c-format
+msgid "ALARM  %ds"
+msgstr "ALLARME  %ds"
+
+#: scripts/ui/hud.gd:258
+msgid "LOCKDOWN — GET BACK TO THE ELEVATOR"
+msgstr "LOCKDOWN — TORNA ALL'ASCENSORE"
+
+#: scripts/ui/ui_root.gd:11
+msgid ""
+"[b]WASD[/b] move   [b]Shift[/b] run   [b]Ctrl[/b] (hold) / [b]C[/b] (toggle) crouch\n"
+"[b]Space[/b] jump / climb onto ledges (mantle)   [b]Q / E[/b] lean\n"
+"[b]LMB[/b] attack · throw   [b]RMB[/b] or [b]F[/b] interact (frob) · put down\n"
+"[b]1 / 2[/b] or wheel: wrench / pistol   [b]R[/b] reload   [b]H[/b] medipatch\n"
+"[b]Tab[/b] PDA   [b]Esc[/b] pause   [b]F2[/b] internal resolution   [b]F3[/b] dithering"
+msgstr ""
+"[b]WASD[/b] muovi   [b]Shift[/b] corri   [b]Ctrl[/b] (tieni) / [b]C[/b] (alterna) accovacciati\n"
+"[b]Spazio[/b] salta / aggrappati alle sporgenze (mantle)   [b]Q / E[/b] sporgiti\n"
+"[b]Mouse sx[/b] attacca · lancia   [b]Mouse dx[/b] o [b]F[/b] interagisci (frob) · posa\n"
+"[b]1 / 2[/b] o rotella: chiave inglese / pistola   [b]R[/b] ricarica   [b]H[/b] medipatch\n"
+"[b]Tab[/b] PDA   [b]Esc[/b] pausa   [b]F2[/b] risoluzione interna   [b]F3[/b] dithering"
+
+#: scripts/ui/ui_root.gd:142
+msgid "SERAPH PROTOCOL"
+msgstr "PROTOCOLLO SERAPH"
+
+#: scripts/ui/ui_root.gd:143
+msgid "vertical slice — FPS/RPG immersive sim"
+msgstr "vertical slice — immersive sim FPS/RPG"
+
+#: scripts/ui/ui_root.gd:145
+msgid ""
+"Nysa Arcology, Level 14, night shift. Your contact, [color=#ffcc55]Vesper[/color], got you up the service elevator into the lab wing of [b]Seraph Biotek[/b].\n"
+"\n"
+"Objective: extract the [color=#ffcc55]SERAPH-7[/color] data core from Lab C and get back to the elevator.\n"
+"\n"
+"Shadows are your allies: the [b]gem[/b] at the bottom shows how visible you are, the arcs beside it how much noise you make. Every obstacle has more than one solution: codes, keycards, hacking, vents, distractions... or the pistol."
+msgstr ""
+"Arcologia Nysa, livello 14, turno di notte. Il tuo contatto, [color=#ffcc55]Vesper[/color], ti ha fatto salire con l'ascensore di servizio nell'ala laboratori della [b]Seraph Biotek[/b].\n"
+"\n"
+"Obiettivo: estrarre il nucleo dati [color=#ffcc55]SERAPH-7[/color] dal Laboratorio C e tornare all'ascensore.\n"
+"\n"
+"Le ombre sono tue alleate: la [b]gemma[/b] in basso ti dice quanto sei visibile, gli archi accanto quanto rumore fai. Ogni ostacolo ha più di una soluzione: codici, tessere, hacking, condotti, distrazioni... o la pistola."
+
+#: scripts/ui/ui_root.gd:149
+#: scripts/ui/ui_root.gd:259
+msgid "CONTROLS"
+msgstr "COMANDI"
+
+#: scripts/ui/ui_root.gd:158
+msgid "OPERATIVE PROFILE"
+msgstr "PROFILO DELL'OPERATIVO"
+
+#: scripts/ui/ui_root.gd:166
+#: scripts/ui/ui_root.gd:202
+msgid "START MISSION"
+msgstr "INIZIA LA MISSIONE"
+
+#: scripts/ui/ui_root.gd:169
+msgid "Later: spend cyber-modules at upgrade stations."
+msgstr "Poi: spendi i cyber-moduli nelle stazioni di potenziamento."
+
+#: scripts/ui/ui_root.gd:182
+#, c-format
+msgid "Points to assign: %d   (max %d per skill at start)"
+msgstr "Punti da assegnare: %d   (max %d per skill all'inizio)"
+
+#: scripts/ui/ui_root.gd:202
+#, c-format
+msgid "START (unspent points: %d)"
+msgstr "INIZIA (punti non spesi: %d)"
+
+#: scripts/ui/ui_root.gd:225
+#, c-format
+msgid "Language: %s"
+msgstr "Lingua: %s"
+
+#: scripts/ui/ui_root.gd:232
+msgid "PAUSED"
+msgstr "PAUSA"
+
+#: scripts/ui/ui_root.gd:234
+msgid "Resume"
+msgstr "Riprendi"
+
+#: scripts/ui/ui_root.gd:235
+msgid "PDA: objectives, logs, inventory  [Tab]"
+msgstr "PDA: obiettivi, registri, inventario  [Tab]"
+
+#: scripts/ui/ui_root.gd:237
+msgid "OPTIONS"
+msgstr "OPZIONI"
+
+#: scripts/ui/ui_root.gd:239
+msgid "Mouse sensitivity"
+msgstr "Sensibilità mouse"
+
+#: scripts/ui/ui_root.gd:240
+msgid "Volume"
+msgstr "Volume"
+
+#: scripts/ui/ui_root.gd:247
+#, c-format
+msgid "Internal resolution: %s  [F2]"
+msgstr "Risoluzione interna: %s  [F2]"
+
+#: scripts/ui/ui_root.gd:248
+#, c-format
+msgid "15-bit dithering: %s  [F3]"
+msgstr "Dithering a 15 bit: %s  [F3]"
+
+#: scripts/ui/ui_root.gd:264
+msgid "Restart mission"
+msgstr "Ricomincia missione"
+
+#: scripts/ui/ui_root.gd:265
+msgid "Quit game"
+msgstr "Esci dal gioco"
+
+#: scripts/ui/ui_root.gd:308
+msgid "(optional)"
+msgstr "(opzionale)"
+
+#: scripts/ui/ui_root.gd:312
+#, c-format
+msgid "Time: %s    Secrets: %d/2    Alarms: %d    Times spotted: %d"
+msgstr "Tempo: %s    Segreti: %d/2    Allarmi: %d    Volte avvistato: %d"
+
+#: scripts/ui/ui_root.gd:326
+msgid "Select a log."
+msgstr "Seleziona un registro."
+
+#: scripts/ui/ui_root.gd:341
+msgid "Wrench — melee. Hit an unaware guard from behind for a silent KO."
+msgstr "Chiave inglese — mischia. Alle spalle di una guardia ignara: KO silenzioso."
+
+#: scripts/ui/ui_root.gd:342
+#, c-format
+msgid "9mm pistol — magazine %d/%d, reserve %d."
+msgstr "Pistola 9mm — caricatore %d/%d, riserva %d."
+
+#: scripts/ui/ui_root.gd:344
+#, c-format
+msgid "Medipatch x%d  (+40 health)"
+msgstr "Medipatch x%d  (+40 salute)"
+
+#: scripts/ui/ui_root.gd:345
+msgid "Use"
+msgstr "Usa"
+
+#: scripts/ui/ui_root.gd:352
+#, c-format
+msgid "Cyber-modules: %d    Credits: %d ¢"
+msgstr "Cyber-moduli: %d    Crediti: %d ¢"
+
+#: scripts/ui/ui_root.gd:354
+msgid "KEYCARDS AND MISSION ITEMS"
+msgstr "TESSERE E OGGETTI DI MISSIONE"
+
+#: scripts/ui/ui_root.gd:356
+msgid "— none —"
+msgstr "— nessuno —"
+
+#: scripts/ui/ui_root.gd:360
+msgid "SERAPH-7 data core (it's warm. And it hums.)"
+msgstr "Nucleo dati SERAPH-7 (è tiepido. E vibra.)"
+
+#: scripts/ui/ui_root.gd:366
+#, c-format
+msgid "Cyber-modules available: %d — spend them at an upgrade station."
+msgstr "Cyber-moduli disponibili: %d — spendili in una stazione di potenziamento."
+
+#: scripts/ui/ui_root.gd:373
+msgid "OBJECTIVES"
+msgstr "OBIETTIVI"
+
+#: scripts/ui/ui_root.gd:373
+msgid "LOGS"
+msgstr "REGISTRI"
+
+#: scripts/ui/ui_root.gd:373
+msgid "INVENTORY"
+msgstr "INVENTARIO"
+
+#: scripts/ui/ui_root.gd:373
+msgid "CHARACTER"
+msgstr "PERSONAGGIO"
+
+#: scripts/ui/ui_root.gd:384
+msgid "LOG"
+msgstr "REGISTRO"
+
+#: scripts/ui/ui_root.gd:393
+#: scripts/ui/ui_root.gd:467
+#: scripts/ui/ui_root.gd:641
+msgid "Close  [Esc]"
+msgstr "Chiudi  [Esc]"
+
+#: scripts/ui/ui_root.gd:401
+#, c-format
+msgid "ACCESS DENIED — %s"
+msgstr "ACCESSO NEGATO — %s"
+
+#: scripts/ui/ui_root.gd:405
+#, c-format
+msgid "Keycard: %s  %s"
+msgstr "Tessera: %s  %s"
+
+#: scripts/ui/ui_root.gd:405
+msgid "(in inventory)"
+msgstr "(ce l'hai)"
+
+#: scripts/ui/ui_root.gd:405
+msgid "(missing)"
+msgstr "(non ce l'hai)"
+
+#: scripts/ui/ui_root.gd:407
+msgid "Keypad — enter the 4-digit code:"
+msgstr "Tastierino — inserisci il codice a 4 cifre:"
+
+#: scripts/ui/ui_root.gd:417
+msgid "Code accepted."
+msgstr "Codice accettato."
+
+#: scripts/ui/ui_root.gd:423
+msgid "WRONG"
+msgstr "ERRATO"
+
+#: scripts/ui/ui_root.gd:455
+#, c-format
+msgid "Hacking required: %d — yours: %d"
+msgstr "Hacking richiesto: %d — il tuo: %d"
+
+#: scripts/ui/ui_root.gd:458
+msgid "START INTRUSION"
+msgstr "AVVIA INTRUSIONE"
+
+#: scripts/ui/ui_root.gd:461
+msgid "Insufficient skill"
+msgstr "Skill insufficiente"
+
+#: scripts/ui/ui_root.gd:464
+#, c-format
+msgid "Device locked out (%ds)"
+msgstr "Dispositivo in blocco (%ds)"
+
+#: scripts/ui/ui_root.gd:490
+#, c-format
+msgid "INTRUSION — %s"
+msgstr "INTRUSIONE — %s"
+
+#: scripts/ui/ui_root.gd:492
+msgid "Build a path from left to right. Each node must touch the previous one (diagonals count). Failed nodes burn out."
+msgstr "Crea un percorso da sinistra a destra. Ogni nodo deve toccare il precedente (anche in diagonale). I nodi falliti bruciano."
+
+#: scripts/ui/ui_root.gd:516
+msgid "Abort  [Esc]"
+msgstr "Interrompi  [Esc]"
+
+#: scripts/ui/ui_root.gd:549
+#, c-format
+msgid "Chance per node: %d%%    Mistakes left: %d"
+msgstr "Probabilità per nodo: %d%%    Errori tollerati: %d"
+
+#: scripts/ui/ui_root.gd:579
+msgid "ACCESS GRANTED"
+msgstr "ACCESSO OTTENUTO"
+
+#: scripts/ui/ui_root.gd:594
+msgid "INTRUSION FAILED — device locked for 20s"
+msgstr "INTRUSIONE FALLITA — dispositivo bloccato per 20 s"
+
+#: scripts/ui/ui_root.gd:604
+msgid "ICE: intrusion detected."
+msgstr "ICE: intrusione rilevata."
+
+#: scripts/ui/ui_root.gd:611
+msgid "NEURAL UPGRADE STATION"
+msgstr "STAZIONE DI POTENZIAMENTO NEURALE"
+
+#: scripts/ui/ui_root.gd:613
+#, c-format
+msgid "Cyber-modules available: %d"
+msgstr "Cyber-moduli disponibili: %d"
+
+#: scripts/ui/ui_root.gd:626
+msgid "MAX"
+msgstr "MASSIMO"
+
+#: scripts/ui/ui_root.gd:630
+#, c-format
+msgid "UPGRADE (cost: %d)"
+msgstr "POTENZIA (costo: %d)"
+
+#: scripts/ui/ui_root.gd:633
+#, c-format
+msgid "%s raised to level %d."
+msgstr "%s: ora al livello %d."
+
+#: scripts/ui/ui_root.gd:660
+msgid "Disconnect  [Esc]"
+msgstr "Disconnetti  [Esc]"
+
+#: scripts/ui/ui_root.gd:667
+#, c-format
+msgid ""
+"Time: %s\n"
+"Guards killed: %d    Knocked out: %d    Pickpockets: %d\n"
+"Alarms: %d    Times spotted: %d    Successful hacks: %d\n"
+"Secrets: %d/2    Credits: %d ¢"
+msgstr ""
+"Tempo: %s\n"
+"Guardie uccise: %d    Messe KO: %d    Borseggi: %d\n"
+"Allarmi: %d    Volte avvistato: %d    Hack riusciti: %d\n"
+"Segreti: %d/2    Crediti: %d ¢"
+
+#: scripts/ui/ui_root.gd:673
+msgid "SIGNAL LOST"
+msgstr "SEGNALE PERSO"
+
+#: scripts/ui/ui_root.gd:676
+msgid "Seraph Biotek thanks you for your involuntary cooperation."
+msgstr "La Seraph Biotek ringrazia per la collaborazione involontaria."
+
+#: scripts/ui/ui_root.gd:680
+msgid "Restart"
+msgstr "Ricomincia"
+
+#: scripts/ui/ui_root.gd:681
+#: scripts/ui/ui_root.gd:703
+msgid "Quit"
+msgstr "Esci"
+
+#: scripts/ui/ui_root.gd:687
+msgid "EXTRACTION SUCCESSFUL"
+msgstr "ESTRAZIONE RIUSCITA"
+
+#: scripts/ui/ui_root.gd:689
+msgid ""
+"[color=#ffcc55]VESPER:[/color] The core is mine, and the payment's already in your account. Nice work, really.\n"
+"...Wait. Why is the core [i]transmitting[/i]? Who— "
+msgstr ""
+"[color=#ffcc55]VESPER:[/color] Il nucleo è mio, il pagamento è già sul tuo conto. Bel lavoro, davvero.\n"
+"...Aspetta. Perché il nucleo sta [i]trasmettendo[/i]? Chi— "
+
+#: scripts/ui/ui_root.gd:698
+#, c-format
+msgid "RATING: %s"
+msgstr "VALUTAZIONE: %s"
+
+#: scripts/ui/ui_root.gd:699
+msgid "End of the vertical slice. Thanks for playing."
+msgstr "Fine della vertical slice. Grazie per aver giocato."
+
+#: scripts/ui/ui_root.gd:702
+msgid "Play again"
+msgstr "Rigioca"
+
+#: scripts/world/datapad.gd:53
+#, c-format
+msgid "Read terminal: %s"
+msgstr "Leggi terminale: %s"
+
+#: scripts/world/datapad.gd:53
+#, c-format
+msgid "Read datapad: %s"
+msgstr "Leggi datapad: %s"
+
+#: scripts/world/elevator_panel.gd:27
+msgid "Service elevator — GO DOWN"
+msgstr "Ascensore di servizio — SCENDI"
+
+#: scripts/world/elevator_panel.gd:27
+msgid "Service elevator — standing by"
+msgstr "Ascensore di servizio — in attesa"
+
+#: scripts/world/elevator_panel.gd:35
+msgid "You're not leaving without the core. Lab C, north of the lobby."
+msgstr "Non ti muovi da lì senza il nucleo. Laboratorio C, a nord della hall."
+
+#: scripts/world/elevator_panel.gd:39
+msgid "Great work. Taking you down."
+msgstr "Ottimo lavoro. Ti porto giù."
+
+#: scripts/world/light_switch.gd:36
+msgid "Light switch (turn off)"
+msgstr "Interruttore luci (spegni)"
+
+#: scripts/world/light_switch.gd:36
+msgid "Light switch (turn on)"
+msgstr "Interruttore luci (accendi)"
+
+#: scripts/world/pickup.gd:51
+msgid "Medipatch"
+msgstr "Medipatch"
+
+#: scripts/world/pickup.gd:53
+#, c-format
+msgid "9mm ammo (%d)"
+msgstr "Munizioni 9mm (%d)"
+
+#: scripts/world/pickup.gd:55
+msgid "Cyber-module"
+msgstr "Cyber-modulo"
+
+#: scripts/world/pickup.gd:57
+#, c-format
+msgid "Credit chip (%d ¢)"
+msgstr "Chip di credito (%d ¢)"
+
+#: scripts/world/pickup.gd:105
+#, c-format
+msgid "Pick up: %s"
+msgstr "Raccogli: %s"
+
+#: scripts/world/pickup.gd:121
+#, c-format
+msgid "Picked up: %s"
+msgstr "Raccolto: %s"
+
+#: scripts/world/security_terminal.gd:29
+#: scripts/world/security_terminal.gd:43
+msgid "Security terminal"
+msgstr "Terminale di sicurezza"
+
+#: scripts/world/security_terminal.gd:44
+#: levels/seraph/seraph.tscn:1207
+#: assets/npc/characters/ruiz.tres:164
+msgid "Security Keycard"
+msgstr "Tessera Sicurezza"
+
+#: scripts/world/security_terminal.gd:60
+#, c-format
+msgid "SERAPH-SEC // NODE 14 // SESSION: %s"
+msgstr "SERAPH-SEC // NODO 14 // SESSIONE: %s"
+
+#: scripts/world/security_terminal.gd:69
+msgid "Disable surveillance cameras"
+msgstr "Disattiva telecamere di sorveglianza"
+
+#: scripts/world/security_terminal.gd:70
+msgid "Disable Corridor C turret"
+msgstr "Disattiva torretta corridoio C"
+
+#: scripts/world/security_terminal.gd:71
+msgid "Read shift log"
+msgstr "Leggi registro di turno"
+
+#: scripts/world/server_core.gd:47
+msgid "Extract the SERAPH-7 core"
+msgstr "Estrai il nucleo SERAPH-7"
+
+#: scripts/world/server_core.gd:59
+msgid "Get back to the service elevator with the core."
+msgstr "Torna all'ascensore di servizio con il nucleo."
+
+#: scripts/world/server_core.gd:60
+msgid "...don't shut me down... get me out..."
+msgstr "...non spegnermi... portami fuori..."
+
+#: scripts/world/sliding_door.gd:239
+#, c-format
+msgid "Locked door — %s"
+msgstr "Porta bloccata — %s"
+
+#: scripts/world/sliding_door.gd:240
+msgid "Close door"
+msgstr "Chiudi porta"
+
+#: scripts/world/sliding_door.gd:240
+msgid "Open door"
+msgstr "Apri porta"
+
+#: scripts/world/sliding_door.gd:245
+msgid "Door"
+msgstr "Porta"
+
+#: scripts/world/sliding_door.gd:253
+msgid "You unlock the door from the inside."
+msgstr "Sblocchi la porta dall'interno."
+
+#: scripts/world/sliding_door.gd:259
+#, c-format
+msgid "Using: %s"
+msgstr "Usi: %s"
+
+#: scripts/world/throwable.gd:21
+msgid "Kaffa-Nova can"
+msgstr "Lattina di Kaffa-Nova"
+
+#: scripts/world/throwable.gd:21
+msgid "Bottle"
+msgstr "Bottiglia"
+
+#: scripts/world/throwable.gd:21
+msgid "Parts box"
+msgstr "Scatola di componenti"
+
+#: scripts/world/throwable.gd:21
+msgid "SB-14 crate"
+msgstr "Cassa SB-14"
+
+#: scripts/world/throwable.gd:126
+#, c-format
+msgid "%s — too heavy (Strength 2)"
+msgstr "%s — troppo pesante (Forza 2)"
+
+#: scripts/world/throwable.gd:127
+#, c-format
+msgid "Take: %s"
+msgstr "Prendi: %s"
+
+#: scripts/world/throwable.gd:132
+msgid "Too heavy. You need Strength 2."
+msgstr "Troppo pesante. Serve Forza 2."
+
+#: scripts/world/upgrade_station.gd:27
+#, c-format
+msgid "Upgrade station (cyber-modules: %d)"
+msgstr "Stazione di potenziamento (cyber-moduli: %d)"
+
+#: scripts/world/vent_grate.gd:56
+msgid "Kick the grate out"
+msgstr "Spingi via la grata (calcio)"
+
+#: scripts/world/vent_grate.gd:58
+msgid "Remove the grate"
+msgstr "Rimuovi la grata"
+
+#: scripts/world/vent_grate.gd:59
+#, c-format
+msgid "Grate bolted down (Strength %d, or smash it)"
+msgstr "Grata fissata (Forza %d, o sfondala)"
+
+#: scripts/world/vent_grate.gd:69
+#, c-format
+msgid "The grate is bolted down. You need Strength %d to remove it by hand, or you can smash it."
+msgstr "La grata è avvitata. Serve Forza %d per toglierla a mano, oppure puoi sfondarla."
+
+#: levels/seraph/seraph.gd:12
+msgid "Retrieve the SERAPH-7 data core from the Lab C server."
+msgstr "Recupera il nucleo dati SERAPH-7 dal server del Laboratorio C."
+
+#: levels/seraph/seraph.gd:13
+msgid "Find out what happened to Dr. Okafor."
+msgstr "Scopri cosa è successo al Dr. Okafor."
+
+#: levels/seraph/seraph.gd:14
+msgid "Don't kill anyone."
+msgstr "Non uccidere nessuno."
+
+#: levels/seraph/seraph.gd:15
+msgid "Don't trigger any alarms."
+msgstr "Non far scattare allarmi."
+
+#: levels/seraph/seraph.gd:31
+msgid "You're in. Level 14, Seraph labs. The briefing's on your PDA [Tab]."
+msgstr "Sei dentro. Livello 14, laboratori Seraph. Il briefing è nel tuo PDA [Tab]."
+
+#: levels/seraph/seraph.gd:36
+msgid "The core is in Lab C, north of the lobby. How you get there is your business."
+msgstr "Il nucleo è nel Laboratorio C, a nord della hall. Come ci arrivi è affar tuo."
+
+#: levels/seraph/seraph.gd:48
+msgid "Breach in Lab C. SERAPH protocol active. Security: seal the exits."
+msgstr "Violazione nel Laboratorio C. Protocollo SERAPH attivo. Vigilanza: bloccare le uscite."
+
+#: levels/seraph/seraph.gd:64
+msgid "They know the core's gone. They're sending someone up the main elevator — get back here, fast."
+msgstr "Si sono accorti del nucleo. Hanno mandato qualcuno dall'ascensore principale: torna indietro, e veloce."
+
+#: levels/guida/guida.tscn:114
+msgid "Storeroom"
+msgstr "Magazzino"
+
+#: levels/seraph/seraph.tscn:1205
+msgid "Security Room"
+msgstr "Sala Sicurezza"
+
+#: levels/seraph/seraph.tscn:1216
+msgid "Lab C"
+msgstr "Laboratorio C"
+
+#: levels/seraph/seraph.tscn:1218
+#: levels/seraph/seraph.tscn:1329
+msgid "Lab C Keycard"
+msgstr "Tessera Laboratorio C"
+
+#: levels/seraph/seraph.tscn:1474
+msgid "The lobby. Camera in the northeast corner and a guard on patrol. Stay in the shadows."
+msgstr "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra."
+
+#: levels/seraph/seraph.tscn:1481
+msgid "You're in the lab. The core is in the central server, the one that's humming."
+msgstr "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza."
+
+#: levels/seraph/seraph.tscn:1486
+msgid "Ventilation duct: stay crouched."
+msgstr "Condotto di ventilazione: resta accovacciato."
+
+#: assets/npc/characters/hale.tres:130
+msgctxt "title"
+msgid "Op."
+msgstr "Op."
+
+#: assets/npc/characters/hale.tres:157
+msgid "Camera three is lagging again. Who installed these things?"
+msgstr "Telecamera tre di nuovo in ritardo. Ma chi le ha installate?"

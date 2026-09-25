@@ -9,7 +9,8 @@ extends Node
 ##
 ## Controlla: geometria (Solido, zone, brush), PlayerStart, oggetti fuori mappa o
 ## nei muri, NodePath (torretta, interruttori, percorsi), registri dei datapad,
-## porte chiuse che non si possono aprire, guardie che non raggiungono le tappe.
+## porte chiuse che non si possono aprire, guardie che non raggiungono le tappe,
+## testi del livello senza traduzione italiana (in italiano resterebbero in inglese).
 
 var errors := 0
 var warnings := 0
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_check_positions()
 	_check_links()
 	_check_doors()
+	_check_translations()
 	# fisica e navmesh sono pronte solo dopo i primi frame
 	var map: RID = lvl.get_world_3d().navigation_map
 	for i in 120:
@@ -197,7 +199,7 @@ func _check_doors() -> void:
 	var texts := ""
 	for d in _all(func(n): return n is Datapad):
 		if Logs.ENTRIES.has(d.log_id):
-			texts += String(Logs.ENTRIES[d.log_id].text) + "\n"
+			texts += String(Logs.ENTRIES[d.log_id].text) + "\n\u0001"   # separatore fra i registri
 	for d in _all(func(n): return n is SlidingDoor):
 		if not d.locked:
 			continue
@@ -210,12 +212,83 @@ func _check_doors() -> void:
 		if d.code != "":
 			if d.code in texts:
 				ways.append("codice %s (scritto in un datapad)" % d.code)
+				for lang in _other_languages():
+					if not (d.code in _translate_all(texts, lang)):
+						_warn(_path(d), "il codice %s non compare nella traduzione (%s) dei datapad: controlla locale/%s.po" % [d.code, lang, lang])
 			else:
 				_warn(_path(d), "il codice %s non compare in nessun datapad del livello" % d.code)
 		if d.hack_level > 0:
 			ways.append("hacking %d" % d.hack_level)
 		if ways.is_empty():
 			_warn(_path(d), "porta chiusa che non si può aprire (ok solo se la apre lo script di missione)")
+
+
+# --- testi e traduzioni ------------------------------------------------------------
+## Lingue del gioco oltre all'inglese (la lingua in cui si scrivono i testi).
+func _other_languages() -> Array:
+	return Game.LANGUAGES.keys().filter(func(l): return l != "en")
+
+
+## Traduce riga per riga i testi dei datapad (per cercarci i codici).
+func _translate_all(texts: String, lang: String) -> String:
+	var t := TranslationServer.get_translation_object(lang)
+	var out := ""
+	for s in texts.split("\n\u0001", false):
+		var m := String(t.get_message(s)) if t != null else ""
+		out += (m if m != "" else s) + "\n"
+	return out
+
+
+func _check_translations() -> void:
+	var texts := {}   # [testo, contesto] -> nodo in cui compare
+	var add := func(s: String, n: Node, ctx := ""):
+		if s.strip_edges() != "" and not texts.has([s, ctx]):
+			texts[[s, ctx]] = n
+	var add_name := func(s: String, n: Node):
+		var sp := s.find(" ")
+		if sp > 1 and s[sp - 1] == ".":
+			add.call(s.substr(0, sp), n, "title")
+		else:
+			add.call(s, n)
+	for n in _all(func(x): return x is TriggerZone):
+		add_name.call(n.speaker, n)
+		add.call(n.text, n)
+	for n in _all(func(x): return x is SlidingDoor):
+		add.call(n.lock_title, n)
+		add.call(n.keycard_name, n)
+	for n in _all(func(x): return x is Pickup):
+		add.call(n.display, n)
+	for n in _all(func(x): return x is Label3D):
+		add.call(n.text, n)
+	for g in _all(func(x): return x is Guard):
+		add_name.call(g.guard_name, g)
+		add.call(g.loot_keycard_name, g)
+		if g.definition != null:
+			add.call(g.definition.keycard_name, g)
+			for b in g.definition.idle_barks:
+				add.call(b, g)
+	for d in _all(func(x): return x is Datapad):
+		var e: Dictionary = Logs.ENTRIES.get(d.log_id, {})
+		for k in ["title", "author", "text"]:
+			add.call(String(e.get(k, "")), d)
+	for o in Game.objectives:
+		add.call(String(o.text), lvl)
+	for lang in _other_languages():
+		var t := TranslationServer.get_translation_object(lang)
+		var missing := 0
+		for key in texts:
+			if t == null or String(t.get_message(key[0], key[1])) == "":
+				missing += 1
+				if missing <= 12:
+					_warn(_path(texts[key]), "manca la traduzione (%s) di «%s»" % [lang, _short(key[0])])
+		if missing > 0:
+			_warn("Traduzioni", "%d testi senza traduzione (%s): in quella lingua restano in inglese. Aggiorna locale/%s.po con tools/aggiorna_traduzioni.gd (File → Run) e traducili: vedi la guida, «Testi e traduzioni»" % [missing, lang, lang])
+	print("        testi del livello: %d" % texts.size())
+
+
+func _short(s: String) -> String:
+	s = s.replace("\n", " ")
+	return s if s.length() <= 50 else s.substr(0, 47) + "..."
 
 
 # --- guardie e navmesh -----------------------------------------------------------

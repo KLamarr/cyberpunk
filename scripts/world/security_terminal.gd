@@ -26,7 +26,7 @@ func _ready() -> void:
 
 
 func get_frob_text() -> String:
-	return "Terminale di sicurezza"
+	return tr("Security terminal")
 
 
 func frob(_player: Node) -> void:
@@ -40,8 +40,8 @@ func frob(_player: Node) -> void:
 
 func get_lock_info() -> Dictionary:
 	return {
-		"kind": "terminal", "title": "Terminale di sicurezza", "keycard": "sicurezza",
-		"keycard_name": "Tessera Sicurezza", "hack": 1, "difficulty": 1,
+		"kind": "terminal", "title": tr("Security terminal"), "keycard": "sicurezza",
+		"keycard_name": tr("Security Keycard"), "hack": 1, "difficulty": 1,
 	}
 
 
@@ -57,7 +57,7 @@ func on_hack_result(ok: bool) -> void:
 
 
 func get_terminal_title() -> String:
-	return "SERAPH-SEC // NODO 14 // SESSIONE: " + ("HALE.J" if Game.has_keycard("sicurezza") else "ROOT (bypass)")
+	return tr("SERAPH-SEC // NODE 14 // SESSION: %s") % ("HALE.J" if Game.has_keycard("sicurezza") else "ROOT (bypass)")
 
 
 func get_terminal_options() -> Array:
@@ -66,9 +66,9 @@ func get_terminal_options() -> Array:
 		if t.is_hostile_active():
 			turret_on = true
 	return [
-		{"id": "cams", "label": "Disattiva telecamere di sorveglianza", "enabled": not Game.security_disabled},
-		{"id": "turret", "label": "Disattiva torretta corridoio C", "enabled": turret_on},
-		{"id": "log", "label": "Leggi registro di turno", "enabled": true},
+		{"id": "cams", "label": tr("Disable surveillance cameras"), "enabled": not Game.security_disabled},
+		{"id": "turret", "label": tr("Disable Corridor C turret"), "enabled": turret_on},
+		{"id": "log", "label": tr("Read shift log"), "enabled": true},
 	]
 
 

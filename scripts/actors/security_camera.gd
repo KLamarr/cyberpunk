@@ -106,7 +106,7 @@ func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) 
 		_head.rotation_degrees.x = -70.0
 		Sfx.play_3d("glass_break", global_position)
 		Game.emit_noise(global_position, 10.0, "glass", Game.player)
-		Game.notify("Telecamera distrutta.")
+		Game.notify(tr("Camera destroyed."))
 
 
 func set_disabled(on: bool) -> void:
@@ -175,7 +175,7 @@ func _physics_process(delta: float) -> void:
 		if _alarm_cd <= 0.0 and p != null:
 			_alarm_cd = 12.0
 			Sfx.play_3d("cam_alert", global_position, 2.0)
-			Game.raise_alarm(p.global_position, "Rilevato dalle telecamere.")
+			Game.raise_alarm(p.global_position, tr("Spotted by the cameras."))
 		awareness = minf(awareness, 1.2)
 	elif awareness > 0.3:
 		_set_color(Color(1.0, 0.8, 0.1))

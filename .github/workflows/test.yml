@@ -39,14 +39,22 @@ jobs:
       - name: Importa le risorse
         run: godot --headless --path . --import
 
-      - name: Test end-to-end (63 controlli)
+      - name: Traduzioni (locale/it.po completo e coerente con i testi del gioco)
+        run: timeout 120 godot --headless --path . --script res://tools/i18n.gd -- --check --strict
+
+      - name: Test end-to-end (72 controlli)
         run: timeout 300 godot --headless --path . -- --autotest
+
+      - name: Test end-to-end in italiano
+        run: timeout 300 godot --headless --path . -- --autotest --lang=it
 
       - name: Test morte e riavvio
         run: timeout 300 godot --headless --path . -- --autotest --death
 
-      - name: Test bottoni UI
-        run: timeout 300 godot --headless --path . -- --autotest --ui
+      - name: Test bottoni UI (anche il cambio di lingua)
+        run: |
+          timeout 300 godot --headless --path . -- --autotest --ui
+          timeout 300 godot --headless --path . -- --autotest --ui --lang=it
 
       - name: Test generatore di NPC
         run: timeout 300 godot --headless --path . -- --autotest --npc

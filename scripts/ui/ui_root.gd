@@ -2,8 +2,13 @@ extends CanvasLayer
 ## Gestore dei pannelli a schermo: menu iniziale (con allocazione delle skill),
 ## pausa/opzioni, PDA, serrature/tastierino, minigioco di hacking, stazione di
 ## potenziamento, terminali, lettore registri, schermate di morte e di fine.
+##
+## Testi: in inglese dentro tr(); l'italiano è in locale/it.po. La traduzione
+## automatica dei Control è spenta (root.auto_translate_mode): ogni testo passa
+## esplicitamente da tr(), così lo strumento tools/i18n.gd li trova tutti.
 
-const CONTROLS := "[b]WASD[/b] muovi   [b]Shift[/b] corri   [b]Ctrl[/b] (tieni) / [b]C[/b] (alterna) accovacciati\n[b]Spazio[/b] salta / aggrappati alle sporgenze (mantle)   [b]Q / E[/b] sporgiti\n[b]Mouse sx[/b] attacca · lancia   [b]Mouse dx[/b] o [b]F[/b] interagisci (frob) · posa\n[b]1 / 2[/b] o rotella: chiave inglese / pistola   [b]R[/b] ricarica   [b]H[/b] medipatch\n[b]Tab[/b] PDA   [b]Esc[/b] pausa   [b]F2[/b] risoluzione interna   [b]F3[/b] dithering"
+# i18n
+const CONTROLS := "[b]WASD[/b] move   [b]Shift[/b] run   [b]Ctrl[/b] (hold) / [b]C[/b] (toggle) crouch\n[b]Space[/b] jump / climb onto ledges (mantle)   [b]Q / E[/b] lean\n[b]LMB[/b] attack · throw   [b]RMB[/b] or [b]F[/b] interact (frob) · put down\n[b]1 / 2[/b] or wheel: wrench / pistol   [b]R[/b] reload   [b]H[/b] medipatch\n[b]Tab[/b] PDA   [b]Esc[/b] pause   [b]F2[/b] internal resolution   [b]F3[/b] dithering"
 
 var root: Control
 var dim: ColorRect
@@ -27,6 +32,7 @@ func _ready() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.theme = UITheme.get_theme()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	add_child(root)
 	dim = ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -51,6 +57,8 @@ func _show(panel: Control, kind: String, pause := true) -> void:
 
 
 func _clear() -> void:
+	if current_kind == "pause":
+		Game.save_settings()   # sensibilità e volume cambiati con i cursori
 	if current != null:
 		current.queue_free()
 	current = null
@@ -131,29 +139,34 @@ func show_start() -> void:
 	left.custom_minimum_size.x = 580
 	left.add_theme_constant_override("separation", 8)
 	h.add_child(left)
-	left.add_child(UITheme.label("PROTOCOLLO SERAPH", 40, UITheme.BORDER))
-	left.add_child(UITheme.label("vertical slice — immersive sim FPS/RPG", 16, UITheme.DIM))
+	left.add_child(UITheme.label(tr("SERAPH PROTOCOL"), 40, UITheme.BORDER))
+	left.add_child(UITheme.label(tr("vertical slice — FPS/RPG immersive sim"), 16, UITheme.DIM))
 	left.add_child(_spacer(6))
-	var brief := _rich("Arcologia Nysa, livello 14, turno di notte. Il tuo contatto, [color=#ffcc55]Vesper[/color], ti ha fatto salire con l'ascensore di servizio nell'ala laboratori della [b]Seraph Biotek[/b].\n\nObiettivo: estrarre il nucleo dati [color=#ffcc55]SERAPH-7[/color] dal Laboratorio C e tornare all'ascensore.\n\nLe ombre sono tue alleate: la [b]gemma[/b] in basso ti dice quanto sei visibile, gli archi accanto quanto rumore fai. Ogni ostacolo ha più di una soluzione: codici, tessere, hacking, condotti, distrazioni... o la pistola.", 16)
+	var brief := _rich(tr("Nysa Arcology, Level 14, night shift. Your contact, [color=#ffcc55]Vesper[/color], got you up the service elevator into the lab wing of [b]Seraph Biotek[/b].\n\nObjective: extract the [color=#ffcc55]SERAPH-7[/color] data core from Lab C and get back to the elevator.\n\nShadows are your allies: the [b]gem[/b] at the bottom shows how visible you are, the arcs beside it how much noise you make. Every obstacle has more than one solution: codes, keycards, hacking, vents, distractions... or the pistol."), 16)
 	brief.custom_minimum_size.x = 570
 	left.add_child(brief)
 	left.add_child(_spacer(4))
-	left.add_child(UITheme.label("COMANDI", 16, UITheme.ACCENT))
-	left.add_child(_rich(CONTROLS, 14, 570))
+	left.add_child(UITheme.label(tr("CONTROLS"), 16, UITheme.ACCENT))
+	left.add_child(_rich(tr(CONTROLS), 14, 570))
 
 	var right := VBoxContainer.new()
 	right.custom_minimum_size.x = 500
 	right.add_theme_constant_override("separation", 6)
 	h.add_child(right)
-	right.add_child(UITheme.label("PROFILO DELL'OPERATIVO", 20, UITheme.ACCENT))
+	var top := HBoxContainer.new()
+	right.add_child(top)
+	var title := UITheme.label(tr("OPERATIVE PROFILE"), 20, UITheme.ACCENT)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(title)
+	top.add_child(_language_button(show_start))
 	_st_pts = UITheme.label("", 16, UITheme.TEXT)
 	right.add_child(_st_pts)
 	_st_rows = VBoxContainer.new()
 	right.add_child(_st_rows)
-	_st_btn = UITheme.button("INIZIA LA MISSIONE", _begin, 300)
+	_st_btn = UITheme.button(tr("START MISSION"), _begin, 300)
 	_build_start_rows()
 	right.add_child(_spacer(6))
-	right.add_child(UITheme.label("Altri potenziamenti: cyber-moduli + stazioni.", 13, UITheme.DIM))
+	right.add_child(UITheme.label(tr("Later: spend cyber-modules at upgrade stations."), 13, UITheme.DIM))
 	right.add_child(_st_btn)
 	_show(pc, "start", false)
 	dim.color = Color(0, 0.01, 0.01, 0.72)
@@ -166,11 +179,11 @@ func _build_start_rows() -> void:
 	for s in Game.SKILLS:
 		used += int(Game.start_alloc[s])
 	var left_pts: int = Game.START_POINTS - used
-	_st_pts.text = "Punti da assegnare: %d   (max %d per skill all'inizio)" % [left_pts, Game.START_CAP]
+	_st_pts.text = tr("Points to assign: %d   (max %d per skill at start)") % [left_pts, Game.START_CAP]
 	for s in Game.SKILLS:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
-		var name_l := UITheme.label(Game.SKILL_NAMES[s], 17, UITheme.TEXT)
+		var name_l := UITheme.label(Game.skill_name(s), 17, UITheme.TEXT)
 		name_l.custom_minimum_size.x = 170
 		row.add_child(name_l)
 		var pl := UITheme.label(UITheme.pips(int(Game.start_alloc[s]), Game.SKILL_MAX), 17, UITheme.GOOD)
@@ -183,10 +196,10 @@ func _build_start_rows() -> void:
 		plus.disabled = left_pts <= 0 or int(Game.start_alloc[s]) >= Game.START_CAP
 		row.add_child(plus)
 		_st_rows.add_child(row)
-		var d := UITheme.label(Game.SKILL_DESC[s], 13, UITheme.DIM, true)
+		var d := UITheme.label(Game.skill_desc(s), 13, UITheme.DIM, true)
 		d.custom_minimum_size.x = 490
 		_st_rows.add_child(d)
-	_st_btn.text = "INIZIA LA MISSIONE" if left_pts == 0 else "INIZIA (punti non spesi: %d)" % left_pts
+	_st_btn.text = tr("START MISSION") if left_pts == 0 else tr("START (unspent points: %d)") % left_pts
 
 
 func _alloc(s: String, delta: int) -> void:
@@ -206,24 +219,33 @@ func _begin() -> void:
 		Game.level.start_intro()
 
 
+# --- lingua ----------------------------------------------------------------------------
+## Bottone che passa alla lingua successiva e poi ridisegna il pannello (rebuild).
+func _language_button(rebuild: Callable) -> Button:
+	return UITheme.button(tr("Language: %s") % Game.language_name(), func():
+		Game.cycle_language()
+		rebuild.call())
+
+
 # --- pausa ----------------------------------------------------------------------------
 func open_pause() -> void:
-	var w := _window("PAUSA", 620, 0)
+	var w := _window(tr("PAUSED"), 620, 0)
 	var v: VBoxContainer = w[1]
-	v.add_child(UITheme.button("Riprendi", close_panel))
-	v.add_child(UITheme.button("PDA: obiettivi, registri, inventario  [Tab]", open_pda))
+	v.add_child(UITheme.button(tr("Resume"), close_panel))
+	v.add_child(UITheme.button(tr("PDA: objectives, logs, inventory  [Tab]"), open_pda))
 	v.add_child(_spacer(4))
-	v.add_child(UITheme.label("OPZIONI", 16, UITheme.ACCENT))
-	v.add_child(_slider_row("Sensibilità mouse", 0.03, 0.4, Game.settings.sensitivity, func(x): Game.settings.sensitivity = x))
-	v.add_child(_slider_row("Volume", 0.0, 1.0, Game.settings.volume, func(x):
+	v.add_child(UITheme.label(tr("OPTIONS"), 16, UITheme.ACCENT))
+	v.add_child(_language_button(open_pause))
+	v.add_child(_slider_row(tr("Mouse sensitivity"), 0.03, 0.4, Game.settings.sensitivity, func(x): Game.settings.sensitivity = x))
+	v.add_child(_slider_row(tr("Volume"), 0.0, 1.0, Game.settings.volume, func(x):
 		Game.settings.volume = x
 		Sfx.set_master_volume(x)))
 	var px_btn := UITheme.button("", func(): pass)
 	var dt_btn := UITheme.button("", func(): pass)
 	var refresh := func():
 		var s: int = Game.settings.pixel_scale
-		px_btn.text = "Risoluzione interna: %s  [F2]" % ["1280x720 (nativa)", "640x360 (default)", "427x240", "320x180"][s - 1]
-		dt_btn.text = "Dithering a 15 bit: %s  [F3]" % ("SÌ" if Game.settings.dither else "NO")
+		px_btn.text = tr("Internal resolution: %s  [F2]") % Game.pixel_scale_name(s)
+		dt_btn.text = tr("15-bit dithering: %s  [F3]") % (tr("ON") if Game.settings.dither else tr("OFF"))
 	px_btn.pressed.connect(func():
 		Game.cycle_pixel_scale()
 		refresh.call())
@@ -234,13 +256,13 @@ func open_pause() -> void:
 	v.add_child(px_btn)
 	v.add_child(dt_btn)
 	v.add_child(_spacer(4))
-	v.add_child(UITheme.label("COMANDI", 16, UITheme.ACCENT))
-	v.add_child(_rich(CONTROLS, 13, 590))
+	v.add_child(UITheme.label(tr("CONTROLS"), 16, UITheme.ACCENT))
+	v.add_child(_rich(tr(CONTROLS), 13, 590))
 	v.add_child(_spacer(4))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
-	hb.add_child(UITheme.button("Ricomincia missione", Game.restart))
-	hb.add_child(UITheme.button("Esci dal gioco", func(): get_tree().quit()))
+	hb.add_child(UITheme.button(tr("Restart mission"), Game.restart))
+	hb.add_child(UITheme.button(tr("Quit game"), Game.quit_game))
 	v.add_child(hb)
 	_show(w[0], "pause")
 
@@ -258,6 +280,7 @@ func _slider_row(label_text: String, mn: float, mx: float, val: float, cb: Calla
 	s.custom_minimum_size = Vector2(320, 24)
 	s.focus_mode = Control.FOCUS_NONE
 	s.value_changed.connect(cb)
+	s.drag_ended.connect(func(_changed: bool): Game.save_settings())
 	row.add_child(s)
 	return row
 
@@ -270,7 +293,7 @@ func open_pda(tab := 0) -> void:
 	pc.add_child(tabs)
 
 	var obj := VBoxContainer.new()
-	obj.name = "OBIETTIVI"
+	obj.name = "Objectives"
 	obj.add_theme_constant_override("separation", 8)
 	tabs.add_child(obj)
 	for o in Game.objectives:
@@ -282,14 +305,14 @@ func open_pda(tab := 0) -> void:
 		elif o.state == "failed":
 			mark = "[✗]"
 			col = UITheme.DANGER
-		var l := UITheme.label("%s %s%s" % [mark, "(opzionale) " if o.optional else "", o.text], 17, col, true)
+		var l := UITheme.label("%s %s%s" % [mark, tr("(optional)") + " " if o.optional else "", tr(o.text)], 17, col, true)
 		l.custom_minimum_size.x = 940
 		obj.add_child(l)
 	obj.add_child(_spacer(12))
-	obj.add_child(UITheme.label("Tempo: %s    Segreti: %d/2    Allarmi: %d    Avvistamenti: %d" % [Util.fmt_time(Game.stats.time), Game.secrets_found.size(), Game.stats.alarms, Game.stats.detections], 15, UITheme.DIM))
+	obj.add_child(UITheme.label(tr("Time: %s    Secrets: %d/2    Alarms: %d    Times spotted: %d") % [Util.fmt_time(Game.stats.time), Game.secrets_found.size(), Game.stats.alarms, Game.stats.detections], 15, UITheme.DIM))
 
 	var logs := HBoxContainer.new()
-	logs.name = "REGISTRI"
+	logs.name = "Logs"
 	logs.add_theme_constant_override("separation", 12)
 	tabs.add_child(logs)
 	var list := ItemList.new()
@@ -300,11 +323,11 @@ func open_pda(tab := 0) -> void:
 	scroll.custom_minimum_size = Vector2(620, 480)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	logs.add_child(scroll)
-	var reader := _rich("[color=#6a9c98]Seleziona un registro.[/color]", 16)
+	var reader := _rich("[color=#6a9c98]%s[/color]" % tr("Select a log."), 16)
 	reader.custom_minimum_size.x = 600
 	scroll.add_child(reader)
 	for id in Game.logs_read:
-		list.add_item(Logs.ENTRIES.get(id, {}).get("title", id))
+		list.add_item(tr(Logs.ENTRIES.get(id, {}).get("title", id)))
 	list.item_selected.connect(func(i: int):
 		reader.text = _log_bbcode(Game.logs_read[i]))
 	if Game.logs_read.size() > 0:
@@ -312,51 +335,53 @@ func open_pda(tab := 0) -> void:
 		reader.text = _log_bbcode(Game.logs_read[Game.logs_read.size() - 1])
 
 	var inv := VBoxContainer.new()
-	inv.name = "INVENTARIO"
+	inv.name = "Inventory"
 	inv.add_theme_constant_override("separation", 8)
 	tabs.add_child(inv)
-	inv.add_child(UITheme.label("Chiave inglese — mischia. Alle spalle di una guardia ignara: KO silenzioso.", 16))
-	inv.add_child(UITheme.label("Pistola 9mm — caricatore %d/%d, riserva %d." % [Game.ammo_mag, Game.MAG_SIZE, Game.ammo_reserve], 16))
+	inv.add_child(UITheme.label(tr("Wrench — melee. Hit an unaware guard from behind for a silent KO."), 16))
+	inv.add_child(UITheme.label(tr("9mm pistol — magazine %d/%d, reserve %d.") % [Game.ammo_mag, Game.MAG_SIZE, Game.ammo_reserve], 16))
 	var med_row := HBoxContainer.new()
-	med_row.add_child(UITheme.label("Medipatch x%d  (+40 salute)   " % Game.medpatches, 16))
-	var use_b := UITheme.button("Usa", func():
+	med_row.add_child(UITheme.label(tr("Medipatch x%d  (+40 health)") % Game.medpatches + "   ", 16))
+	var use_b := UITheme.button(tr("Use"), func():
 		if Game.player:
 			Game.player.use_medpatch()
 		open_pda(2))
 	use_b.disabled = Game.medpatches <= 0
 	med_row.add_child(use_b)
 	inv.add_child(med_row)
-	inv.add_child(UITheme.label("Cyber-moduli: %d    Crediti: %d ¢" % [Game.modules, Game.credits], 16))
+	inv.add_child(UITheme.label(tr("Cyber-modules: %d    Credits: %d ¢") % [Game.modules, Game.credits], 16))
 	inv.add_child(_spacer(6))
-	inv.add_child(UITheme.label("TESSERE E OGGETTI DI MISSIONE", 15, UITheme.ACCENT))
+	inv.add_child(UITheme.label(tr("KEYCARDS AND MISSION ITEMS"), 15, UITheme.ACCENT))
 	if Game.keycards.is_empty() and Game.items.is_empty():
-		inv.add_child(UITheme.label("— nessuno —", 15, UITheme.DIM))
+		inv.add_child(UITheme.label(tr("— none —"), 15, UITheme.DIM))
 	for k in Game.keycards:
-		inv.add_child(UITheme.label("▪ " + String(Game.keycards[k]), 16))
+		inv.add_child(UITheme.label("▪ " + Game.keycard_name(k), 16))
 	if Game.has_item("core"):
-		inv.add_child(UITheme.label("▪ Nucleo dati SERAPH-7 (è tiepido. E vibra.)", 16, UITheme.BORDER))
+		inv.add_child(UITheme.label("▪ " + tr("SERAPH-7 data core (it's warm. And it hums.)"), 16, UITheme.BORDER))
 
 	var ch := VBoxContainer.new()
-	ch.name = "PERSONAGGIO"
+	ch.name = "Character"
 	ch.add_theme_constant_override("separation", 6)
 	tabs.add_child(ch)
-	ch.add_child(UITheme.label("Cyber-moduli disponibili: %d — spendili in una stazione di potenziamento." % Game.modules, 16, UITheme.ACCENT))
+	ch.add_child(UITheme.label(tr("Cyber-modules available: %d — spend them at an upgrade station.") % Game.modules, 16, UITheme.ACCENT))
 	for s in Game.SKILLS:
-		ch.add_child(UITheme.label("%-16s %s" % [Game.SKILL_NAMES[s], UITheme.pips(Game.skill(s), Game.SKILL_MAX)], 18, UITheme.TEXT))
-		var d := UITheme.label(Game.SKILL_DESC[s], 13, UITheme.DIM, true)
+		ch.add_child(UITheme.label("%-16s %s" % [Game.skill_name(s), UITheme.pips(Game.skill(s), Game.SKILL_MAX)], 18, UITheme.TEXT))
+		var d := UITheme.label(Game.skill_desc(s), 13, UITheme.DIM, true)
 		d.custom_minimum_size.x = 940
 		ch.add_child(d)
+	for i in 4:
+		tabs.set_tab_title(i, [tr("OBJECTIVES"), tr("LOGS"), tr("INVENTORY"), tr("CHARACTER")][i])
 	tabs.current_tab = tab
 	_show(pc, "pda")
 
 
 func _log_bbcode(id: String) -> String:
 	var e: Dictionary = Logs.ENTRIES.get(id, {})
-	return "[color=#ffcc55][b]%s[/b][/color]\n[color=#6a9c98]%s[/color]\n\n%s" % [e.get("title", id), e.get("author", ""), e.get("text", "")]
+	return "[color=#ffcc55][b]%s[/b][/color]\n[color=#6a9c98]%s[/color]\n\n%s" % [tr(e.get("title", id)), tr(e.get("author", "")), tr(e.get("text", ""))]
 
 
 func show_log(id: String) -> void:
-	var w := _window("REGISTRO", 760, 0)
+	var w := _window(tr("LOG"), 760, 0)
 	var v: VBoxContainer = w[1]
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(720, 400)
@@ -365,20 +390,21 @@ func show_log(id: String) -> void:
 	var r := _rich(_log_bbcode(id), 17)
 	r.custom_minimum_size.x = 700
 	scroll.add_child(r)
-	v.add_child(UITheme.button("Chiudi  [Esc]", close_panel))
+	v.add_child(UITheme.button(tr("Close  [Esc]"), close_panel))
 	_show(w[0], "log")
 
 
 # --- serrature / tastierino ------------------------------------------------------------
+## target.get_lock_info() restituisce testi già tradotti (title, keycard_name, note).
 func open_lock(target: Node) -> void:
 	var info: Dictionary = target.get_lock_info()
-	var w := _window("ACCESSO NEGATO — " + String(info.get("title", "")), 560, 0)
+	var w := _window(tr("ACCESS DENIED — %s") % String(info.get("title", "")), 560, 0)
 	var v: VBoxContainer = w[1]
 	if info.get("keycard", "") != "":
 		var has: bool = Game.has_keycard(info.keycard)
-		v.add_child(UITheme.label("Tessera: %s  %s" % [info.get("keycard_name", info.keycard), "(ce l'hai)" if has else "(non ce l'hai)"], 16, UITheme.GOOD if has else UITheme.DIM))
+		v.add_child(UITheme.label(tr("Keycard: %s  %s") % [info.get("keycard_name", info.keycard), tr("(in inventory)") if has else tr("(missing)")], 16, UITheme.GOOD if has else UITheme.DIM))
 	if info.has("code"):
-		v.add_child(UITheme.label("Tastierino — inserisci il codice a 4 cifre:", 16))
+		v.add_child(UITheme.label(tr("Keypad — enter the 4-digit code:"), 16))
 		var disp := LineEdit.new()
 		disp.max_length = 4
 		disp.alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -388,13 +414,13 @@ func open_lock(target: Node) -> void:
 		var submit := func(_t := ""):
 			if target.try_code(disp.text):
 				Sfx.play_ui("granted")
-				Game.notify("Codice accettato.", UITheme.GOOD)
+				Game.notify(tr("Code accepted."), UITheme.GOOD)
 				_clear()
 				Game.set_state(Game.State.PLAYING)
 			else:
 				Sfx.play_ui("denied")
 				disp.text = ""
-				disp.placeholder_text = "ERRATO"
+				disp.placeholder_text = tr("WRONG")
 		disp.text_submitted.connect(submit)
 		disp.text_changed.connect(func(t: String):
 			var clean := ""
@@ -426,19 +452,19 @@ func open_lock(target: Node) -> void:
 		var sk := Game.skill("hacking")
 		var lock_until: float = hack_lockouts.get(target.get_instance_id(), 0.0)
 		var now := Time.get_ticks_msec() / 1000.0
-		v.add_child(UITheme.label("Hacking richiesto: %d — il tuo: %d" % [req, sk], 16, UITheme.GOOD if sk >= req else UITheme.DANGER))
+		v.add_child(UITheme.label(tr("Hacking required: %d — yours: %d") % [req, sk], 16, UITheme.GOOD if sk >= req else UITheme.DANGER))
 		if info.has("note"):
 			v.add_child(UITheme.label(info.note, 13, UITheme.DIM, true))
-		var hb := UITheme.button("AVVIA INTRUSIONE", func(): open_hack(target, info))
+		var hb := UITheme.button(tr("START INTRUSION"), func(): open_hack(target, info))
 		if sk < req:
 			hb.disabled = true
-			hb.text = "Skill insufficiente"
+			hb.text = tr("Insufficient skill")
 		elif lock_until > now:
 			hb.disabled = true
-			hb.text = "Dispositivo in blocco (%ds)" % int(ceil(lock_until - now))
+			hb.text = tr("Device locked out (%ds)") % int(ceil(lock_until - now))
 		v.add_child(hb)
 	v.add_child(_spacer(4))
-	v.add_child(UITheme.button("Chiudi  [Esc]", close_panel))
+	v.add_child(UITheme.button(tr("Close  [Esc]"), close_panel))
 	_show(w[0], "lock")
 
 
@@ -461,9 +487,9 @@ func open_hack(target: Node, info: Dictionary) -> void:
 		for r in 3:
 			col.append(0)
 		_hk.grid.append(col)
-	var w := _window("INTRUSIONE — " + String(info.get("title", "")), 640, 0)
+	var w := _window(tr("INTRUSION — %s") % String(info.get("title", "")), 640, 0)
 	var v: VBoxContainer = w[1]
-	var help := UITheme.label("Crea un percorso da sinistra a destra. Ogni nodo deve toccare il precedente (anche in diagonale). I nodi falliti bruciano.", 14, UITheme.DIM, true)
+	var help := UITheme.label(tr("Build a path from left to right. Each node must touch the previous one (diagonals count). Failed nodes burn out."), 14, UITheme.DIM, true)
 	help.custom_minimum_size.x = 600
 	v.add_child(help)
 	var status := UITheme.label("", 16, UITheme.ACCENT)
@@ -487,7 +513,7 @@ func open_hack(target: Node, info: Dictionary) -> void:
 			grid.add_child(b)
 			btns[Vector2i(c, r)] = b
 	_hk["buttons"] = btns
-	v.add_child(UITheme.button("Interrompi  [Esc]", close_panel))
+	v.add_child(UITheme.button(tr("Abort  [Esc]"), close_panel))
 	_show(w[0], "hack")
 	_hack_refresh()
 
@@ -520,7 +546,7 @@ func _hack_refresh() -> void:
 				b.text = "◇"
 				b.add_theme_color_override("font_disabled_color", Color(0.25, 0.35, 0.35))
 	var left: int = _hk.max_fail - _hk.fails
-	_hk.status.text = "Probabilità per nodo: %d%%    Errori tollerati: %d" % [int(_hk.p * 100.0), max(left, 0)]
+	_hk.status.text = tr("Chance per node: %d%%    Mistakes left: %d") % [int(_hk.p * 100.0), max(left, 0)]
 	if not any and not _hk.done:
 		_hack_lose()
 
@@ -550,7 +576,7 @@ func _hack_click(c: int, r: int) -> void:
 func _hack_win() -> void:
 	_hk.done = true
 	_hack_refresh()
-	_hk.status.text = "ACCESSO OTTENUTO"
+	_hk.status.text = tr("ACCESS GRANTED")
 	_hk.status.add_theme_color_override("font_color", UITheme.GOOD)
 	Sfx.play_ui("hack_win")
 	var target: Node = _hk.target
@@ -565,7 +591,7 @@ func _hack_lose() -> void:
 	if _hk.get("done", false):
 		return
 	_hk.done = true
-	_hk.status.text = "INTRUSIONE FALLITA — dispositivo bloccato per 20 s"
+	_hk.status.text = tr("INTRUSION FAILED — device locked for 20s")
 	_hk.status.add_theme_color_override("font_color", UITheme.DANGER)
 	Sfx.play_ui("denied")
 	var target: Node = _hk.target
@@ -575,20 +601,20 @@ func _hack_lose() -> void:
 		_clear()
 		Game.set_state(Game.State.PLAYING)
 		if info.get("alarm_on_fail", false) and randf() < 0.6 and Game.player:
-			Game.raise_alarm(Game.player.global_position, "ICE: intrusione rilevata.")
+			Game.raise_alarm(Game.player.global_position, tr("ICE: intrusion detected."))
 		if is_instance_valid(target):
 			target.on_hack_result(false))
 
 
 # --- stazione di potenziamento --------------------------------------------------------
 func open_upgrade() -> void:
-	var w := _window("STAZIONE DI POTENZIAMENTO NEURALE", 760, 0)
+	var w := _window(tr("NEURAL UPGRADE STATION"), 760, 0)
 	var v: VBoxContainer = w[1]
-	v.add_child(UITheme.label("Cyber-moduli disponibili: %d" % Game.modules, 18, UITheme.ACCENT))
+	v.add_child(UITheme.label(tr("Cyber-modules available: %d") % Game.modules, 18, UITheme.ACCENT))
 	for s in Game.SKILLS:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
-		var n := UITheme.label(Game.SKILL_NAMES[s], 18)
+		var n := UITheme.label(Game.skill_name(s), 18)
 		n.custom_minimum_size.x = 190
 		row.add_child(n)
 		var pl := UITheme.label(UITheme.pips(Game.skill(s), Game.SKILL_MAX), 18, UITheme.GOOD)
@@ -597,26 +623,27 @@ func open_upgrade() -> void:
 		var lvl := Game.skill(s)
 		var b: Button
 		if lvl >= Game.SKILL_MAX:
-			b = UITheme.button("MASSIMO", func(): pass)
+			b = UITheme.button(tr("MAX"), func(): pass)
 			b.disabled = true
 		else:
 			var cost := Game.upgrade_cost(s)
-			b = UITheme.button("POTENZIA (%d moduli)" % cost, func():
+			b = UITheme.button(tr("UPGRADE (cost: %d)") % cost, func():
 				if Game.try_upgrade(s):
 					Sfx.play_ui("upgrade")
-					Game.notify("%s portata a livello %d." % [Game.SKILL_NAMES[s], Game.skill(s)], UITheme.GOOD)
+					Game.notify(tr("%s raised to level %d.") % [Game.skill_name(s), Game.skill(s)], UITheme.GOOD)
 				open_upgrade())
 			b.disabled = Game.modules < cost
 		row.add_child(b)
 		v.add_child(row)
-		var d := UITheme.label(Game.SKILL_DESC[s], 13, UITheme.DIM, true)
+		var d := UITheme.label(Game.skill_desc(s), 13, UITheme.DIM, true)
 		d.custom_minimum_size.x = 720
 		v.add_child(d)
-	v.add_child(UITheme.button("Chiudi  [Esc]", close_panel))
+	v.add_child(UITheme.button(tr("Close  [Esc]"), close_panel))
 	_show(w[0], "upgrade")
 
 
 # --- terminali ------------------------------------------------------------------------
+## Titolo ed etichette delle opzioni arrivano già tradotti dal terminale.
 func open_terminal(target: Node) -> void:
 	var w := _window(target.get_terminal_title(), 660, 0)
 	var v: VBoxContainer = w[1]
@@ -630,49 +657,49 @@ func open_terminal(target: Node) -> void:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		v.add_child(b)
 	v.add_child(_spacer(6))
-	v.add_child(UITheme.button("Disconnetti  [Esc]", close_panel))
+	v.add_child(UITheme.button(tr("Disconnect  [Esc]"), close_panel))
 	_show(w[0], "terminal")
 
 
 # --- fine partita ----------------------------------------------------------------------
 func _stats_text() -> String:
 	var st := Game.stats
-	return "Tempo: %s\nGuardie uccise: %d    Messe KO: %d    Borseggi: %d\nAllarmi: %d    Volte avvistato: %d    Hack riusciti: %d\nSegreti: %d/2    Crediti: %d ¢" % [
+	return tr("Time: %s\nGuards killed: %d    Knocked out: %d    Pickpockets: %d\nAlarms: %d    Times spotted: %d    Successful hacks: %d\nSecrets: %d/2    Credits: %d ¢") % [
 		Util.fmt_time(st.time), st.kills, st.kos, st.pickpockets, st.alarms, st.detections, st.hacks,
 		Game.secrets_found.size(), Game.credits]
 
 
 func show_death() -> void:
-	var w := _window("SEGNALE PERSO", 620, 0)
+	var w := _window(tr("SIGNAL LOST"), 620, 0)
 	var v: VBoxContainer = w[1]
 	w[1].get_child(0).add_theme_color_override("font_color", UITheme.DANGER)
-	v.add_child(UITheme.label("La Seraph Biotek ringrazia per la collaborazione involontaria.", 16, UITheme.DIM, true))
+	v.add_child(UITheme.label(tr("Seraph Biotek thanks you for your involuntary cooperation."), 16, UITheme.DIM, true))
 	v.add_child(_rich(_stats_text(), 15, 580))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
-	hb.add_child(UITheme.button("Ricomincia", Game.restart))
-	hb.add_child(UITheme.button("Esci", func(): get_tree().quit()))
+	hb.add_child(UITheme.button(tr("Restart"), Game.restart))
+	hb.add_child(UITheme.button(tr("Quit"), Game.quit_game))
 	v.add_child(hb)
 	_show(w[0], "death", false)
 
 
 func show_complete() -> void:
-	var w := _window("ESTRAZIONE RIUSCITA", 860, 0)
+	var w := _window(tr("EXTRACTION SUCCESSFUL"), 860, 0)
 	var v: VBoxContainer = w[1]
-	var txt := _rich("[color=#ffcc55]VESPER:[/color] Il nucleo è mio, il pagamento è già sul tuo conto. Bel lavoro, davvero.\n...Aspetta. Perché il nucleo sta [i]trasmettendo[/i]? Chi— ", 16)
+	var txt := _rich(tr("[color=#ffcc55]VESPER:[/color] The core is mine, and the payment's already in your account. Nice work, really.\n...Wait. Why is the core [i]transmitting[/i]? Who— "), 16)
 	txt.custom_minimum_size.x = 820
 	v.add_child(txt)
 	v.add_child(_spacer(4))
 	for o in Game.objectives:
 		var ok: bool = o.state == "done"
-		v.add_child(UITheme.label("%s %s" % ["[✓]" if ok else ("[✗]" if o.state == "failed" else "[ ]"), o.text], 15, UITheme.GOOD if ok else (UITheme.DANGER if o.state == "failed" else UITheme.DIM)))
+		v.add_child(UITheme.label("%s %s" % ["[✓]" if ok else ("[✗]" if o.state == "failed" else "[ ]"), tr(o.text)], 15, UITheme.GOOD if ok else (UITheme.DANGER if o.state == "failed" else UITheme.DIM)))
 	v.add_child(_spacer(4))
 	v.add_child(_rich(_stats_text(), 15, 580))
-	v.add_child(UITheme.label("VALUTAZIONE: " + Game.rating(), 22, UITheme.BORDER))
-	v.add_child(UITheme.label("Fine della vertical slice. Grazie per aver giocato.", 14, UITheme.DIM))
+	v.add_child(UITheme.label(tr("RATING: %s") % Game.rating(), 22, UITheme.BORDER))
+	v.add_child(UITheme.label(tr("End of the vertical slice. Thanks for playing."), 14, UITheme.DIM))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
-	hb.add_child(UITheme.button("Rigioca", Game.restart))
-	hb.add_child(UITheme.button("Esci", func(): get_tree().quit()))
+	hb.add_child(UITheme.button(tr("Play again"), Game.restart))
+	hb.add_child(UITheme.button(tr("Quit"), Game.quit_game))
 	v.add_child(hb)
 	_show(w[0], "complete", false)
