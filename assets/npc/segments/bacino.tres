@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_jrf2i"]
+
+[sub_resource type="Curve" id="Curve_6q2jk"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.0333333, 1, 1, Vector2(0.6, 0.98), -0.0333333, -0.45000005, 1, 1, Vector2(1, 0.8), -0.45000005, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_yogh6"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.0333333, 1, 1, Vector2(0.6, 0.98), -0.0333333, -0.45000005, 1, 1, Vector2(1, 0.8), -0.45000005, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "bacino"
+script = ExtResource("1_jrf2i")
+category = 4
+tags = PackedStringArray()
+width_curve = SubResource("Curve_yogh6")
+depth_curve = SubResource("Curve_6q2jk")
+radius_x = 0.162
+radius_z = 0.108
+rings = 3
+sides = 8
+extend_start = 0.15
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array(0.98, 1.05, 1, 1.04, 1, 1.04, 1, 1.05)
+color_slot = 2

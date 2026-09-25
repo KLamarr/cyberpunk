@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_peo65"]
+
+[sub_resource type="Curve" id="Curve_3t4wb"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1.12), 0.0, -0.17, 1, 1, Vector2(1, 0.95), -0.17, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_l7aar"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1.12), 0.0, -0.17, 1, 1, Vector2(1, 0.95), -0.17, 0.0, 1, 1]
+point_count = 2
+
+[resource]
+resource_name = "collo"
+script = ExtResource("1_peo65")
+category = 1
+tags = PackedStringArray()
+width_curve = SubResource("Curve_l7aar")
+depth_curve = SubResource("Curve_3t4wb")
+radius_x = 0.056
+radius_z = 0.06
+rings = 2
+extend_start = 0.25
+extend_end = 0.35
+section = PackedFloat32Array()
+band = 2
+color_slot = 0

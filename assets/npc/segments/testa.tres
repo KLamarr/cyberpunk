@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_o86ys"]
+
+[sub_resource type="Curve" id="Curve_uwau7"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0.18), 0.0, -0.22857144, 1, 1, Vector2(0.35, 0.1), -0.22857144, -0.22857143, 1, 1, Vector2(0.7, 0.02), -0.22857143, -0.06666666, 1, 1, Vector2(1, 0), -0.06666666, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_oemf5"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.62), 0.0, 1.6000001, 1, 1, Vector2(0.15, 0.86), 1.6000001, 0.46666667, 1, 1, Vector2(0.45, 1), 0.46666667, -0.1666667, 1, 1, Vector2(0.75, 0.95), -0.1666667, -1.4705881, 1, 1, Vector2(0.92, 0.7), -1.4705881, -5.0000005, 1, 1, Vector2(1, 0.3), -5.0000005, 0.0, 1, 1]
+point_count = 6
+
+[sub_resource type="Curve" id="Curve_f8pm3"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.55), 0.0, 1.6666665, 1, 1, Vector2(0.15, 0.8), 1.6666665, 0.6666667, 1, 1, Vector2(0.45, 1), 0.6666667, -0.111110985, 1, 1, Vector2(0.72, 0.97), -0.111110985, -1.3888892, 1, 1, Vector2(0.9, 0.72), -1.3888892, -4.199999, 1, 1, Vector2(1, 0.3), -4.199999, 0.0, 1, 1]
+point_count = 6
+
+[resource]
+resource_name = "testa"
+script = ExtResource("1_o86ys")
+category = 0
+tags = PackedStringArray()
+width_curve = SubResource("Curve_f8pm3")
+depth_curve = SubResource("Curve_oemf5")
+bulge_curve = SubResource("Curve_uwau7")
+radius_x = 0.085
+radius_z = 0.1
+rings = 6
+sides = 8
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array()
+band = 3
+color_slot = 0

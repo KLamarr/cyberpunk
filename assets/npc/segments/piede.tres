@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_u4bui"]
+
+[sub_resource type="Curve" id="Curve_tuacu"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.8571429, 1, 1, Vector2(0.35, 0.3), 0.8571429, -0.75, 1, 1, Vector2(0.75, 0), -0.75, -0.8000001, 1, 1, Vector2(1, -0.2), -0.8000001, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_ym78f"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.85), 0.0, 0.42857134, 1, 1, Vector2(0.35, 1), 0.42857134, -0.75, 1, 1, Vector2(0.75, 0.7), -0.75, -1.0, 1, 1, Vector2(1, 0.45), -1.0, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_n8gw1"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.8), 0.0, 0.2857142, 1, 1, Vector2(0.35, 0.9), 0.2857142, 0.25000006, 1, 1, Vector2(0.75, 1), 0.25000006, -1.0, 1, 1, Vector2(1, 0.75), -1.0, 0.0, 1, 1]
+point_count = 4
+
+[resource]
+resource_name = "piede"
+script = ExtResource("1_u4bui")
+category = 10
+tags = PackedStringArray()
+width_curve = SubResource("Curve_n8gw1")
+depth_curve = SubResource("Curve_ym78f")
+bulge_curve = SubResource("Curve_tuacu")
+radius_x = 0.042
+radius_z = 0.04
+extend_start = 0.08
+extend_end = 0.0
+cap_start = true
+cap_end = true
+smooth = false
+section = PackedFloat32Array()
+band = 4
+color_slot = 4

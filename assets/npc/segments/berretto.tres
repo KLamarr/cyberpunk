@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_wg8pd"]
+
+[sub_resource type="Curve" id="Curve_pi7b5"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.059999943, 1, 1, Vector2(0.5, 0.97), -0.059999943, -1.1400001, 1, 1, Vector2(1, 0.4), -1.1400001, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_vy50n"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.059999943, 1, 1, Vector2(0.5, 0.97), -0.059999943, -1.1400001, 1, 1, Vector2(1, 0.4), -1.1400001, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "berretto"
+script = ExtResource("1_wg8pd")
+tags = PackedStringArray("tecnico")
+width_curve = SubResource("Curve_vy50n")
+depth_curve = SubResource("Curve_pi7b5")
+radius_x = 0.095
+radius_z = 0.112
+rings = 3
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array()
+attach_offset = Vector3(0, 0.15, 0.008)
+attach_rotation = Vector3(12, 0, 0)
+attach_length = 0.085

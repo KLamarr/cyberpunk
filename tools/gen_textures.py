@@ -2,6 +2,7 @@
 """Genera le texture procedurali a bassa risoluzione (stile Dark Engine / System Shock 2).
 
 Uso:  python3 tools/gen_textures.py   (dalla cartella del progetto)
+      python3 tools/gen_textures.py npc_atlas   (solo le funzioni indicate)
 Tutte le texture sono 64x64 (o multipli) e vanno campionate con filtro nearest.
 Rigenerarle è deterministico (seed fisso).
 """
@@ -634,6 +635,86 @@ def skin_face():
     save("helmet", img)
 
 
+def npc_atlas():
+    """Atlante degli NPC (128x128): 8 fasce da 16 px, una per SegmentShape.Band.
+    Dettaglio quasi neutro: il colore lo danno i vertex color della tavolozza.
+    u = giro attorno al segmento (0 = dietro, 0.5 = davanti), v = lungo il segmento
+    (in alto l'estremità, in basso l'attacco). Ha un suo generatore casuale, così
+    rigenerarlo non cambia le altre texture."""
+    r = np.random.default_rng(2000)
+    w, bh = 128, 16
+    img = np.zeros((bh * 8, w, 3))
+
+    def noise(h, s):
+        return (r.random((h, w)) - 0.5) * s
+
+    # 0 tessuto: trama, cucitura davanti e dietro, pieghe
+    b = np.ones((bh, w)) * 196 + noise(bh, 14)
+    b[::2, ::2] += 6
+    b[:, 63:65] *= 0.72
+    b[:, 0] *= 0.8
+    b[:, 127] *= 0.8
+    fold = np.sin(np.arange(w) / w * np.pi * 6) * 7
+    b += fold[None, :]
+    img[0:16] = b[:, :, None]
+    # 1 armatura: piastre con bordi in rilievo e rivetti
+    b = np.ones((bh, w)) * 190 + noise(bh, 10)
+    for x0 in range(0, w, 32):
+        b[:, x0] *= 0.55
+        b[:, x0 + 1] *= 1.18
+    b[0, :] *= 1.2
+    b[1, :] *= 1.1
+    b[bh - 1, :] *= 0.55
+    b[7, :] *= 0.8
+    for x0 in range(0, w, 32):
+        for y0 in (3, 12):
+            b[y0, x0 + 4] = 235
+            b[y0 + 1, x0 + 5] = 110
+    img[16:32] = b[:, :, None]
+    # 2 pelle
+    b = np.ones((bh, w)) * 226 + noise(bh, 8)
+    img[32:48] = b[:, :, None]
+    # 3 volto: pelle con i tratti al centro (u = 0.5 = davanti)
+    b = np.ones((bh, w, 3)) * 226 + noise(bh, 8)[:, :, None]
+    c = 64
+    b[5, c - 7:c - 2] *= 0.78                   # sopracciglia
+    b[5, c + 2:c + 7] *= 0.78
+    for ex in (c - 6, c + 3):                   # occhi
+        b[7, ex:ex + 3] = (70, 62, 58)
+        b[7, ex + 1] = (28, 24, 22)
+        b[8, ex:ex + 3] *= 0.86
+    b[8:11, c - 1:c + 1] *= 0.9                 # naso
+    b[10, c - 2:c + 2] *= 0.8
+    b[12, c - 3:c + 3] = (150, 88, 82)          # bocca
+    b[13, c - 2:c + 2] *= 0.88
+    for ex in (32, 96):                         # orecchie
+        b[7:11, ex - 1:ex + 1] *= 0.8
+    img[48:64] = b
+    # 4 gomma: stivali e guanti, costolature
+    b = np.ones((bh, w)) * 150 + noise(bh, 18)
+    b[::3, :] *= 0.72
+    b[bh - 2:, :] *= 0.6
+    img[64:80] = b[:, :, None]
+    # 5 metallo spazzolato
+    b = np.ones((bh, w)) * 205 + noise(bh, 10)
+    b += (r.random((bh, 1)) - 0.5) * 40
+    b[2, :] += 30
+    img[80:96] = b[:, :, None]
+    # 6 luce (parti emissive): righe di scansione
+    b = np.ones((bh, w)) * 235
+    b[::2, :] = 190
+    b[:, ::8] *= 0.85
+    img[96:112] = b[:, :, None]
+    # 7 capelli: ciocche verticali
+    b = np.ones((bh, w)) * 180
+    strands = (r.random(w) - 0.5) * 70
+    b += strands[None, :]
+    b += noise(bh, 20)
+    b[bh - 1, :] *= 0.7
+    img[112:128] = b[:, :, None]
+    save("npc_atlas", img)
+
+
 def main():
     wall_panel(); wall_concrete(); wall_tech(); wall_tile()
     floor_tiles(); floor_tiles("floor_lab", (138, 146, 150), 0.6)
@@ -651,8 +732,15 @@ def main():
     sign("sign_store", "MAGAZZINO", 64, 16, (200, 200, 200))
     sign("sign_lift", "SERVIZIO 14", 64, 16, (80, 200, 240))
     poster(); vending(); keypad(); graffiti(); locker(); desk(); glass_blue(); pipes(); skin_face()
+    npc_atlas()
     print("texture generate in", os.path.normpath(OUT))
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    # python3 tools/gen_textures.py npc_atlas  -> rigenera solo le texture indicate
+    if len(sys.argv) > 1:
+        for name in sys.argv[1:]:
+            globals()[name]()
+    else:
+        main()

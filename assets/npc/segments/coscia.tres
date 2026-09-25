@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_4kcpl"]
+
+[sub_resource type="Curve" id="Curve_1cxf0"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13333334, 1, 1, Vector2(0.45, 0.94), -0.13333334, -0.43636364, 1, 1, Vector2(1, 0.7), -0.43636364, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_jeiwy"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13333334, 1, 1, Vector2(0.45, 0.94), -0.13333334, -0.43636364, 1, 1, Vector2(1, 0.7), -0.43636364, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "coscia"
+script = ExtResource("1_4kcpl")
+category = 8
+tags = PackedStringArray()
+width_curve = SubResource("Curve_jeiwy")
+depth_curve = SubResource("Curve_1cxf0")
+radius_z = 0.086
+sides = 7
+extend_start = 0.12
+extend_end = 0.08
+cap_start = true
+section = PackedFloat32Array()
+color_slot = 2

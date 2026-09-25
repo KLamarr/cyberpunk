@@ -1,0 +1,157 @@
+[gd_resource type="Resource" script_class="NPCDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/npc_attachment.gd" id="1_io7ta"]
+[ext_resource type="Resource" path="res://assets/npc/segments/impianto_calma.tres" id="2_r6bmv"]
+[ext_resource type="Resource" path="res://assets/npc/segments/colletto.tres" id="3_irpxs"]
+[ext_resource type="Resource" path="res://assets/npc/segments/cintura.tres" id="4_7swvs"]
+[ext_resource type="Resource" path="res://assets/npc/segments/pistola.tres" id="5_jyy3b"]
+[ext_resource type="Resource" path="res://assets/npc/segments/capelli.tres" id="6_puu7q"]
+[ext_resource type="Resource" path="res://assets/npc/segments/cuffia.tres" id="7_xsptx"]
+[ext_resource type="Script" path="res://scripts/npc/npc_part.gd" id="8_gm7ey"]
+[ext_resource type="Resource" path="res://assets/npc/segments/testa.tres" id="9_c4wf8"]
+[ext_resource type="Resource" path="res://assets/npc/segments/collo.tres" id="10_llp55"]
+[ext_resource type="Resource" path="res://assets/npc/segments/torace_armatura.tres" id="11_ro85c"]
+[ext_resource type="Resource" path="res://assets/npc/segments/addome_pancia.tres" id="12_0wd8d"]
+[ext_resource type="Resource" path="res://assets/npc/segments/bacino.tres" id="13_rjc06"]
+[ext_resource type="Resource" path="res://assets/npc/segments/braccio.tres" id="14_gn7rv"]
+[ext_resource type="Resource" path="res://assets/npc/segments/avambraccio_guanto.tres" id="15_lkfbh"]
+[ext_resource type="Resource" path="res://assets/npc/segments/mano_guanto.tres" id="16_csleg"]
+[ext_resource type="Resource" path="res://assets/npc/segments/coscia.tres" id="17_s5ml0"]
+[ext_resource type="Resource" path="res://assets/npc/segments/stinco_stivale.tres" id="18_1ub3q"]
+[ext_resource type="Resource" path="res://assets/npc/segments/piede_stivale.tres" id="19_7seao"]
+[ext_resource type="Script" path="res://scripts/npc/npc_definition.gd" id="20_y6oyq"]
+
+[sub_resource type="Resource" id="Resource_rjn45"]
+script = ExtResource("1_io7ta")
+label = "Impianto CALMA"
+shape = ExtResource("2_r6bmv")
+offset = Vector3(0, 0.07, 0.095)
+rotation_deg = Vector3(90, 0, 0)
+length = 0.032
+
+[sub_resource type="Resource" id="Resource_omo4v"]
+script = ExtResource("1_io7ta")
+label = "Colletto"
+shape = ExtResource("3_irpxs")
+bone = "neck"
+offset = Vector3(0, -0.02, 0)
+length = 0.07
+
+[sub_resource type="Resource" id="Resource_ea3gd"]
+script = ExtResource("1_io7ta")
+label = "Cintura"
+shape = ExtResource("4_7swvs")
+bone = "hips"
+length = 0.055
+
+[sub_resource type="Resource" id="Resource_q0p0f"]
+script = ExtResource("1_io7ta")
+label = "Pistola"
+shape = ExtResource("5_jyy3b")
+bone = "hand_r"
+offset = Vector3(0, -0.08, -0.012)
+rotation_deg = Vector3(180, 0, 0)
+length = 0.17
+
+[sub_resource type="Resource" id="Resource_gixfo"]
+script = ExtResource("1_io7ta")
+label = "Capelli"
+shape = ExtResource("6_puu7q")
+offset = Vector3(0, 0.125, 0.018)
+rotation_deg = Vector3(28, 0, 0)
+length = 0.105
+
+[sub_resource type="Resource" id="Resource_yaefb"]
+script = ExtResource("1_io7ta")
+label = "Cuffia"
+shape = ExtResource("7_xsptx")
+mirror = true
+offset = Vector3(-0.078, 0.11, 0)
+rotation_deg = Vector3(0, 0, 90)
+length = 0.03
+
+[sub_resource type="Resource" id="Resource_sw03m"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("9_c4wf8")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_3jua5"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("10_llp55")
+thickness = 0.96
+
+[sub_resource type="Resource" id="Resource_duw3g"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("11_ro85c")
+thickness = 0.9400000000000001
+
+[sub_resource type="Resource" id="Resource_fq3nd"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("12_0wd8d")
+thickness = 1.11
+
+[sub_resource type="Resource" id="Resource_hv5cn"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("13_rjc06")
+thickness = 1.02
+
+[sub_resource type="Resource" id="Resource_mu1ib"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("14_gn7rv")
+thickness = 0.99
+
+[sub_resource type="Resource" id="Resource_twurm"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("15_lkfbh")
+thickness = 0.9500000000000001
+
+[sub_resource type="Resource" id="Resource_3xxck"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("16_csleg")
+thickness = 0.98
+
+[sub_resource type="Resource" id="Resource_fg5qc"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("17_s5ml0")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_ea8wf"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("18_1ub3q")
+thickness = 1.04
+
+[sub_resource type="Resource" id="Resource_2ggne"]
+script = ExtResource("8_gm7ey")
+shape = ExtResource("19_7seao")
+thickness = 1.02
+
+[resource]
+script = ExtResource("20_y6oyq")
+display_name = "Op. Hale"
+random_seed = 1402
+height = 1.74
+mass = 1.12
+shoulders = 1.06
+arm_length = 1.01
+leg_length = 1.01
+head_size = 0.99
+neck_length = 1.1
+posture = 0.35
+palette = PackedColorArray(0.86, 0.66, 0.52, 1, 0.15034108, 0.17038655, 0.21047749, 1, 0.08640486, 0.0960054, 0.11520647, 1, 0.22959656, 0.2487296, 0.2869957, 1, 0.060806207, 0.060806207, 0.07094058, 1, 0.55, 0.42, 0.25, 1, 0.3, 0.9, 1, 1)
+parts = Dictionary[String, ExtResource("8_gm7ey")]({
+"addome": SubResource("Resource_fq3nd"),
+"avambraccio": SubResource("Resource_twurm"),
+"bacino": SubResource("Resource_hv5cn"),
+"braccio": SubResource("Resource_mu1ib"),
+"collo": SubResource("Resource_3jua5"),
+"coscia": SubResource("Resource_fg5qc"),
+"mano": SubResource("Resource_3xxck"),
+"piede": SubResource("Resource_2ggne"),
+"stinco": SubResource("Resource_ea8wf"),
+"testa": SubResource("Resource_sw03m"),
+"torace": SubResource("Resource_duw3g")
+})
+attachments = Array[ExtResource("1_io7ta")]([SubResource("Resource_rjn45"), SubResource("Resource_omo4v"), SubResource("Resource_ea3gd"), SubResource("Resource_q0p0f"), SubResource("Resource_gixfo"), SubResource("Resource_yaefb")])
+ammo = 4
+medpatch = 1
+idle_barks = PackedStringArray("Telecamera tre di nuovo in ritardo. Ma chi le ha installate?", "...lo senti anche tu, il ronzio?", "Altre sei ore di turno.", "Mi fa male la testa. Sempre dopo l\'aggiornamento.")

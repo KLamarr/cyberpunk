@@ -47,3 +47,9 @@ jobs:
 
       - name: Test bottoni UI
         run: godot --headless --path . -- --autotest --ui
+
+      - name: Test generatore di NPC
+        run: godot --headless --path . -- --autotest --npc
+
+      - name: Test del creatore di NPC nell'editor
+        run: NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .

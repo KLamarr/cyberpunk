@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_f0ei0"]
+
+[sub_resource type="Curve" id="Curve_py4c5"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.8571429, 1, 1, Vector2(0.35, 0.3), 0.8571429, -0.75, 1, 1, Vector2(0.75, 0), -0.75, -0.8000001, 1, 1, Vector2(1, -0.2), -0.8000001, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_y7jkn"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.9), 0.0, 0.28571436, 1, 1, Vector2(0.35, 1), 0.28571436, -0.625, 1, 1, Vector2(0.75, 0.75), -0.625, -1.0, 1, 1, Vector2(1, 0.5), -1.0, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_i7owk"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.85), 0.0, 0.19999999, 1, 1, Vector2(0.35, 0.92), 0.19999999, 0.19999996, 1, 1, Vector2(0.75, 1), 0.19999996, -0.5999999, 1, 1, Vector2(1, 0.85), -0.5999999, 0.0, 1, 1]
+point_count = 4
+
+[resource]
+resource_name = "piede_stivale"
+script = ExtResource("1_f0ei0")
+category = 10
+tags = PackedStringArray("guardia", "tecnico")
+width_curve = SubResource("Curve_i7owk")
+depth_curve = SubResource("Curve_y7jkn")
+bulge_curve = SubResource("Curve_py4c5")
+radius_x = 0.05
+radius_z = 0.048
+extend_start = 0.08
+extend_end = 0.0
+cap_start = true
+cap_end = true
+smooth = false
+section = PackedFloat32Array()
+band = 4
+color_slot = 4

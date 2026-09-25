@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_m3j7n"]
+
+[sub_resource type="Curve" id="Curve_44rk7"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.8), 0.0, 0.44444442, 1, 1, Vector2(0.45, 1), 0.44444442, -0.7272726, 1, 1, Vector2(1, 0.6), -0.7272726, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_fi21b"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.111111134, 1, 1, Vector2(0.45, 1), 0.111111134, -0.7272726, 1, 1, Vector2(1, 0.6), -0.7272726, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "mano"
+script = ExtResource("1_m3j7n")
+category = 7
+tags = PackedStringArray()
+width_curve = SubResource("Curve_fi21b")
+depth_curve = SubResource("Curve_44rk7")
+radius_x = 0.022
+radius_z = 0.042
+rings = 3
+extend_start = 0.12
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array()
+band = 2
+color_slot = 0

@@ -417,23 +417,29 @@ func _items() -> void:
 
 
 # --- guardie ----------------------------------------------------------------------
+## Chi sono (aspetto, sensi, bottino, battute) sta nelle definizioni fatte col creatore di
+## NPC (assets/npc/characters); qui si decide solo dove stanno e che giro fanno.
+func _npc(id: String) -> NPCDefinition:
+	return load(NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres"))
+
+
 func _guards() -> void:
-	_add(Guard.new().setup("Ag. Ruiz", Vector3(-7, 0, -3.5), 0, [
+	_add(Guard.new().setup_def(_npc("ruiz"), Vector3(-7, 0, -3.5), 0, [
 		[Vector3(-7, 0, -3.5), 2.5], [Vector3(0, 0, -9), 3.0], [Vector3(7, 0, -3.5), 3.0],
 		[Vector3(7.5, 0, 5.8), 2.0], [Vector3(-7.5, 0, 5.8), 3.0],
-	], {"keycard": ["sicurezza", "Tessera Sicurezza"], "ammo": 6, "credits": 30}))
-	_add(Guard.new().setup("Op. Hale", Vector3(-16.3, 0, 0.6), 90, [], {"ammo": 4, "credits": 20, "medpatch": 1}))
-	_add(Guard.new().setup("Ag. Kovač", Vector3(-2.8, 0, -19.5), 180, [
+	]))
+	_add(Guard.new().setup_def(_npc("hale"), Vector3(-16.3, 0, 0.6), 90))
+	_add(Guard.new().setup_def(_npc("kovac"), Vector3(-2.8, 0, -19.5), 180, [
 		[Vector3(-2.8, 0, -19.5), 3.0], [Vector3(-2.8, 0, -26.2), 2.0], [Vector3(2.8, 0, -26.2), 4.0],
 		[Vector3(2.8, 0, -19.5), 2.0],
-	], {"ammo": 6, "credits": 15}))
+	]))
 
 
 func _spawn_reinforcement() -> void:
-	var g := Guard.new().setup("Ag. Mori", Vector3(6.0, 0, 12.5), 180, [
+	var g := Guard.new().setup_def(_npc("mori"), Vector3(6.0, 0, 12.5), 180, [
 		[Vector3(6, 0, 10.5), 1.0], [Vector3(6, 0, 4), 2.0], [Vector3(-3, 0, 2), 2.0],
 		[Vector3(6, 0, 4), 1.0], [Vector3(6, 0, 11), 2.0], [Vector3(9.5, 0, 15), 2.5],
-	], {"ammo": 8, "credits": 10})
+	])
 	_add(g)
 	g.alertness = 1.0
 

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/segment_shape.gd" id="1_2sem5"]
+
+[sub_resource type="Curve" id="Curve_l2nl4"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.100000024, 1, 1, Vector2(0.5, 1), 0.100000024, -0.62499994, 1, 1, Vector2(0.82, 0.8), -0.62499994, -2.5, 1, 1, Vector2(1, 0.35), -2.5, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_mddre"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.100000024, 1, 1, Vector2(0.5, 1), 0.100000024, -0.56250006, 1, 1, Vector2(0.82, 0.82), -0.56250006, -2.611111, 1, 1, Vector2(1, 0.35), -2.611111, 0.0, 1, 1]
+point_count = 4
+
+[resource]
+resource_name = "capelli_lunghi"
+script = ExtResource("1_2sem5")
+tags = PackedStringArray()
+width_curve = SubResource("Curve_mddre")
+depth_curve = SubResource("Curve_l2nl4")
+radius_x = 0.096
+radius_z = 0.112
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array()
+band = 7
+color_slot = 5
+attach_offset = Vector3(0, 0.07, 0.035)
+attach_rotation = Vector3(38, 0, 0)
+attach_length = 0.16
