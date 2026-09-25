@@ -1,0 +1,23 @@
+# Cache e import di Godot 4 (rigenerati all'apertura del progetto)
+.godot/
+*.tmp
+
+# Export e build
+build/
+export/
+*.pck
+*.exe
+*.x86_64
+
+# Python (script di generazione in tools/)
+__pycache__/
+*.pyc
+.venv/
+
+# Editor e sistema operativo
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

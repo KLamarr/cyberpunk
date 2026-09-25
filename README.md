@@ -1,0 +1,180 @@
+# PROTOCOLLO SERAPH — vertical slice
+
+Immersive sim FPS/RPG cyberpunk in **Godot 4.7**, con grafica in stile **Dark Engine**
+(il motore di *Thief* e *System Shock 2*): texture a 64 px con filtro nearest, rendering
+a 640×360 con dithering a 15 bit, geometria scavata a brush, pozze di luce e buio vero.
+
+Arcologia Nysa, livello 14, turno di notte. Sei salito con l'ascensore di servizio
+nell'ala laboratori della Seraph Biotek: devi estrarre il nucleo dati **SERAPH-7** dal
+Laboratorio C e tornare all'ascensore. Come ci arrivi è affar tuo.
+
+| | |
+|---|---|
+| ![Ascensore](docs/screenshots/01_ascensore.png) | ![Laboratorio](docs/screenshots/07_nucleo.png) |
+| ![Hall in lockdown](docs/screenshots/08_lockdown_hall.png) | ![Hacking](docs/screenshots/ui_05_hacking.png) |
+
+## Avvio
+
+1. Installa **Godot 4.7.x** (testato su 4.7.2 stable, build standard, non serve .NET).
+2. Apri `project.godot` dall'editor: al primo avvio importa texture e suoni (pochi secondi).
+3. Premi **F5**. Nel menu iniziale distribuisci 4 punti fra le skill e inizia.
+
+Una partita dura 10–25 minuti. Nessun asset esterno: texture e suoni sono generati dagli
+script in `tools/` e sono già inclusi.
+
+## Comandi
+
+| Tasto | Azione |
+|---|---|
+| WASD | movimento |
+| Shift | corsa (rumorosa) |
+| Ctrl (tieni) / C (alterna) | accovacciati |
+| Spazio | salto; davanti a una sporgenza o a un condotto ti ci arrampichi (mantle) |
+| Q / E | sporgiti a sinistra / destra |
+| Mouse sinistro | attacca (chiave inglese / pistola), lancia l'oggetto in mano |
+| Mouse destro o F | **frob**: usa, raccogli, leggi, apri, perquisisci, posa |
+| 1 / 2, rotella | chiave inglese / pistola |
+| R | ricarica |
+| H | medipatch |
+| Tab | PDA (obiettivi, registri, inventario, personaggio) |
+| Esc | pausa e opzioni |
+| F2 / F3 | risoluzione interna (1280×720 → 320×180) / dithering |
+
+I comandi sono nella Mappa input del progetto e si possono rimappare dall'editor.
+
+## Cosa c'è nella slice
+
+**Mappa** — ascensore di servizio, corridoio di servizio, hall a doppia altezza con
+telecamera, sala sicurezza (con finestra sulla hall), magazzino, sala relax con stazione
+di potenziamento, corridoio con torretta, Laboratorio C con il server, rete di condotti
+di ventilazione con un ramo segreto.
+
+**Sistemi**
+- **Visibilità dalla luce**: ogni luce contribuisce con raycast di occlusione; la gemma in
+  basso mostra quanto sei visibile. Accovacciarsi e stare fermi aiuta, correre no. Le
+  plafoniere si possono spegnere (interruttori) o rompere (rumore di vetri).
+- **Rumore**: i passi dipendono da superficie (grata, metallo, cemento, moquette), velocità
+  e skill; urti di oggetti, spari, porte, grate e corpi che cadono sono eventi udibili,
+  attenuati dai muri. Gli archi accanto alla gemma mostrano quanto rumore fai.
+- **Guardie**: percezione continua (awareness) con cono visivo e udito; stati pattuglia →
+  sospetto/indagine → combattimento → ricerca; si chiamano a vicenda, trovano i corpi,
+  aprono le porte (hanno l'accesso). Visiera e icona sopra la testa mostrano lo stato.
+- **Stealth "non letale"**: colpo di chiave inglese alle spalle = KO; perquisizione e
+  borseggio; trasporto dei corpi per nasconderli.
+- **Sicurezza**: telecamere (il loro cono di luce ti illumina davvero) che fanno scattare
+  l'allarme; torretta a sensori ottici; terminale di sicurezza per spegnerle.
+- **Serrature**: tessere, tastierini con codice, hacking. Il minigioco di hacking (alla
+  System Shock 2) ha probabilità per nodo che dipendono dalla skill; fallire blocca il
+  dispositivo e sui sistemi protetti può far scattare l'allarme.
+- **RPG**: 4 skill (Hacking, Armi da fuoco, Forza, Furtività) con effetti concreti su
+  porte accessibili, grate, precisione, rumore, visibilità, salute. I cyber-moduli
+  (trovati, o ricompense degli obiettivi) si spendono alla stazione di potenziamento.
+- **Mondo fisico**: lattine, bottiglie e scatole si raccolgono e si lanciano per
+  distrarre; mantle su casse e dentro i condotti.
+- **Narrativa ambientale**: 8 registri (datapad e terminali) raccontano cosa sta facendo
+  il Dr. Okafor con gli impianti CALMA; sottotitoli per Vesper, il PA e le battute delle
+  guardie.
+- **Struttura di missione**: obiettivo principale + 3 opzionali (Okafor, nessuna vittima,
+  nessun allarme), lockdown con rinforzo dopo il furto del nucleo, 2 segreti,
+  schermata finale con statistiche e valutazione.
+
+## Soluzioni (spoiler)
+
+| Ostacolo | Modi per superarlo |
+|---|---|
+| Hall sorvegliata | ombre lungo la parete est; spegnere le telecamere dal terminale; sparare alla telecamera (rumoroso); correre il rischio |
+| Porta della sala sicurezza | codice **0451** (nel promemoria in sala relax); Tessera Sicurezza (borseggio o KO sulla guardia della hall); hack livello 1 |
+| Guardia in sala sicurezza | alle spalle col colpo di chiave; attirarla lontano con un rumore; ignorarla |
+| Terminale di sicurezza | Tessera Sicurezza o hack livello 1 → spegne telecamere e torretta |
+| Torretta del corridoio | terminale; pannello di manutenzione (Hacking 2 la spegne, Hacking 3 la mette contro le guardie); distruggerla a colpi di pistola; rompere le luci del corridoio (pistola, o chiave inglese da sotto): con i sensori ottici al buio vede solo nel suo fascio, che puoi schivare accovacciato |
+| Porta del Laboratorio C | Tessera Laboratorio (sul tavolino accanto all'armadietto, in sala sicurezza); hack livello 2; oppure non usarla affatto |
+| Condotto | grata della sala relax (Forza 1 per toglierla in silenzio, altrimenti sfondala) → condotto → Laboratorio, saltando torretta, porta e telecamera del corridoio |
+| Ritorno dopo il lockdown | un rinforzo pattuglia il corridoio di servizio: evitalo, mettilo KO o combatti |
+
+## Come è fatto il look Dark Engine
+
+- **Brush sottrattivi** (`scripts/world/level_builder.gd`): si parte da un blocco solido e
+  si scavano volumi d'aria con CSG, come in DromEd. Il CSG viene "compilato" in mesh
+  statiche e una collisione trimesh.
+- **Zone di luce**: ogni triangolo è assegnato alla zona (stanza) del brush che l'ha
+  generato e ogni zona è un bit dei render layer. Le luci illuminano solo la loro zona:
+  la luce non attraversa i muri anche senza ombre, come con le lightmap del Dark Engine.
+  Guardie e oggetti aggiornano il proprio layer in base alla stanza in cui si trovano.
+- **Texture a densità costante**: lo shader `shaders/level_surface.gdshader` proietta in
+  spazio mondo texture diverse per pavimento, soffitto e pareti, filtro nearest + mipmap.
+- **Bassa risoluzione**: il mondo è renderizzato in un `SubViewport` (default 640×360) e
+  scalato senza filtro; `shaders/retro_post.gdshader` quantizza a 32 livelli per canale con
+  dithering Bayer 4×4. HUD e menu restano a piena risoluzione.
+- **Renderer Compatibility** (OpenGL 3.3): gira ovunque; poche luci con ombre nella hall
+  e nel laboratorio, il resto a zone.
+
+## Struttura del progetto
+
+```
+scenes/main.tscn            scena principale (tutto il resto è costruito da codice)
+scripts/main.gd             SubViewport retro, HUD, UI, input globale
+scripts/core/game.gd        autoload Game: skill, inventario, obiettivi, rumore, allarmi
+scripts/core/sfx.gd         autoload Sfx: suoni 2D/3D e loop
+scripts/core/util.gd        materiali nearest, primitive, raycast, evidenziazione frob
+scripts/core/effects.gd     scintille, polvere, traccianti, lampi
+scripts/world/level_builder.gd   brush → mesh a zone → collisione
+scripts/world/level_seraph.gd    LA MAPPA: brush, luci, porte, oggetti, guardie, script di missione
+scripts/world/*.gd          porte, luci, pickup, datapad, oggetti fisici, grate, terminale,
+                            stazione di potenziamento, nucleo, ascensore, interruttori, trigger
+scripts/actors/player.gd    controller, mantle, lean, visibilità, passi, armi, frob, trasporto
+scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi)
+scripts/actors/security_camera.gd, turret.gd, turret_panel.gd
+scripts/ui/hud.gd           gemma di luce, rumore, salute, arma, prompt, sottotitoli
+scripts/ui/ui_root.gd       menu, PDA, serrature/tastierino, hacking, potenziamento, terminali, fine
+scripts/data/logs.gd        testi dei registri
+tools/gen_textures.py       generatore delle texture (Python + numpy + Pillow)
+tools/gen_sounds.py         generatore degli effetti sonori
+tools/autotest.gd           test end-to-end
+```
+
+## Estendere la mappa
+
+Tutto il livello è in `level_seraph.gd`. Una nuova stanza collegata alla hall:
+
+```gdscript
+# in _carve(): volume d'aria della stanza e passaggio nel muro (1 m)
+b.carve(Vector3(-18, 0, -12), Vector3(-11, 3.5, -6), "office", Z_NUOVA)
+b.carve(Vector3(-11, 0, -5.2), Vector3(-10, 2.5, -3.6), "frame", Z_LOBBY | Z_NUOVA)
+# in _lights():
+light(Vector3(-14.5, 3.45, -9), Color(0.8, 0.9, 1.0), 1.5, 6.0, Z_NUOVA)
+# in _doors(): porta con codice e hack
+_add(SlidingDoor.new().setup(Vector3(-10.5, 0, -4.4), 90, 1.6, 2.5, {"title": "Archivio", "code": "1234", "hack": 1, "difficulty": 1}))
+# in _guards(): nome, posizione, direzione, percorso [[punto, attesa]], bottino
+_add(Guard.new().setup("Ag. Nuova", Vector3(-15, 0, -9), 0, [[Vector3(-15, 0, -9), 3.0], [Vector3(-12, 0, -9), 2.0]], {"ammo": 4}))
+```
+
+Le zone sono bit (`const Z_NUOVA := 512`). I registri si aggiungono in `scripts/data/logs.gd`
+e si piazzano con `Datapad.new().setup(pos, "id")`. Un oggetto qualsiasi diventa
+interattivo se ha i metodi `get_frob_text()` e `frob(player)`; un bersaglio se ha
+`take_damage(amount, hit_pos, dir, kind)`; una serratura se espone `get_lock_info()`,
+`try_code()` e `on_hack_result()`.
+
+## Test automatico
+
+```
+godot --headless --path . -- --autotest            # 63 controlli: navmesh, frob, porte, codice,
+                                                   # hacking, telecamera, torretta, IA, KO, borseggio,
+                                                   # lancio, mantle nel condotto, lockdown, estrazione
+godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
+godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino
+godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
+```
+
+Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sounds.py`
+(servono `numpy` e `Pillow`), poi riapri l'editor per il reimport.
+
+## Limiti noti / prossimi passi
+
+- Niente salvataggio/caricamento (il classico quicksave F5/F9 è il prossimo pezzo naturale).
+- Guardie e armi sono modelli a primitive con animazione procedurale: vanno sostituiti con
+  modelli low-poly animati.
+- Il suono si attenua con raycast diretti; il Dark Engine propagava il suono lungo le stanze
+  (portali): con le zone già presenti si può fare un grafo stanza→stanza.
+- Una sola arma da fuoco e nessun tipo di munizione alternativo.
+- Il renderer Compatibility limita le ombre dinamiche; con Forward+ si possono accendere su
+  più luci (il progetto funziona anche lì, basta cambiare il renderer).

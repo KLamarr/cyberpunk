@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+
+      - name: Installa Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q Godot_*.zip
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          rm Godot_*.zip
+
+      - name: Aggiungi Godot al PATH
+        run: echo "$HOME/godot" >> "$GITHUB_PATH"
+
+      - name: Importa le risorse
+        run: godot --headless --path . --import
+
+      - name: Test end-to-end (63 controlli)
+        run: godot --headless --path . -- --autotest
+
+      - name: Test morte e riavvio
+        run: godot --headless --path . -- --autotest --death
+
+      - name: Test bottoni UI
+        run: godot --headless --path . -- --autotest --ui

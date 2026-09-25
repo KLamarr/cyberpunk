@@ -1,0 +1,43 @@
+class_name Datapad
+extends StaticBody3D
+## Datapad (si raccoglie e finisce nel PDA) o terminale a muro (resta, si rilegge).
+
+var log_id := ""
+var wall_terminal := false
+
+
+func setup(pos: Vector3, id: String, yaw_deg := 0.0, is_wall := false) -> Datapad:
+	position = pos
+	rotation_degrees.y = yaw_deg
+	log_id = id
+	wall_terminal = is_wall
+	return self
+
+
+func _ready() -> void:
+	collision_layer = Game.L_INTERACT
+	collision_mask = 0
+	if wall_terminal:
+		Util.box(self, Vector3(0.62, 0.46, 0.08), Vector3.ZERO, Util.color_mat(Color(0.2, 0.22, 0.24)))
+		var scr := Util.box(self, Vector3(0.52, 0.36, 0.02), Vector3(0, 0, 0.045), Util.mat("screen_green", {"fit": Vector3(0.52, 0.36, 0.02), "emission": 1.4}))
+		scr.set_meta("keep_layers", true)
+		Util.add_box_collider(self, Vector3(0.62, 0.46, 0.12))
+	else:
+		Util.box(self, Vector3(0.22, 0.02, 0.15), Vector3(0, 0.01, 0), Util.color_mat(Color(0.12, 0.13, 0.14)))
+		Util.box(self, Vector3(0.18, 0.022, 0.11), Vector3(0, 0.012, 0), Util.mat("screen_green", {"fit": Vector3(0.18, 0.02, 0.11), "emission": 1.2}))
+		var cs := CollisionShape3D.new()
+		var sph := SphereShape3D.new()
+		sph.radius = 0.2
+		cs.shape = sph
+		add_child(cs)
+
+
+func get_frob_text() -> String:
+	var t: String = Logs.ENTRIES.get(log_id, {}).get("title", "")
+	return ("Leggi terminale: " if wall_terminal else "Leggi datapad: ") + t
+
+
+func frob(_player: Node) -> void:
+	Game.read_log(log_id)
+	if not wall_terminal:
+		queue_free()

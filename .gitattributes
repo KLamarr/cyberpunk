@@ -1,0 +1,25 @@
+# Fine riga uniformi su tutti i sistemi operativi
+* text=auto eol=lf
+
+# File di Godot e script: sempre testo
+*.gd       text eol=lf
+*.gdshader text eol=lf
+*.tscn     text eol=lf
+*.tres     text eol=lf
+*.godot    text eol=lf
+*.import   text eol=lf
+*.cfg      text eol=lf
+*.py       text eol=lf
+*.md       text eol=lf
+
+# Asset binari: nessuna conversione e nessun diff testuale
+*.png  binary
+*.jpg  binary
+*.webp binary
+*.wav  binary
+*.ogg  binary
+*.mp3  binary
+*.glb  binary
+*.gltf binary
+*.ttf  binary
+*.otf  binary
