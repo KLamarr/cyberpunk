@@ -149,8 +149,11 @@ i livelli che lo usano) e continua sulla copia; salvare sopra un file già usato
 livello aperto aggiorna i dati senza staccare il livello dal file. Il Ctrl+S dell'editor,
 come fa Godot con tutte le risorse modificate, salva anche l'NPC aperto (se ha già un
 file) e le forme di libreria cambiate con «Modifica la libreria»; un NPC mai salvato resta
-da salvare, con un avviso nell'Output. Aprire un altro NPC azzera la cronologia di
-annulla globale, così un Ctrl+Z non può cambiare l'NPC appena chiuso.
+da salvare, con un avviso nell'Output (chiudendo l'editor, «Salva» gli dà un nome libero
+in `assets/npc/characters/`). Se l'NPC è stato modificato dagli Inspector integrati,
+aprirne un altro azzera la cronologia di annulla globale, così un Ctrl+Z non può cambiare
+l'NPC appena chiuso. Una forma di libreria cambiata fuori dal creatore (Inspector
+principale) resta una modifica normale di Godot: Scarta non la tocca.
 
 **Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC,
 e nel creatore sono **bloccate**: la nota dice quali personaggi usano la forma.

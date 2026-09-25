@@ -60,7 +60,8 @@ func _edit(object: Object) -> void:
 func _get_unsaved_status(for_scene: String) -> String:
 	if for_scene == "" and is_instance_valid(panel) and panel.dirty and panel.def != null:
 		if panel.def_path == "":
-			return "L'NPC «%s» non è mai stato salvato e andrebbe perso: Annulla e usa Salva nella scheda NPC." % panel.def.display_name
+			panel.quit_prompt_time = Time.get_ticks_msec()
+			return "L'NPC «%s» non è mai stato salvato: «Salva» lo salverà come %s." % [panel.def.display_name, panel.free_character_path().get_file()]
 		return "Salvare le modifiche all'NPC «%s»?" % panel.def.display_name
 	return ""
 

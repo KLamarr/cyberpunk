@@ -79,6 +79,11 @@ var _dialog_mode := ""
 var _pending: Callable
 var _after_save: Callable
 var _quiet := 0
+## > 0 mentre il pannello applica una sua modifica (i suoi passi di annulla sono sicuri).
+var _own_edit := 0
+## L'NPC aperto è stato modificato anche fuori dalle azioni del pannello (Inspector
+## integrati): cambiando NPC la cronologia globale va azzerata.
+var _foreign_edits := false
 var _dirty_shapes := {}
 ## Modifiche a forme di libreria che l'NPC ha smesso di usare (Rendi unica, cambio forma,
 ## accessorio rimosso): la forma torna com'è su disco e le modifiche restano qui, pronte
@@ -276,7 +281,7 @@ func _build_shapes_tab() -> void:
 	sym_check.button_pressed = true
 	sym_check.toggled.connect(func(on): section_ed.symmetric = on)
 	sh.add_child(sym_check)
-	ellipse_btn = _button(sh, "Ellisse", func(): if _part() != null and _shape_editable(_part().shape): _set_prop(_part().shape, "section", PackedFloat32Array(), "sezione"), "Riporta la sezione all'ellisse")
+	ellipse_btn = _button(sh, "Ellisse", func(): if _part() != null and _shape_editable(_part().shape): _set_prop(_part().shape, "section", PackedFloat32Array(), "sezione", false), "Riporta la sezione all'ellisse")
 	lib_note = Label.new()
 	lib_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lib_note.custom_minimum_size = Vector2(150, 0)
@@ -546,17 +551,20 @@ var _last_merge_key := ""
 
 ## Imposta una proprietà registrando l'azione nell'annulla dell'editor. Le modifiche
 ## consecutive alla stessa proprietà dello stesso oggetto (trascinare uno slider)
-## diventano un solo passo; tutto il resto resta separato.
-func _set_prop(obj: Object, prop: String, value: Variant, label := "") -> void:
+## diventano un solo passo; le azioni "a scatto" (merge = false: aggiungi, rimuovi,
+## rendi unica...) restano sempre separate, anche se ripetute in fretta.
+func _set_prop(obj: Object, prop: String, value: Variant, label := "", can_merge := true) -> void:
 	if obj == null:
 		return
 	var ur := plugin.get_undo_redo() if plugin != null else null
 	if ur == null:
+		_own_edit += 1
 		obj.set(prop, value)
+		_own_edit -= 1
 		_after_edit()
 		return
-	var key := "%d:%s" % [obj.get_instance_id(), prop]
-	var merge := UndoRedo.MERGE_ENDS if key == _last_merge_key else UndoRedo.MERGE_DISABLE
+	var key := "%d:%s" % [obj.get_instance_id(), prop] if can_merge else ""
+	var merge := UndoRedo.MERGE_ENDS if key != "" and key == _last_merge_key else UndoRedo.MERGE_DISABLE
 	_last_merge_key = key
 	# contesto = il pannello (un nodo fuori dalla scena): l'azione va nella cronologia
 	# globale e non marca come modificata la scena aperta
@@ -571,7 +579,9 @@ func _set_prop(obj: Object, prop: String, value: Variant, label := "") -> void:
 func _apply(owner: NPCDefinition, obj: Object, prop: String, value: Variant) -> void:
 	if owner != def or not is_instance_valid(obj):
 		return
+	_own_edit += 1
 	obj.set(prop, value)
+	_own_edit -= 1
 	if obj is SegmentShape and NPCDefinition.is_library_shape(obj) and _uses_shape(obj):
 		_dirty_shapes[obj.resource_path] = obj
 	_after_edit()
@@ -618,8 +628,10 @@ func _snapshot(d: NPCDefinition) -> Dictionary:
 func _restore(owner: NPCDefinition, snap: Dictionary) -> void:
 	if owner != def:
 		return
+	_own_edit += 1
 	for k in snap:
 		def.set(k, snap[k])
+	_own_edit -= 1
 	_after_edit()
 
 
@@ -640,10 +652,12 @@ func open_definition(d: NPCDefinition) -> void:
 func _load_def(d: NPCDefinition, keep_dirty_shapes := false) -> void:
 	if def != null and def.changed.is_connected(_on_def_changed):
 		def.changed.disconnect(_on_def_changed)
-	if def != null and d != def and plugin != null:
+	if def != null and d != def and plugin != null and _foreign_edits:
 		# le modifiche fatte negli Inspector integrati sono azioni normali dell'editor: un
-		# Ctrl+Z dopo aver cambiato NPC cambierebbe quello chiuso. Si riparte da zero.
+		# Ctrl+Z dopo aver cambiato NPC cambierebbe quello chiuso. Solo in quel caso (le
+		# azioni del pannello sono già innocue) la cronologia globale riparte da zero.
 		plugin.get_undo_redo().clear_history(EditorUndoRedoManager.GLOBAL_HISTORY, false)
+	_foreign_edits = false
 	def = d
 	dirty = false
 	_last_merge_key = ""
@@ -664,6 +678,8 @@ func _load_def(d: NPCDefinition, keep_dirty_shapes := false) -> void:
 func _on_def_changed() -> void:
 	if _quiet > 0:
 		return
+	if _own_edit == 0:
+		_foreign_edits = true
 	# subito, non al prossimo frame: una forma appena assegnata va già sorvegliata
 	_watch_shapes()
 	_sync_library_shapes()
@@ -784,8 +800,29 @@ func save_on_editor_save() -> void:
 	if def_path != "":
 		save_to(def_path)
 		return
+	if quit_prompt_time > 0 and Time.get_ticks_msec() - quit_prompt_time < 60000:
+		# «Salva» nella finestra di chiusura dell'editor: il nome promesso nel messaggio
+		quit_prompt_time = 0
+		save_to(free_character_path())
+		return
 	var n := _save_library_shapes()
 	_warn_unsaved("non è mai stato salvato" + (" (salvate %d forme di libreria)" % n if n > 0 else ""))
+
+
+## Momento in cui la finestra di chiusura dell'editor ha chiesto di salvare un NPC mai
+## salvato (vedi plugin._get_unsaved_status): il «Salva» che segue gli dà un nome libero.
+var quit_prompt_time := 0
+
+
+## Un file libero in CHARACTERS_DIR con il nome dell'NPC.
+func free_character_path() -> String:
+	var base := NPCLibrary.CHARACTERS_DIR.path_join(_slug(def.display_name))
+	var path := base + ".tres"
+	var n := 2
+	while FileAccess.file_exists(path):
+		path = "%s_%d.tres" % [base, n]
+		n += 1
+	return path
 
 
 func _warn_unsaved(why: String) -> void:
@@ -892,7 +929,7 @@ func save_shape_to_library(path: String) -> void:
 		return
 	_fs_update(path)
 	NPCLibrary.invalidate()
-	_set_prop(part, "shape", target, "forma in libreria")
+	_set_prop(part, "shape", target, "forma in libreria", false)
 	_status("Forma salvata in libreria: " + path.get_file())
 
 
@@ -918,7 +955,9 @@ func _duplicate() -> void:
 
 func randomize_appearance(rseed: int) -> void:
 	var before := _snapshot(def)
+	_own_edit += 1
 	NPCLibrary.randomize_appearance(def, rseed, false)
+	_own_edit -= 1
 	var after := _snapshot(def)
 	var ur := plugin.get_undo_redo() if plugin != null else null
 	if ur != null:
@@ -964,7 +1003,10 @@ func _uses_shape(sh: SegmentShape) -> bool:
 
 
 func _on_lib_shape_changed(sh: SegmentShape) -> void:
-	if _quiet > 0 or not _uses_shape(sh):
+	# con la libreria bloccata una forma condivisa cambia solo da fuori (Inspector
+	# principale, FileSystem): è una modifica normale di Godot, non dell'NPC, e Scarta
+	# non deve toccarla
+	if _quiet > 0 or not edit_library or not _uses_shape(sh):
 		return
 	_dirty_shapes[sh.resource_path] = sh
 	_mark_dirty()
@@ -1196,7 +1238,7 @@ func _on_shape_selected(i: int, is_b: bool) -> void:
 		return
 	var s: SegmentShape = null if path == "" else load(path)
 	var part := _part()
-	_set_prop(part, "shape_b" if is_b else "shape", s, "forma")
+	_set_prop(part, "shape_b" if is_b else "shape", s, "forma", false)
 
 
 func _make_unique() -> void:
@@ -1206,12 +1248,14 @@ func _make_unique() -> void:
 	var lib := part.shape
 	var copy: SegmentShape = lib.duplicate(true)
 	copy.resource_name = NPCLibrary.shape_name_of(lib) + "_unica"
-	_set_prop(part, "shape", copy, "rendi unica")
+	_set_prop(part, "shape", copy, "rendi unica", false)
 
 
 func _on_section_edited(sec: PackedFloat32Array) -> void:
 	if _part() != null and _shape_editable(_part().shape):
+		_own_edit += 1
 		_part().shape.section = sec
+		_own_edit -= 1
 
 
 func _on_section_committed(old: PackedFloat32Array, sec: PackedFloat32Array) -> void:
@@ -1309,7 +1353,7 @@ func _make_acc_unique() -> void:
 	var lib := a.shape
 	var copy: SegmentShape = lib.duplicate(true)
 	copy.resource_name = NPCLibrary.shape_name_of(lib) + "_unica"
-	_set_prop(a, "shape", copy, "rendi unica")
+	_set_prop(a, "shape", copy, "rendi unica", false)
 	acc_inspector.edit(null)
 	_fill_acc_ui()
 
@@ -1320,7 +1364,7 @@ func _add_accessory() -> void:
 	var nm := acc_add_opt.get_item_text(acc_add_opt.selected)
 	var arr := def.attachments.duplicate()
 	arr.append(NPCLibrary.attachment_from(nm))
-	_set_prop(def, "attachments", arr, "aggiungi accessorio")
+	_set_prop(def, "attachments", arr, "aggiungi accessorio", false)
 	_selected_acc = arr.size() - 1
 	_select_acc.call_deferred(_selected_acc)
 
@@ -1329,7 +1373,7 @@ func _toggle_acc() -> void:
 	if _selected_acc < 0:
 		return
 	var a := def.attachments[_selected_acc]
-	_set_prop(a, "enabled", not a.enabled, "attiva accessorio")
+	_set_prop(a, "enabled", not a.enabled, "attiva accessorio", false)
 
 
 func _dup_acc() -> void:
@@ -1341,7 +1385,7 @@ func _dup_acc() -> void:
 		c.shape = c.shape.duplicate(true)
 	c.label += " 2"
 	arr.append(c)
-	_set_prop(def, "attachments", arr, "duplica accessorio")
+	_set_prop(def, "attachments", arr, "duplica accessorio", false)
 
 
 func _remove_acc() -> void:
@@ -1352,7 +1396,7 @@ func _remove_acc() -> void:
 	_selected_acc = -1
 	acc_inspector.edit(null)
 	preview.body.highlight_part = ""
-	_set_prop(def, "attachments", arr, "rimuovi accessorio")
+	_set_prop(def, "attachments", arr, "rimuovi accessorio", false)
 
 
 func _notification(what: int) -> void:

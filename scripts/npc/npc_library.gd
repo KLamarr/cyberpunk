@@ -272,8 +272,23 @@ static func shape_users(path: String) -> PackedStringArray:
 static func copy_storage(from: Resource, to: Resource) -> void:
 	for p in from.get_property_list():
 		var pn: String = p.name
-		if p.usage & PROPERTY_USAGE_STORAGE and pn != "script" and not pn.begins_with("resource_"):
-			to.set(pn, from.get(pn))
+		if not (p.usage & PROPERTY_USAGE_STORAGE) or pn == "script" or pn.begins_with("resource_"):
+			continue
+		var v: Variant = from.get(pn)
+		var cur: Variant = to.get(pn)
+		# una sottorisorsa incorporata (le curve di una forma) si aggiorna dentro, così
+		# l'oggetto e il suo id nel .tres restano gli stessi (niente rumore in git)
+		if v is Resource and cur is Resource and v != cur and _embedded(v) and _embedded(cur) \
+				and (v as Resource).get_class() == (cur as Resource).get_class() \
+				and (v as Resource).get_script() == (cur as Resource).get_script():
+			copy_storage(v, cur)
+			(cur as Resource).emit_changed()
+		else:
+			to.set(pn, v)
+
+
+static func _embedded(r: Resource) -> bool:
+	return r.resource_path == "" or r.resource_path.contains("::")
 
 
 ## Riporta una risorsa (definizione o forma) com'è su disco, anche nelle proprietà al

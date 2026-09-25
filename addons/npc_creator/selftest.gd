@@ -86,6 +86,7 @@ func run() -> void:
 	await _test_undo_release()
 	await _test_overwrite_cached()
 	await _test_history_on_switch()
+	await _test_external_and_merge()
 	await _test_existing_characters()
 	await _test_background()
 	_check(not _scene_marked_unsaved(), "modificare gli NPC non marca come modificata la scena aperta")
@@ -477,6 +478,62 @@ func _test_history_on_switch() -> void:
 	await _frames(2)
 	hist.undo()
 	_check(is_equal_approx(acc.length, l0 + 0.3) and not hist.has_undo(), "dopo aver cambiato NPC il Ctrl+Z non tocca quello chiuso")
+
+
+## Modifiche fatte fuori dal creatore, cronologia degli altri editor, clic rapidi.
+func _test_external_and_merge() -> void:
+	p.revert_unsaved()
+	p.open_definition(load(prova_path))
+	await _frames(2)
+	p.revert_unsaved()
+	var d: NPCDefinition = p.def
+	var lib: SegmentShape = null
+	for sh in p._used_shapes():
+		if NPCDefinition.is_library_shape(sh) and sh.resource_path.begins_with(TMP):
+			lib = sh
+	if lib == null:
+		d.get_part("testa").shape = load(testa_path)
+		p.save()
+		lib = d.get_part("testa").shape
+	# come dall'Inspector principale, con la libreria bloccata
+	var wc := lib.width_curve
+	var r0 := lib.radius_x
+	lib.radius_x = r0 + 0.07
+	_check(not p._dirty_shapes.has(lib.resource_path), "una forma cambiata fuori dal creatore non diventa una modifica dell'NPC")
+	p.revert_unsaved()
+	_check(is_equal_approx(lib.radius_x, r0 + 0.07), "Scarta non annulla le modifiche fatte fuori dal creatore")
+	NPCLibrary.restore_from_disk(lib)
+	_check(lib.width_curve == wc and is_equal_approx(lib.radius_x, r0), "il ripristino dal disco tiene le stesse curve (niente id nuovi nel .tres)")
+	# un'azione di un altro editor nella cronologia globale sopravvive al cambio di NPC
+	# (se l'NPC chiuso non è stato toccato dagli Inspector integrati)
+	p.revert_unsaved()
+	p.open_definition(load(TMP.path_join("prova_elite.tres")))
+	await _frames(2)
+	var other := Resource.new()
+	other.resource_name = "a"
+	other.take_over_path(TMP.path_join("altro.tres"))
+	ur.create_action("Altro editor")
+	ur.add_do_property(other, "resource_name", "b")
+	ur.add_undo_property(other, "resource_name", "a")
+	ur.commit_action()
+	p._set_prop(p.def, "height", p.def.height + 0.01)
+	p.revert_unsaved()
+	p.open_definition(load(prova_path))
+	await _frames(2)
+	hist.undo()
+	hist.undo()
+	_check(other.resource_name == "a", "aprire un NPC non cancella l'annulla degli altri editor")
+	p.open_definition(load(TMP.path_join("prova_elite.tres")))
+	await _frames(2)
+	# due «Aggiungi» di fila sono due passi di annulla
+	var n0: int = p.def.attachments.size()
+	p._add_accessory()
+	p._add_accessory()
+	hist.undo()
+	_check(p.def.attachments.size() == n0 + 1, "due accessori aggiunti di fila si annullano uno alla volta")
+	hist.undo()
+	_check(p.def.attachments.size() == n0, "…e il secondo annulla toglie anche il primo")
+	p.revert_unsaved()
 
 
 func _test_existing_characters() -> void:
