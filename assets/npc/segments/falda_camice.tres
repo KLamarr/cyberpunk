@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://cfj7o1pv02vg7"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_4w2nx"]
+
+[sub_resource type="Curve" id="Curve_u5y0t"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.24000001, 1, 1, Vector2(0.5, 1.12), 0.24000001, 0.35999987, 1, 1, Vector2(1, 1.3), 0.35999987, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_nrvmx"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.24000001, 1, 1, Vector2(0.5, 1.12), 0.24000001, 0.35999987, 1, 1, Vector2(1, 1.3), 0.35999987, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "falda_camice"
+script = ExtResource("1_4w2nx")
+tags = PackedStringArray("scienziato")
+width_curve = SubResource("Curve_nrvmx")
+depth_curve = SubResource("Curve_u5y0t")
+radius_x = 0.172
+radius_z = 0.122
+rings = 3
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+section = PackedFloat32Array(0.98, 1.04, 1, 1.04, 1, 1.04, 1, 1.04)
+attach_bone = "hips"
+attach_offset = Vector3(0, 0.06, 0)
+attach_rotation = Vector3(180, 0, 0)
+attach_length = 0.38

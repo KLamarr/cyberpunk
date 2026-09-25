@@ -1,3 +1,4 @@
+@tool
 class_name SecurityTerminal
 extends StaticBody3D
 ## Terminale della sala sicurezza: con la tessera sicurezza (o un hack di livello 1)
@@ -13,7 +14,7 @@ func setup(pos: Vector3, yaw_deg: float) -> SecurityTerminal:
 
 
 func _ready() -> void:
-	collision_layer = Game.L_INTERACT
+	collision_layer = Layers.INTERACT
 	collision_mask = 0
 	# monitor su staffa
 	Util.box(self, Vector3(0.7, 0.48, 0.08), Vector3(0, 0.3, 0), Util.color_mat(Color(0.16, 0.17, 0.19)))

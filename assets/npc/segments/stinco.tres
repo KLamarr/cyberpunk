@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://tdycw65pwfjj"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_4cpwg"]
+
+[sub_resource type="Curve" id="Curve_ryqnh"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, -0.5, 1, 1, Vector2(0.3, -0.15), -0.5, 0.21428572, 1, 1, Vector2(1, 0), 0.21428572, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_ajkbi"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.1666667, 1, 1, Vector2(0.3, 1), 0.1666667, -0.45714286, 1, 1, Vector2(1, 0.68), -0.45714286, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_mmixn"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.1666667, 1, 1, Vector2(0.3, 1), 0.1666667, -0.45714286, 1, 1, Vector2(1, 0.68), -0.45714286, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "stinco"
+script = ExtResource("1_4cpwg")
+category = 9
+tags = PackedStringArray()
+width_curve = SubResource("Curve_mmixn")
+depth_curve = SubResource("Curve_ajkbi")
+bulge_curve = SubResource("Curve_ryqnh")
+radius_x = 0.058
+radius_z = 0.064
+sides = 7
+extend_start = 0.08
+extend_end = 0.12
+section = PackedFloat32Array()
+color_slot = 2

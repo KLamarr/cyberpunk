@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://cb0ex4gru57ki"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_66aha"]
+
+[sub_resource type="Curve" id="Curve_fo7xc"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0.04), 0.0, 0.08, 1, 1, Vector2(0.5, 0.08), 0.08, -0.08, 1, 1, Vector2(1, 0.04), -0.08, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_3n1uf"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13999999, 1, 1, Vector2(0.5, 0.93), -0.13999999, 0.03999996, 1, 1, Vector2(1, 0.95), 0.03999996, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_tqs07"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13999999, 1, 1, Vector2(0.5, 0.93), -0.13999999, 0.03999996, 1, 1, Vector2(1, 0.95), 0.03999996, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "addome"
+script = ExtResource("1_66aha")
+category = 3
+tags = PackedStringArray()
+width_curve = SubResource("Curve_tqs07")
+depth_curve = SubResource("Curve_3n1uf")
+bulge_curve = SubResource("Curve_fo7xc")
+radius_x = 0.158
+radius_z = 0.108
+rings = 3
+sides = 8
+extend_start = 0.12
+extend_end = 0.12
+section = PackedFloat32Array(0.96, 1.05, 1, 1.05, 1, 1.05, 1, 1.05)

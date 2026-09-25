@@ -2,6 +2,8 @@ extends Node
 ## Test automatico end-to-end. Avvio:
 ##   godot --path . -- --autotest            (headless: logica)
 ##   xvfb-run godot --path . -- --autotest --shots   (anche screenshot)
+##   godot --path . -- --autotest --npc      (generatore di NPC: libreria, mesh, scheletro, pose)
+##   godot --path . -- --autotest --stress   (10/25/50/100 guardie nella hall: tempi e draw call)
 ## Stampa OK/FAIL per ogni controllo ed esce con codice 0 se tutto passa.
 
 var fails := 0
@@ -10,7 +12,7 @@ var shots := false
 var shot_dir := "user://shots"
 var p: Node
 var lvl: Node
-var mode := "full"   # full | death | post_restart
+var mode := "full"   # full | death | post_restart | ui | npc | stress
 
 
 func _ready() -> void:
@@ -24,6 +26,12 @@ func _ready() -> void:
 		mode = "death"
 	if "--ui" in OS.get_cmdline_user_args() and mode == "full":
 		mode = "ui"
+	if "--guida" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "guida"
+	if "--npc" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "npc"
+	if "--stress" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "stress"
 	# watchdog: nessun test deve restare appeso
 	get_tree().create_timer(240.0, true).timeout.connect(func():
 		print("FAIL: timeout globale")
@@ -35,6 +43,12 @@ func _ready() -> void:
 			run_post_restart()
 		"ui":
 			run_ui()
+		"guida":
+			run_guida()
+		"npc":
+			run_npc()
+		"stress":
+			run_stress()
 		_:
 			run()
 
@@ -132,6 +146,310 @@ func run_ui() -> void:
 	check(not door.locked and Game.state == Game.State.PLAYING, "porta sbloccata dal tastierino")
 	print("RISULTATO: %d ok, %d fail" % [oks, fails])
 	get_tree().quit(0 if fails == 0 else 1)
+
+
+## Il livello d'esempio di docs/GUIDA_EDITOR.md (levels/guida): stanza, porta
+## col codice del datapad, guardia di ronda. Avvio:
+##   godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+func run_guida() -> void:
+	await frames(20)
+	lvl = Game.level
+	p = Game.player
+	p.god_mode = true
+	Game.ui._begin()
+	await wait(0.5)
+	check(Game.state == Game.State.PLAYING, "guida: partita avviata")
+	await shot("guida_01_stanza")
+	await tp(Vector3(2.5, 0.05, 1.6), 180, -30)
+	await face(Vector3(2.5, 0.81, 2.8))
+	await frob_expect("datapad col codice")
+	check("codice_magazzino" in Game.logs_read, "guida: registro col codice letto")
+	await close_ui()
+	var door: Node = lvl.find_child("PortaMagazzino", true, false)
+	check(door != null and door.locked, "guida: porta del magazzino chiusa")
+	check(not door.try_code("0000") and door.try_code("2468"), "guida: il codice 2468 apre la porta")
+	var rossi := guard("Ag. Rossi")
+	var from: Vector3 = rossi.global_position
+	await wait(6.0)
+	check(rossi.global_position.distance_to(from) > 1.0, "guida: la guardia fa la ronda (%.1f m)" % rossi.global_position.distance_to(from))
+	await tp(Vector3(2.2, 0.05, -10.2), 0, 0)
+	await face(Vector3(-0.8, 1.1, -5.5))
+	await wait(0.8)
+	await shot("guida_02_magazzino")
+	print("RISULTATO: %d ok, %d fail" % [oks, fails])
+	get_tree().quit(0 if fails == 0 else 1)
+
+
+## Generatore di NPC: libreria, definizioni dei personaggi, mesh, scheletro, pose, cache.
+func run_npc() -> void:
+	await frames(10)
+	lvl = Game.level
+	p = Game.player
+	var shapes := NPCLibrary.list_shapes()
+	check(shapes.size() >= 30, "libreria: %d forme su disco" % shapes.size())
+	var broken := []
+	for e in shapes:
+		var sh: SegmentShape = e[1]
+		if sh == null or sh.width_curve == null or sh.depth_curve == null:
+			broken.append(e[0])
+	check(broken.is_empty(), "libreria: tutte le forme hanno le curve di profilo %s" % str(broken))
+	for cat in 11:
+		check(not NPCLibrary.list_shapes(cat).is_empty(), "libreria: almeno una forma per la parte %s" % NPCDefinition.PART_NAMES[cat])
+	# personaggi della slice: il bottino deve restare quello del livello originale
+	var expected := {
+		"ruiz": {"keycard": ["sicurezza", "Tessera Sicurezza"], "ammo": 6, "credits": 30},
+		"hale": {"ammo": 4, "credits": 20, "medpatch": 1},
+		"kovac": {"ammo": 6, "credits": 15},
+		"mori": {"ammo": 8, "credits": 10},
+	}
+	for id in expected:
+		var d: NPCDefinition = load(NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres"))
+		check(d != null and d.parts.size() == 11, "%s.tres: 11 parti" % id)
+		check(d != null and d.loot() == expected[id], "%s.tres: bottino %s" % [id, str(d.loot() if d else {})])
+	var g_ruiz := guard("Ag. Ruiz")
+	check(g_ruiz != null and g_ruiz.definition != null and g_ruiz.definition.resource_path.ends_with("ruiz.tres"), "Ruiz nel livello usa ruiz.tres")
+	var g_hale := guard("Op. Hale")
+	check(g_hale != null and not g_hale.definition.idle_barks.is_empty(), "Hale ha le sue battute di ronda")
+
+	# mesh: una superficie, pesi rigidi, tutte le ossa usate
+	var ruiz: NPCDefinition = load(NPCLibrary.CHARACTERS_DIR.path_join("ruiz.tres"))
+	var st := NPCBodyBuilder.Stats.new()
+	var mesh := NPCBodyBuilder.build_mesh(ruiz, {}, st)
+	check(mesh.get_surface_count() == 1 and mesh.surface_get_material(0) == NPCBodyBuilder.material(), "una superficie con il materiale condiviso")
+	check(st.triangles > 500 and st.triangles < 2500, "triangoli in stile SS2: %d" % st.triangles)
+	var arr := mesh.surface_get_arrays(0)
+	var w: PackedFloat32Array = arr[Mesh.ARRAY_WEIGHTS]
+	var b: PackedInt32Array = arr[Mesh.ARRAY_BONES]
+	var rigid := true
+	var used := {}
+	for i in w.size() / 4:
+		rigid = rigid and is_equal_approx(w[i * 4], 1.0) and w[i * 4 + 1] == 0.0 and w[i * 4 + 2] == 0.0 and w[i * 4 + 3] == 0.0
+		used[b[i * 4]] = true
+	check(rigid, "pesi rigidi: ogni vertice al 100% su un osso")
+	check(used.size() == NPCRig.BONES.size(), "tutte le %d ossa hanno geometria (%d)" % [NPCRig.BONES.size(), used.size()])
+	var cols: PackedColorArray = arr[Mesh.ARRAY_COLOR]
+	var glow := 0
+	for c in cols:
+		if c.a < 0.5:
+			glow += 1
+	check(glow > 0, "visore e impianto CALMA marcati come luminosi (%d vertici)" % glow)
+	# proporzioni
+	var lay := NPCRig.layout(ruiz)
+	check(absf(lay.top - ruiz.height) < 0.01, "l'altezza della definizione è la sommità della testa")
+	var tall := ruiz.clone()
+	tall.height = 2.0
+	check(tall.eye_height() > ruiz.eye_height() + 0.2, "più alto = occhi più alti")
+	# determinismo del generatore
+	var a1 := NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, 5)
+	var a2 := NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, 5)
+	var same := a1.height == a2.height and a1.palette == a2.palette and a1.display_name == a2.display_name
+	for k in a1.parts:
+		same = same and a1.parts[k].shape == a2.parts[k].shape
+	check(same, "stesso seme = stesso NPC")
+	var a3 := NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, 6)
+	check(a3.height != a1.height or a3.palette != a1.palette, "seme diverso = NPC diverso")
+	# cache della mesh
+	var m1 := NPCBodyBuilder.get_mesh(a1)
+	check(NPCBodyBuilder.get_mesh(a1) == m1, "mesh in cache se la definizione non cambia")
+	a1.mass = 1.3
+	check(NPCBodyBuilder.get_mesh(a1) != m1, "mesh ricostruita dopo una modifica")
+	# corpo animato
+	var body := NPCBody.new()
+	body.definition = ruiz
+	lvl.add_child(body)
+	await frames(2)
+	check(body.skeleton.get_bone_count() == NPCRig.BONES.size() and body.mesh_instance.skin.get_bind_count() == NPCRig.BONES.size(), "scheletro e skin con %d ossa" % NPCRig.BONES.size())
+	body.update_motion(0.016, 0.0, 0.0, 0.0)
+	var m0 := body.muzzle_position()
+	for i in 40:
+		body.update_motion(0.05, 0.0, 0.0, 1.0)
+	var m_aim := body.muzzle_position()
+	check(m_aim.y > m0.y + 0.4, "in mira la pistola si alza (%.2f -> %.2f)" % [m0.y, m_aim.y])
+	var hand := body.bone_index("hand_l")
+	var h0 := body.skeleton.get_bone_global_pose(hand).origin
+	body.update_motion(0.016, 1.8, PI * 0.5, 0.0)
+	var h1 := body.skeleton.get_bone_global_pose(hand).origin
+	check(h0.distance_to(h1) > 0.05, "camminando le braccia oscillano")
+	body.lod_interval = 0.2
+	body.update_motion(0.016, 1.8, PI * 1.5, 0.0)
+	check(body.skeleton.get_bone_global_pose(hand).origin.is_equal_approx(h1), "LOD: posa non aggiornata prima dell'intervallo")
+	body.queue_free()
+	await _npc_render_checks(ruiz)
+	# costi
+	var t0 := Time.get_ticks_usec()
+	for i in 20:
+		NPCBodyBuilder.build_mesh(NPCLibrary.random_npc(i % 5, 900 + i))
+	var build_ms := (Time.get_ticks_usec() - t0) / 20000.0
+	var bodies: Array[NPCBody] = []
+	for i in 50:
+		var bb := NPCBody.new()
+		bb.definition = ruiz
+		lvl.add_child(bb)
+		bodies.append(bb)
+	await frames(1)
+	t0 = Time.get_ticks_usec()
+	for f in 20:
+		for bb in bodies:
+			bb.update_motion(0.016, 1.8, f * 0.3, 0.0)
+	var pose_us := (Time.get_ticks_usec() - t0) / (20.0 * 50.0)
+	for bb in bodies:
+		bb.queue_free()
+	print("      costruzione di un NPC (dati + mesh): %.2f ms   posa per NPC per frame: %.1f µs" % [build_ms, pose_us])
+	check(build_ms < 50.0, "costruzione della mesh sotto i 50 ms")
+	print("RISULTATO: %d ok, %d fail" % [oks, fails])
+	get_tree().quit(0 if fails == 0 else 1)
+
+
+## Controlli di resa del corpo e dei parametri della guardia (bug trovati in review).
+func _npc_render_checks(ruiz: NPCDefinition) -> void:
+	var d := ruiz.clone()
+	d.palette = PackedColorArray([Color(0.9, 0.1, 0.1), Color(0.1, 0.9, 0.1), Color(0.1, 0.1, 0.9),
+		Color(0.9, 0.9, 0.1), Color(0.2, 0.2, 0.2), Color(0.9, 0.1, 0.9), Color(0.1, 0.9, 0.9)])
+	# tappi: con split = 1 hanno il colore del segmento, non quello della seconda banda
+	var sh := SegmentShape.create(SegmentShape.Category.TORACE, 0.1, 0.1, [Vector2(0, 1), Vector2(1, 1)], [], {"cap_start": true, "cap_end": true})
+	sh.color_slot = SegmentShape.Slot.UNIFORME
+	sh.color_slot_b = SegmentShape.Slot.STIVALI
+	var cols := _loft_colors(d, sh)
+	var all_main := true
+	for c in cols:
+		all_main = all_main and c.is_equal_approx(d.color(SegmentShape.Slot.UNIFORME))
+	check(all_main and cols.size() > 0, "tappi del colore del segmento (split = 1)")
+	sh.split = 0.5
+	cols = _loft_colors(d, sh)
+	var n_b := 0
+	for c in cols:
+		if c.is_equal_approx(d.color(SegmentShape.Slot.STIVALI)):
+			n_b += 1
+	check(n_b > 0 and n_b < cols.size(), "con split 0.5 il tappo finale prende la seconda banda")
+	# parti luminose: ogni vertice dell'impianto CALMA è emissivo
+	var calma := -1
+	for i in d.attachments.size():
+		if d.attachments[i].shape != null and d.attachments[i].shape.band == SegmentShape.Band.LUCE:
+			calma = i
+	check(calma >= 0, "Ruiz ha un accessorio luminoso")
+	if calma >= 0:
+		var with_st := NPCBodyBuilder.Stats.new()
+		var m_with := NPCBodyBuilder.build_mesh(d, {}, with_st)
+		d.attachments[calma].enabled = false
+		var m_without := NPCBodyBuilder.build_mesh(d)
+		d.attachments[calma].enabled = true
+		var dv := _glow_count(m_with) - _glow_count(m_without)
+		var dt := m_with.surface_get_array_len(0) - m_without.surface_get_array_len(0)
+		check(dt > 0 and dv == dt, "impianto CALMA tutto luminoso (%d vertici su %d)" % [dv, dt])
+	# mirror su un osso centrale: due copie (le cuffie di Hale)
+	var one := NPCDefinition.new()
+	one.parts = d.parts
+	one.attachments = [NPCLibrary.attachment_from("cuffia")]
+	one.attachments[0].mirror = false
+	var single := NPCBodyBuilder.build_mesh(one).surface_get_array_len(0)
+	one.attachments[0].mirror = true
+	var both := NPCBodyBuilder.build_mesh(one).surface_get_array_len(0)
+	one.attachments = []
+	var none := NPCBodyBuilder.build_mesh(one).surface_get_array_len(0)
+	check(both - none == 2 * (single - none), "mirror sulla testa: due cuffie (%d → %d vertici)" % [single - none, both - none])
+	# accessori: seguono la larghezza dei fianchi come il bacino
+	var wide := d.clone()
+	wide.hips = 1.3
+	var lay := NPCRig.layout(wide)
+	var rh: Vector2 = lay.radial["hips"]
+	check(rh.x > rh.y * 1.2, "accessori sul bacino larghi quanto i fianchi (%.3f × %.3f)" % [rh.x, rh.y])
+	# la bocca dell'arma non dipende dal nome della forma
+	var renamed := d.clone()
+	for a in renamed.attachments:
+		if a.shape != null and a.shape.is_weapon:
+			a.shape = a.shape.duplicate(true)
+			a.shape.resource_name = "arma_senza_nome"
+			a.label = "Arma"
+	check(NPCBodyBuilder.muzzle_local(renamed) == NPCBodyBuilder.muzzle_local(d), "bocca dell'arma trovata anche con un altro nome")
+	# posa: fermandosi le gambe rallentano invece di scattare alla posa neutra
+	var body := NPCBody.new()
+	body.definition = d
+	lvl.add_child(body)
+	await frames(1)
+	for i in 60:
+		body.update_motion(0.016, 1.8, PI * 0.5, 0.0)
+	var thigh := body.bone_index("thigh_l")
+	var before := body.skeleton.get_bone_pose_rotation(thigh).get_angle()
+	body.update_motion(0.016, 0.0, PI * 0.5, 0.0)
+	var after := body.skeleton.get_bone_pose_rotation(thigh).get_angle()
+	check(before > 0.1 and after > before * 0.8, "fermandosi la gamba non scatta (%.2f → %.2f rad)" % [before, after])
+	body.queue_free()
+	# valori impossibili nella definizione non bloccano la guardia
+	var bad := d.clone()
+	bad.walk_speed = 0.0
+	bad.run_speed = 0.0
+	bad.reaction_time = -1.0
+	bad.hearing = 0.0
+	bad.sight_range = 0.0
+	var g := Guard.new()
+	g._apply_definition(bad)
+	check(g.walk_speed >= 0.3 and g.run_speed >= g.walk_speed and g.reaction_time >= 0.2 and g.hearing > 0.0 and g.sight_range >= 1.0,
+		"valori della definizione validati (passo %.1f, reazione %.1f)" % [g.walk_speed, g.reaction_time])
+	g.free()
+
+
+func _loft_colors(d: NPCDefinition, sh: SegmentShape) -> PackedColorArray:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var ctx := {"st": st, "def": d, "group": 1, "tris": 0, "verts": 0, "aabb": AABB(), "first": true}
+	NPCBodyBuilder._loft(ctx, sh, null, 0.0, Transform3D.IDENTITY, 1.0, Vector2.ONE, 0, false, false)
+	return st.commit_to_arrays()[Mesh.ARRAY_COLOR]
+
+
+func _glow_count(m: ArrayMesh) -> int:
+	var n := 0
+	for c in m.surface_get_arrays(0)[Mesh.ARRAY_COLOR]:
+		if c.a < 0.5:
+			n += 1
+	return n
+
+
+## Stress test: 10, 25, 50, 100 guardie casuali nella hall. Misura il tempo di un frame
+## (media e 95° percentile, dal tempo reale fra un frame e l'altro: comprende IA,
+## percezione, navigazione, animazione e, con un display, il rendering) e le draw call
+## (solo con un display). Non è un test che passa o fallisce: stampa una tabella.
+func run_stress() -> void:
+	await frames(20)
+	lvl = Game.level
+	p = Game.player
+	p.god_mode = true
+	Game.ui._begin()
+	await wait(0.5)
+	# il player resta nell'ascensore: le guardie fanno la ronda senza vederlo
+	await tp(Vector3(19.4, 0.05, 15.2), 90)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	var added := 0
+	print("  guardie   frame ms (media)   frame ms (95%)   draw call")
+	for n in [10, 25, 50, 100]:
+		while added < n:
+			var def := NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, 5000 + added)
+			var pos := Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 5))
+			var to := pos + Vector3(rng.randf_range(-4, 4), 0, rng.randf_range(-4, 4))
+			var g := Guard.new().setup_def(def, pos, rng.randf_range(0, 360), [[pos, rng.randf_range(1, 3)], [to, rng.randf_range(1, 3)]])
+			lvl.spawn(g, "Guardie")
+			added += 1
+		# lo spawn (mesh generate nello stesso frame) non entra nella misura
+		await wait(1.5)
+		var times: Array[float] = []
+		var dc_sum := 0.0
+		var t_prev := Time.get_ticks_usec()
+		var t_start := Time.get_ticks_msec()
+		while Time.get_ticks_msec() - t_start < 2500:
+			await get_tree().process_frame
+			var t_now := Time.get_ticks_usec()
+			times.append((t_now - t_prev) / 1000.0)
+			t_prev = t_now
+			dc_sum += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+		times.sort()
+		var avg := 0.0
+		for t in times:
+			avg += t
+		avg /= times.size()
+		var p95: float = times[mini(int(times.size() * 0.95), times.size() - 1)]
+		print("  %7d   %16.2f   %14.2f   %9.0f" % [get_tree().get_nodes_in_group("guards").size(), avg, p95, dc_sum / times.size()])
+	print("RISULTATO: %d ok, %d fail" % [oks, fails])
+	get_tree().quit(0)
 
 
 func run_post_restart() -> void:
@@ -297,8 +615,9 @@ func run() -> void:
 		g.global_position = g.post_pos
 	await tp(Vector3(6.0, 0.05, 12.0), 0)
 	await wait(3.0)
-	lvl.turret.awareness = 0.0
-	lvl.turret.state = Turret.T.IDLE
+	var turret := lvl.find_child("Torretta", true, false) as Turret
+	turret.awareness = 0.0
+	turret.state = Turret.T.IDLE
 
 	# --- porta di servizio + hall
 	await tp(Vector3(6.0, 0.05, 10.0), 0)
@@ -385,7 +704,7 @@ func run() -> void:
 
 	# --- terminale di sicurezza via minigioco di hacking (forzato)
 	var term: Node = null
-	for e in lvl.entities.get_children():
+	for e in lvl.find_children("*", "", true, false):
 		if e is SecurityTerminal:
 			term = e
 	Game.ui.open_lock(term)
@@ -407,7 +726,7 @@ func run() -> void:
 	var cams_off := true
 	for c in get_tree().get_nodes_in_group("security_cameras"):
 		cams_off = cams_off and c.disabled
-	check(cams_off and not lvl.turret.is_hostile_active(), "telecamere e torretta disattivate")
+	check(cams_off and not turret.is_hostile_active(), "telecamere e torretta disattivate")
 
 	# --- IA: una guardia mi vede in piena luce
 	var hale := guard("Op. Hale")

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d33728qwt2dh0"]
+
+[ext_resource type="Script" uid="uid://by7gayjwvlj8t" path="res://scripts/world/light_switch.gd" id="1"]
+
+[node name="Interruttore" type="StaticBody3D" unique_id=1105670797]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("1")

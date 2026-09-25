@@ -1,3 +1,4 @@
+@tool
 class_name ElevatorPanel
 extends StaticBody3D
 ## Pulsantiera dell'ascensore di servizio: punto di estrazione.
@@ -12,7 +13,7 @@ func setup(pos: Vector3, yaw_deg: float) -> ElevatorPanel:
 
 
 func _ready() -> void:
-	collision_layer = Game.L_INTERACT
+	collision_layer = Layers.INTERACT
 	collision_mask = 0
 	Util.box(self, Vector3(0.3, 0.5, 0.05), Vector3.ZERO, Util.color_mat(Color(0.25, 0.24, 0.22)))
 	var b := Util.box(self, Vector3(0.1, 0.1, 0.03), Vector3(0, 0.1, 0.035), Util.color_mat(Color(0.2, 0.8, 1.0), 2.0, true))

@@ -7,8 +7,19 @@ static var _mat_cache := {}
 static var _highlight_mat: StandardMaterial3D
 
 
-static func tex(tex_name: String) -> Texture2D:
-	return load("res://assets/textures/%s.png" % tex_name)
+## Texture per nome (assets/textures/<nome>.png) oppure la Texture2D stessa.
+static func tex(t: Variant) -> Texture2D:
+	if t is Texture2D:
+		return t
+	if t == null or String(t) == "":
+		return null
+	return load("res://assets/textures/%s.png" % t)
+
+
+static func _tex_key(t: Variant) -> String:
+	if t is Texture2D:
+		return (t as Texture2D).resource_path
+	return "" if t == null else String(t)
 
 
 ## Materiale con texture a filtro nearest (look Dark Engine).
@@ -17,17 +28,21 @@ static func tex(tex_name: String) -> Texture2D:
 ##   fit: Vector3      -> triplanare locale che "stende" la texture una volta per faccia di un box di quelle dimensioni
 ##   color: Color      -> tinta
 ##   emission: float   -> intensità emissiva (usa la texture come emissione, o emission_tex)
-##   emission_tex: String
+##   emission_tex: String o Texture2D
 ##   unshaded: bool, alpha: bool (alpha scissor), transparent: float (0..1), cull_off: bool
-static func mat(tex_name: String, opts := {}) -> StandardMaterial3D:
-	var key := tex_name + str(opts)
+## tex_name può essere il nome di una texture in assets/textures o una Texture2D.
+static func mat(tex_name: Variant, opts := {}) -> StandardMaterial3D:
+	var key := _tex_key(tex_name) + str(opts)
+	if opts.has("emission_tex"):
+		key += _tex_key(opts.emission_tex)
 	if _mat_cache.has(key):
 		return _mat_cache[key]
 	var m := StandardMaterial3D.new()
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS
 	m.roughness = 1.0
 	m.metallic_specular = 0.2
-	if tex_name != "":
+	var has_tex := _tex_key(tex_name) != ""
+	if has_tex:
 		m.albedo_texture = tex(tex_name)
 	m.albedo_color = opts.get("color", Color.WHITE)
 	if opts.has("fit"):
@@ -35,7 +50,7 @@ static func mat(tex_name: String, opts := {}) -> StandardMaterial3D:
 		m.uv1_triplanar = true
 		m.uv1_scale = Vector3(1.0 / max(s.x, 0.01), 1.0 / max(s.y, 0.01), 1.0 / max(s.z, 0.01))
 		m.uv1_offset = Vector3(0.5, 0.5, 0.5)
-	elif tex_name != "" and not opts.get("mesh_uv", false):
+	elif has_tex and not opts.get("mesh_uv", false):
 		var d: float = opts.get("density", 0.5)
 		m.uv1_triplanar = true
 		m.uv1_world_triplanar = true

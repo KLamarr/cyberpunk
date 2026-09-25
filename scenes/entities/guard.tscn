@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d1h18oc5cgj6r"]
+
+[ext_resource type="Script" uid="uid://vqjqr5lxolbc" path="res://scripts/actors/guard.gd" id="1"]
+
+[node name="Guardia" type="CharacterBody3D" unique_id=576752028]
+script = ExtResource("1")

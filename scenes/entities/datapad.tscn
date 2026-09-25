@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dqy7seabs2eru"]
+
+[ext_resource type="Script" uid="uid://cwgvw22wpro1n" path="res://scripts/world/datapad.gd" id="1"]
+
+[node name="Datapad" type="StaticBody3D" unique_id=1983423202]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("1")

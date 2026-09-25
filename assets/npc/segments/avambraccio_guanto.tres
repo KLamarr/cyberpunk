@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://cinbsofeoyanf"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_4jlf8"]
+
+[sub_resource type="Curve" id="Curve_wxlt1"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.48888883, 1, 1, Vector2(0.75, 0.8), -0.48888883, 2.9999988, 1, 1, Vector2(0.8, 0.95), 2.9999988, -0.44999993, 1, 1, Vector2(1, 0.86), -0.44999993, 0.0, 1, 1]
+point_count = 5
+
+[sub_resource type="Curve" id="Curve_884ny"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.066666596, 1, 1, Vector2(0.3, 1.02), 0.066666596, -0.48888883, 1, 1, Vector2(0.75, 0.8), -0.48888883, 2.9999988, 1, 1, Vector2(0.8, 0.95), 2.9999988, -0.44999993, 1, 1, Vector2(1, 0.86), -0.44999993, 0.0, 1, 1]
+point_count = 5
+
+[resource]
+resource_name = "avambraccio_guanto"
+script = ExtResource("1_4jlf8")
+category = 6
+tags = PackedStringArray("guardia")
+width_curve = SubResource("Curve_884ny")
+depth_curve = SubResource("Curve_wxlt1")
+radius_x = 0.042
+radius_z = 0.045
+extend_start = 0.1
+extend_end = 0.04
+section = PackedFloat32Array()
+split = 0.78

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://chvuw0lephtxf"]
+
+[ext_resource type="Script" uid="uid://rsacw87gdqsg" path="res://scripts/world/patrol_route.gd" id="1"]
+
+[node name="Percorso" type="Node3D" unique_id=748840329]
+script = ExtResource("1")

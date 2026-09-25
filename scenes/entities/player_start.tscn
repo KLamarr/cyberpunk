@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://1ddisw60invf"]
+
+[ext_resource type="Script" uid="uid://ds6begya4s58m" path="res://scripts/world/player_start.gd" id="1"]
+
+[node name="PartenzaPlayer" type="Marker3D" unique_id=1542544137]
+script = ExtResource("1")

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ppm1omv53jox"]
+
+[ext_resource type="Script" uid="uid://qd78poqaewuu" path="res://scripts/actors/security_camera.gd" id="1"]
+
+[node name="Telecamera" type="Node3D" unique_id=894267668]
+script = ExtResource("1")

@@ -1,57 +1,96 @@
+@tool
 class_name LightFixture
 extends StaticBody3D
 ## Luce di gioco: OmniLight3D + plafoniera colpibile.
 ## Tutte le LightFixture stanno nel gruppo "game_lights": il player somma i loro
 ## contributi (con raycast di occlusione) per calcolare quanto è visibile.
 ## Sparare o colpire la plafoniera la rompe: meno luce, ma rumore di vetri.
+## In gioco illumina solo la zona in cui si trova (vedi Zone).
 
 ## le energie visive sono più alte di quelle "di gioco": questo le riporta in scala
 const VIS_SCALE := 0.6
 
+@export var color := Color(0.75, 0.85, 1.0):
+	set(v):
+		color = v
+		_editor_rebuild()
+@export_range(0.0, 8.0, 0.05) var energy := 1.5:
+	set(v):
+		energy = v
+		_editor_rebuild()
+## Raggio in metri.
+@export_range(0.5, 30.0, 0.1) var light_range := 6.0:
+	set(v):
+		light_range = v
+		_editor_rebuild()
+## 0 = stabile, 1 = sfarfalla spesso (neon guasto).
+@export_range(0.0, 1.0, 0.05) var flicker := 0.0
+## panel: plafoniera. lamp: lampada piccola. none: solo luce (insegne, schermi).
+@export_enum("panel", "lamp", "none") var style := "panel":
+	set(v):
+		style = v
+		_editor_rebuild()
+## Ombre in tempo reale: costose, usale solo dove servono al gameplay.
+@export var shadows := false
+## Luce d'emergenza rossa: spenta finché non scatta il lockdown.
+@export var emergency := false
+## Zone illuminate. Vuoto = la zona in cui si trova la luce (di solito va bene così).
+@export_flags_3d_render var zones_override := 0
+
 var light: OmniLight3D
-var base_energy := 1.0
-var light_range := 6.0
-var color := Color.WHITE
-var flicker := 0.0        # 0 = stabile; 0..1 = frequenza dello sfarfallio
 var zones := 1
-var style := "panel"      # panel | lamp | none
-var shadows := false
-var emergency := false    # luce rossa che si accende solo in lockdown
 var is_on := true
 var broken := false
 var dim := 1.0
+var base_energy: float:
+	get:
+		return energy
 
 var _mesh: MeshInstance3D
 var _mat: StandardMaterial3D
+var _built: Array[Node] = []
 var _flick := 1.0
 var _flick_t := 0.0
 var _t := 0.0
 
 
-func setup(pos: Vector3, col: Color, energy: float, rng: float, zone_mask: int, opts := {}) -> LightFixture:
+## Usato dal codice (e dal convertitore) per creare una luce senza editor.
+func setup(pos: Vector3, col: Color, e: float, rng: float, zone_mask: int, opts := {}) -> LightFixture:
 	position = pos
 	color = col
-	base_energy = energy
+	energy = e
 	light_range = rng
-	zones = zone_mask
+	zones_override = zone_mask
 	flicker = opts.get("flicker", 0.0)
 	style = opts.get("style", "panel")
 	shadows = opts.get("shadows", false)
 	emergency = opts.get("emergency", false)
-	is_on = not emergency
 	return self
 
 
 func _ready() -> void:
+	is_on = not emergency or Engine.is_editor_hint()
+	_build()
+	if Engine.is_editor_hint():
+		return
 	add_to_group("game_lights")
-	collision_layer = Game.L_DEVICE
+	add_to_group("level_aware")
+
+
+func _build() -> void:
+	for n in _built:
+		if is_instance_valid(n):
+			remove_child(n)
+			n.queue_free()
+	_built.clear()
+	var before := get_child_count()
+	collision_layer = Layers.DEVICE
 	collision_mask = 0
 	light = OmniLight3D.new()
 	light.light_color = color
-	light.light_energy = base_energy if is_on else 0.0
+	light.light_energy = energy if is_on else 0.0
 	light.omni_range = light_range
 	light.omni_attenuation = 0.75
-	light.light_cull_mask = zones
 	light.shadow_enabled = shadows
 	light.light_specular = 0.3
 	light.position = Vector3(0, -0.2 if style == "panel" else 0.0, 0)
@@ -60,6 +99,7 @@ func _ready() -> void:
 	_mat = StandardMaterial3D.new()
 	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS
+	_mesh = null
 	match style:
 		"panel":
 			_mat.albedo_texture = Util.tex("light_panel")
@@ -70,7 +110,22 @@ func _ready() -> void:
 			Util.add_box_collider(self, Vector3(0.2, 0.15, 0.2))
 		_:
 			pass
+	if _mesh != null:
+		_mesh.set_meta("keep_layers", true)
 	_mesh_set_on(is_on)
+	for i in range(before, get_child_count()):
+		_built.append(get_child(i))
+
+
+func _editor_rebuild() -> void:
+	if Engine.is_editor_hint() and is_inside_tree():
+		_build()
+
+
+## Chiamato dal Level dopo aver compilato la geometria.
+func on_level_ready(level: Node) -> void:
+	zones = zones_override if zones_override != 0 else level.zone_mask_at(light.global_position)
+	light.light_cull_mask = zones
 
 
 func _mesh_set_on(on: bool) -> void:
@@ -81,12 +136,12 @@ func _mesh_set_on(on: bool) -> void:
 
 
 func _process(delta: float) -> void:
-	if not is_on or broken:
+	if Engine.is_editor_hint() or not is_on or broken:
 		return
 	_t += delta
 	if emergency:
 		# lampeggio rotante
-		light.light_energy = base_energy * (0.35 + 0.65 * absf(sin(_t * 2.6)))
+		light.light_energy = energy * (0.35 + 0.65 * absf(sin(_t * 2.6)))
 		return
 	if flicker > 0.0:
 		_flick_t -= delta
@@ -97,10 +152,10 @@ func _process(delta: float) -> void:
 			else:
 				_flick = 1.0
 				_flick_t = randf_range(0.1, 1.2) / max(flicker, 0.05)
-		light.light_energy = base_energy * _flick * dim
+		light.light_energy = energy * _flick * dim
 		_mesh_set_on(_flick > 0.5)
 	else:
-		light.light_energy = base_energy * dim
+		light.light_energy = energy * dim
 
 
 ## Contributo di luce nel punto p (per la visibilità del player).
@@ -117,7 +172,7 @@ func light_contribution(p: Vector3) -> float:
 	if c < 0.01:
 		return 0.0
 	var space := get_world_3d().direct_space_state
-	if not Util.ray_clear(space, lp, p, Game.L_WORLD | Game.L_DOOR, [get_rid()]):
+	if not Util.ray_clear(space, lp, p, Layers.WORLD | Layers.DOOR, [get_rid()]):
 		return 0.0
 	return c
 
@@ -127,7 +182,7 @@ func set_on(on: bool) -> void:
 		return
 	is_on = on
 	light.visible = on
-	light.light_energy = base_energy * dim if on else 0.0
+	light.light_energy = energy * dim if on else 0.0
 	_mesh_set_on(on)
 
 

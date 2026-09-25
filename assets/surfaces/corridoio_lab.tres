@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/ceiling_dark.png" id="1_f1uhs"]
+[ext_resource type="Texture2D" path="res://assets/textures/floor_grate.png" id="2_mht8n"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="3_sqoyt"]
+[ext_resource type="Texture2D" path="res://assets/textures/wall_tech.png" id="4_8f0r3"]
+
+[resource]
+script = ExtResource("3_sqoyt")
+wall_texture = ExtResource("4_8f0r3")
+floor_texture = ExtResource("2_mht8n")
+ceiling_texture = ExtResource("1_f1uhs")
+footsteps = "grate"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/hazard.png" id="1_dax0n"]
+[ext_resource type="Texture2D" path="res://assets/textures/floor_grate.png" id="2_nbs06"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="3_aid1x"]
+
+[resource]
+script = ExtResource("3_aid1x")
+wall_texture = ExtResource("1_dax0n")
+floor_texture = ExtResource("2_nbs06")
+ceiling_texture = ExtResource("1_dax0n")
+wall_scale = 1.0
+ceiling_scale = 1.0
+footsteps = "metal"

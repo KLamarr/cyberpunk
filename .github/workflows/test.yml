@@ -40,10 +40,38 @@ jobs:
         run: godot --headless --path . --import
 
       - name: Test end-to-end (63 controlli)
-        run: godot --headless --path . -- --autotest
+        run: timeout 300 godot --headless --path . -- --autotest
 
       - name: Test morte e riavvio
-        run: godot --headless --path . -- --autotest --death
+        run: timeout 300 godot --headless --path . -- --autotest --death
 
       - name: Test bottoni UI
-        run: godot --headless --path . -- --autotest --ui
+        run: timeout 300 godot --headless --path . -- --autotest --ui
+
+      - name: Test generatore di NPC
+        run: timeout 300 godot --headless --path . -- --autotest --npc
+
+      - name: Test del creatore di NPC nell'editor
+        run: |
+          # timeout: se il plugin non si carica l'editor resterebbe aperto fino al limite del job
+          NPC_CREATOR_SELFTEST=1 timeout 300 godot --headless --editor --path . 2>&1 | tee selftest.log
+          grep -q "RISULTATO CREATORE NPC: .*, 0 fail" selftest.log
+
+      - name: Test del livello della guida all'editor
+        run: timeout 300 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+
+      - name: Validazione dei livelli
+        run: |
+          for f in levels/*/*.tscn; do
+            godot --headless --path . -- --validate --level="res://$f"
+          done
+
+      - name: I livelli si aprono nell'editor senza errori
+        run: |
+          fail=0
+          for f in levels/*/*.tscn; do
+            echo "== editor: $f"
+            out=$(godot --headless --editor --path . "res://$f" --quit-after 400 2>&1)
+            if echo "$out" | grep -E "SCRIPT ERROR|Parse Error|ERROR:"; then fail=1; fi
+          done
+          exit $fail

@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bgsi37hl071nh"]
+
+[ext_resource type="Script" uid="uid://cpil0p5lx85fy" path="res://scripts/world/props/prop_box.gd" id="1"]
+
+[node name="Scatola" type="StaticBody3D" unique_id=1298294489]
+collision_mask = 0
+script = ExtResource("1")

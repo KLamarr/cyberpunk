@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/rust_metal.png" id="1_f16t8"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="2_6js3n"]
+
+[resource]
+script = ExtResource("2_6js3n")
+wall_texture = ExtResource("1_f16t8")
+floor_texture = ExtResource("1_f16t8")
+ceiling_texture = ExtResource("1_f16t8")
+wall_scale = 1.0
+floor_scale = 1.0
+ceiling_scale = 1.0
+footsteps = "metal"

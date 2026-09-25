@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bqiycve8jf1o1"]
+
+[ext_resource type="Script" uid="uid://c3omvcpkvuti3" path="res://scripts/world/elevator_panel.gd" id="1"]
+
+[node name="PulsantieraAscensore" type="StaticBody3D" unique_id=2100594874]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("1")

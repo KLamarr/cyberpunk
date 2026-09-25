@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://jedmxqbaq8k8"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_arart"]
+
+[sub_resource type="Curve" id="Curve_ma843"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1.04), 0.0, 0.0238095, 1, 1, Vector2(0.42, 1.05), 0.0238095, -2.9999988, 1, 1, Vector2(0.47, 0.9), -2.9999988, -0.41509432, 1, 1, Vector2(1, 0.68), -0.41509432, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_yvm5t"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1.04), 0.0, 0.0238095, 1, 1, Vector2(0.42, 1.05), 0.0238095, -2.9999988, 1, 1, Vector2(0.47, 0.9), -2.9999988, -0.41509432, 1, 1, Vector2(1, 0.68), -0.41509432, 0.0, 1, 1]
+point_count = 4
+
+[resource]
+resource_name = "avambraccio_nudo"
+script = ExtResource("1_arart")
+category = 6
+tags = PackedStringArray("tecnico", "civile")
+width_curve = SubResource("Curve_yvm5t")
+depth_curve = SubResource("Curve_ma843")
+radius_x = 0.04
+radius_z = 0.043
+extend_start = 0.1
+extend_end = 0.04
+section = PackedFloat32Array()
+split = 0.45
+band_b = 2
+color_slot_b = 0

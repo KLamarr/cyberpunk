@@ -22,6 +22,9 @@ Laboratorio C e tornare all'ascensore. Come ci arrivi è affar tuo.
 Una partita dura 10–25 minuti. Nessun asset esterno: texture e suoni sono generati dagli
 script in `tools/` e sono già inclusi.
 
+**Vuoi modificare la mappa o farne una nuova?** I livelli sono scene che si modificano
+nell'editor di Godot: leggi la [guida all'editor](docs/GUIDA_EDITOR.md), che parte da zero.
+
 ## Comandi
 
 | Tasto | Azione |
@@ -93,9 +96,9 @@ di ventilazione con un ramo segreto.
 
 ## Come è fatto il look Dark Engine
 
-- **Brush sottrattivi** (`scripts/world/level_builder.gd`): si parte da un blocco solido e
-  si scavano volumi d'aria con CSG, come in DromEd. Il CSG viene "compilato" in mesh
-  statiche e una collisione trimesh.
+- **Brush sottrattivi** (`scripts/world/level/`): nella scena del livello un blocco solido
+  (`Solido`) viene scavato da volumi d'aria (`Brush` dentro le `Zone`), come in DromEd.
+  All'avvio `LevelBuilder` "compila" il CSG in mesh statiche e una collisione trimesh.
 - **Zone di luce**: ogni triangolo è assegnato alla zona (stanza) del brush che l'ha
   generato e ogni zona è un bit dei render layer. Le luci illuminano solo la loro zona:
   la luce non attraversa i muri anche senza ombre, come con le lightmap del Dark Engine.
@@ -108,51 +111,147 @@ di ventilazione con un ramo segreto.
 - **Renderer Compatibility** (OpenGL 3.3): gira ovunque; poche luci con ombre nella hall
   e nel laboratorio, il resto a zone.
 
+## Creatore di NPC
+
+![Creatore di NPC](docs/screenshots/npc_creator.png)
+
+Plugin dell'editor (`addons/npc_creator`, già attivo): scheda **NPC** nella barra in alto,
+accanto a 2D, 3D e Script. A sinistra le schede con i controlli, a destra l'anteprima 3D
+che gira nello stesso SubViewport 640×360 con dithering del gioco (disattivabile), con
+le pose Riposo, Cammina, Corri, Mira e A terra, una luce regolabile per vedere l'NPC al buio
+e uno sfondo a scelta (buio come in gioco, grigio, chiaro, due colori di contrasto o
+personalizzato, con o senza pavimento): sugli NPC scuri uno sfondo chiaro fa leggere la sagoma.
+
+- **Corpo**: nome, archetipo, fazione; altezza, corporatura, spalle, fianchi, braccia,
+  gambe, testa, collo, postura; i 7 colori della tavolozza (pelle, uniforme, secondario,
+  armatura, stivali e guanti, capelli, luce di visore e impianto CALMA).
+- **Forme**: le 11 parti del corpo (testa, collo, torace, addome, bacino, braccio,
+  avambraccio, mano, coscia, stinco, piede). Per ognuna: la forma della libreria, un morph
+  verso una seconda forma, lo spessore, la **sezione** (trascini i vertici dell'anello,
+  con simmetria) e sotto, nell'Inspector integrato, le **curve di profilo** (larghezza,
+  profondità, sporgenza in avanti) con l'editor di curve di Godot, raggi, anelli, lati,
+  sovrapposizione alle articolazioni, materiale.
+- **Accessori**: casco, visore, impianto CALMA, colletto, spallacci, cintura, pistola,
+  capelli, berretto, cuffia, falda del camice... ognuno agganciato a un osso, con
+  posizione, direzione, lunghezza e specchiatura sui due lati.
+- **Gameplay**: vista, cono visivo, prontezza, udito, salute, precisione, danno, tempo di
+  reazione, velocità; se va a controllare i rumori, se dà l'allarme per un corpo, se
+  risponde agli allarmi, se chiama rinforzi.
+- **Inventario**: munizioni, crediti, medipatch, tessera; battute di ronda.
+
+In alto: **Nuovo** (NPC casuale dell'archetipo), **Apri**, **Salva**, **Salva come**,
+**Duplica**, **Seme** e **Casuale** (stesso seme = stesso aspetto). Un clic su una parte
+nell'anteprima la seleziona. Ogni modifica si annulla con Ctrl+Z. Aprire un file
+`.tres` di un NPC dal FileSystem lo carica nel creatore. Prima di lasciare un NPC con
+modifiche non salvate il creatore chiede **Salva / Scarta / Annulla**; **Scarta** lo
+riporta esattamente com'è su disco. **Salva come** lascia il file di prima com'era (con
+i livelli che lo usano) e continua sulla copia; salvare sopra un file già usato da un
+livello aperto aggiorna i dati senza staccare il livello dal file. Il Ctrl+S dell'editor,
+come fa Godot con tutte le risorse modificate, salva anche l'NPC aperto (se ha già un
+file) e le forme di libreria cambiate con «Modifica la libreria»; un NPC mai salvato resta
+da salvare, con un avviso nell'Output (chiudendo l'editor, «Salva» gli dà un nome libero
+in `assets/npc/characters/`). Se l'NPC è stato modificato dagli Inspector integrati,
+aprirne un altro azzera la cronologia di annulla globale, così un Ctrl+Z non può cambiare
+l'NPC appena chiuso. Una forma di libreria cambiata fuori dal creatore (Inspector
+principale) resta una modifica normale di Godot: Scarta non la tocca.
+
+**Libreria e file.** Le forme sono file in `assets/npc/segments/` condivisi fra gli NPC,
+e nel creatore sono **bloccate**: la nota dice quali personaggi usano la forma.
+**Rendi unica** ne fa una copia dentro l'NPC, da modificare liberamente; **Salva in
+libreria** la trasforma in un nuovo file riutilizzabile (la forma di partenza resta com'è).
+Per cambiare davvero una forma per tutti si attiva **Modifica la libreria**: la forma
+viene salvata nel suo file insieme all'NPC. Gli NPC sono `NPCDefinition` in
+`assets/npc/characters/`. Il generatore casuale pesca fra le forme della libreria
+(quelle con un tag d'archetipo, es. `guardia`, restano all'uniforme giusta), quindi una
+forma nuova entra subito nel mescolamento.
+
+![NPC generati](docs/screenshots/npc_lineup.png)
+
+**Come è fatto il corpo.** Scheletro di 17 ossa calcolato dalle proporzioni (rotazione di
+riposo nulla: la stessa animazione vale per ogni corporatura). Ogni segmento è un loft di
+anelli low-poly lungo il proprio osso, con pesi rigidi e sovrapposizione alle
+articolazioni come in System Shock 2. Corpo e accessori finiscono in **una sola mesh con
+un solo materiale** condiviso (atlante `npc_atlas.png` in scala di grigi + colori nei
+vertex color; visore e impianto CALMA emissivi, tinti per istanza secondo lo stato della
+guardia). La mesh si genera al caricamento (circa 5 ms per NPC) e resta in cache.
+L'animazione è procedurale sulle ossa, guidata dalla stessa fase dei passi udibili;
+le guardie lontane aggiornano la posa meno spesso.
+
+| Guardie nella hall | draw call con le vecchie primitive | draw call con la mesh unica |
+|---|---|---|
+| 14 | 970 | 406 |
+| 29 | 1558 | 451 |
+| 54 | 2720 | 559 |
+| 104 | 5264 | 788 |
+
+(`--autotest --stress` con un display; restano più draw call per guardia perché il
+renderer Compatibility disegna una passata per ogni luce e ombra che la tocca.)
+
+**Usare un NPC nel livello.** Trascina `scenes/entities/guard.tscn` nel livello e, nella
+proprietà **Definition**, trascina il personaggio da `assets/npc/characters/` (nell'editor
+la guardia prende subito il suo aspetto). La definizione dice chi è (aspetto, sensi,
+bottino, battute); il livello dove sta e che giro fa (**Patrol Route**). Da codice:
+`Guard.new().setup_def(def, posizione, direzione, percorso)`. Per rigenerare libreria e personaggi predefiniti:
+`godot --headless --path . --script tools/npc_seed.gd -- --force`. Per una foto di gruppo:
+`xvfb-run godot --path . --script tools/npc_lineup.gd -- --out=/tmp/npc.png --retro`.
+
 ## Struttura del progetto
 
 ```
-scenes/main.tscn            scena principale (tutto il resto è costruito da codice)
+levels/seraph/seraph.tscn   LA MAPPA: geometria, luci, porte, oggetti, guardie (si modifica nell'editor)
+levels/seraph/seraph.gd     logica della missione: obiettivi, battute, lockdown
+levels/palestra/            livello vuoto da cui partire (vedi la guida)
+levels/guida/               il livello costruito passo passo in docs/GUIDA_EDITOR.md
+scenes/main.tscn            scena principale: carica il livello, HUD e menu
+scenes/entities/*.tscn      entità da trascinare nei livelli (porte, luci, guardie, datapad…)
+scenes/props/*.tscn         arredo: scatole, pannelli, cilindri
+assets/surfaces/*.tres      SurfaceSet: texture e passi delle superfici delle stanze
 scripts/main.gd             SubViewport retro, HUD, UI, input globale
 scripts/core/game.gd        autoload Game: skill, inventario, obiettivi, rumore, allarmi
 scripts/core/sfx.gd         autoload Sfx: suoni 2D/3D e loop
 scripts/core/util.gd        materiali nearest, primitive, raycast, evidenziazione frob
+scripts/core/layers.gd      layer di collisione (mondo, player, npc, porte…)
 scripts/core/effects.gd     scintille, polvere, traccianti, lampi
-scripts/world/level_builder.gd   brush → mesh a zone → collisione
-scripts/world/level_seraph.gd    LA MAPPA: brush, luci, porte, oggetti, guardie, script di missione
+scripts/world/level/        Level (base dei livelli), LevelGeometry, Zone, Brush, SurfaceSet,
+                            LevelBuilder (brush → mesh a zone → collisione)
 scripts/world/*.gd          porte, luci, pickup, datapad, oggetti fisici, grate, terminale,
-                            stazione di potenziamento, nucleo, ascensore, interruttori, trigger
+                            stazione di potenziamento, nucleo, ascensore, interruttori, trigger,
+                            percorsi di ronda, PlayerStart
+scripts/world/props/        PropBox, PropQuad, PropCylinder
 scripts/actors/player.gd    controller, mantle, lean, visibilità, passi, armi, frob, trasporto
-scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi)
+scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi), legge una NPCDefinition
+scripts/npc/*.gd            NPC: definizione, forme, scheletro, costruzione della mesh, corpo animato, libreria
 scripts/actors/security_camera.gd, turret.gd, turret_panel.gd
 scripts/ui/hud.gd           gemma di luce, rumore, salute, arma, prompt, sottotitoli
 scripts/ui/ui_root.gd       menu, PDA, serrature/tastierino, hacking, potenziamento, terminali, fine
 scripts/data/logs.gd        testi dei registri
+addons/npc_creator/         plugin dell'editor: creatore di NPC (scheda "NPC")
+assets/npc/segments/        libreria delle forme dei segmenti (.tres)
+assets/npc/characters/      definizioni degli NPC: Ruiz, Hale, Kovač, Mori (.tres)
+shaders/npc_body.gdshader   materiale unico degli NPC (atlante + vertex color + luce per istanza)
+tools/validate_level.gd     validatore dei livelli (gira anche a ogni F6)
+tools/autotest.gd           test end-to-end
+tools/convert_seraph.gd     il convertitore usato una volta per passare dalla mappa in codice alla scena
+tools/npc_seed.gd           scrive libreria e personaggi predefiniti
+tools/npc_lineup.gd         foto di gruppo degli NPC (verifica visiva)
 tools/gen_textures.py       generatore delle texture (Python + numpy + Pillow)
 tools/gen_sounds.py         generatore degli effetti sonori
-tools/autotest.gd           test end-to-end
 ```
 
 ## Estendere la mappa
 
-Tutto il livello è in `level_seraph.gd`. Una nuova stanza collegata alla hall:
+Tutto si fa nell'editor: apri `levels/seraph/seraph.tscn` (o la palestra), scava stanze con
+i `Brush` dentro le `Zone`, trascina le entità da `scenes/entities/`, premi **F6** per
+provare. La [guida all'editor](docs/GUIDA_EDITOR.md) spiega tutto passo passo.
 
-```gdscript
-# in _carve(): volume d'aria della stanza e passaggio nel muro (1 m)
-b.carve(Vector3(-18, 0, -12), Vector3(-11, 3.5, -6), "office", Z_NUOVA)
-b.carve(Vector3(-11, 0, -5.2), Vector3(-10, 2.5, -3.6), "frame", Z_LOBBY | Z_NUOVA)
-# in _lights():
-light(Vector3(-14.5, 3.45, -9), Color(0.8, 0.9, 1.0), 1.5, 6.0, Z_NUOVA)
-# in _doors(): porta con codice e hack
-_add(SlidingDoor.new().setup(Vector3(-10.5, 0, -4.4), 90, 1.6, 2.5, {"title": "Archivio", "code": "1234", "hack": 1, "difficulty": 1}))
-# in _guards(): nome, posizione, direzione, percorso [[punto, attesa]], bottino
-_add(Guard.new().setup("Ag. Nuova", Vector3(-15, 0, -9), 0, [[Vector3(-15, 0, -9), 3.0], [Vector3(-12, 0, -9), 2.0]], {"ammo": 4}))
-```
-
-Le zone sono bit (`const Z_NUOVA := 512`). I registri si aggiungono in `scripts/data/logs.gd`
-e si piazzano con `Datapad.new().setup(pos, "id")`. Un oggetto qualsiasi diventa
-interattivo se ha i metodi `get_frob_text()` e `frob(player)`; un bersaglio se ha
-`take_damage(amount, hit_pos, dir, kind)`; una serratura se espone `get_lock_info()`,
-`try_code()` e `on_hack_result()`.
+Dal lato codice: i registri si aggiungono in `scripts/data/logs.gd`; la logica di missione
+di un livello si scrive estendendo `Level` (vedi `levels/seraph/seraph.gd`: `setup_mission`,
+`start_intro`, `on_lockdown`). Un oggetto qualsiasi diventa interattivo se ha i metodi
+`get_frob_text()` e `frob(player)`; un bersaglio se ha `take_damage(amount, hit_pos, dir,
+kind)`; una serratura se espone `get_lock_info()`, `try_code()` e `on_hack_result()`. Le
+entità nuove seguono lo schema di quelle esistenti: script `@tool` con proprietà `@export`
+commentate (il commento diventa il tooltip dell'Inspector) e una scena in
+`scenes/entities/`.
 
 ## Test automatico
 
@@ -162,8 +261,19 @@ godot --headless --path . -- --autotest            # 63 controlli: navmesh, frob
                                                    # lancio, mantle nel condotto, lockdown, estrazione
 godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
 godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino
+godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
+godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache
+NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .   # il creatore nell'editor: controlli, Ctrl+Z,
+                                                   # forme bloccate, Rendi unica, Salva come, Scarta, Ctrl+S,
+                                                   # cronologia della scena (scrive solo in user://)
+godot --path . -- --autotest --stress              # 10/25/50/100 guardie: tempo di frame (media e 95%)
+                                                   # e draw call (non passa/fallisce)
 godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
 ```
+
+La CI (`.github/workflows/test.yml`) esegue i test, valida tutti i livelli in `levels/` e li
+apre nell'editor per scovare errori negli script `@tool`.
 
 Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sounds.py`
 (servono `numpy` e `Pillow`), poi riapri l'editor per il reimport.
@@ -171,8 +281,11 @@ Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sound
 ## Limiti noti / prossimi passi
 
 - Niente salvataggio/caricamento (il classico quicksave F5/F9 è il prossimo pezzo naturale).
-- Guardie e armi sono modelli a primitive con animazione procedurale: vanno sostituiti con
-  modelli low-poly animati.
+- Le guardie sono modelli low-poly skinnati generati dal creatore di NPC, ma l'animazione
+  è ancora procedurale (passo, corsa, mira, respiro, caduta): mancano clip vere (colpito,
+  perquisizione, reazioni) e le armi in prima persona sono ancora primitive.
+- Il creatore modella i segmenti con curve e sezione; mancano le maniglie per trascinare
+  gli anelli direttamente nella vista 3D.
 - Il suono si attenua con raycast diretti; il Dark Engine propagava il suono lungo le stanze
   (portali): con le zone già presenti si può fare un grafo stanza→stanza.
 - Una sola arma da fuoco e nessun tipo di munizione alternativo.

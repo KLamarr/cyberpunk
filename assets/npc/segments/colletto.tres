@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://m5ge5dyfqu30"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_ssfpc"]
+
+[sub_resource type="Curve" id="Curve_0ndtc"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0.05), 0.0, -0.050000004, 1, 1, Vector2(1, 0), -0.050000004, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_g8qeu"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13999999, 1, 1, Vector2(1, 0.86), -0.13999999, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_vkfkx"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.13999999, 1, 1, Vector2(1, 0.86), -0.13999999, 0.0, 1, 1]
+point_count = 2
+
+[resource]
+resource_name = "colletto"
+script = ExtResource("1_ssfpc")
+tags = PackedStringArray("guardia")
+width_curve = SubResource("Curve_vkfkx")
+depth_curve = SubResource("Curve_g8qeu")
+bulge_curve = SubResource("Curve_0ndtc")
+radius_x = 0.078
+radius_z = 0.082
+rings = 2
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+smooth = false
+section = PackedFloat32Array()
+band = 1
+attach_bone = "neck"
+attach_offset = Vector3(0, -0.02, 0)
+attach_length = 0.07

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/ceiling_panel.png" id="1_nut7d"]
+[ext_resource type="Texture2D" path="res://assets/textures/floor_lab.png" id="2_3bdcv"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="3_3lrjd"]
+[ext_resource type="Texture2D" path="res://assets/textures/wall_tech.png" id="4_gubry"]
+
+[resource]
+script = ExtResource("3_3lrjd")
+wall_texture = ExtResource("4_gubry")
+floor_texture = ExtResource("2_3bdcv")
+ceiling_texture = ExtResource("1_nut7d")

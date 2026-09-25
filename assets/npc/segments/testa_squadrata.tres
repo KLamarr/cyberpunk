@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://71jp4rtfeknc"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_0q4oo"]
+
+[sub_resource type="Curve" id="Curve_n5qg8"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0.18), 0.0, -0.22857144, 1, 1, Vector2(0.35, 0.1), -0.22857144, -0.22857143, 1, 1, Vector2(0.7, 0.02), -0.22857143, -0.06666666, 1, 1, Vector2(1, 0), -0.06666666, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_biops"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.62), 0.0, 1.6000001, 1, 1, Vector2(0.15, 0.86), 1.6000001, 0.46666667, 1, 1, Vector2(0.45, 1), 0.46666667, -0.1666667, 1, 1, Vector2(0.75, 0.95), -0.1666667, -1.4705881, 1, 1, Vector2(0.92, 0.7), -1.4705881, -5.0000005, 1, 1, Vector2(1, 0.3), -5.0000005, 0.0, 1, 1]
+point_count = 6
+
+[sub_resource type="Curve" id="Curve_ra5se"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.75), 0.0, 0.85, 1, 1, Vector2(0.2, 0.92), 0.85, 0.2666666, 1, 1, Vector2(0.5, 1), 0.2666666, -0.1666667, 1, 1, Vector2(0.8, 0.95), -0.1666667, -1.642857, 1, 1, Vector2(0.94, 0.72), -1.642857, -6.1666675, 1, 1, Vector2(1, 0.35), -6.1666675, 0.0, 1, 1]
+point_count = 6
+
+[resource]
+resource_name = "testa_squadrata"
+script = ExtResource("1_0q4oo")
+category = 0
+tags = PackedStringArray()
+width_curve = SubResource("Curve_ra5se")
+depth_curve = SubResource("Curve_biops")
+bulge_curve = SubResource("Curve_n5qg8")
+radius_x = 0.09
+radius_z = 0.098
+rings = 6
+sides = 8
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array(1, 1.08, 1, 1.1, 0.96, 1.1, 1, 1.08)
+band = 3
+color_slot = 0

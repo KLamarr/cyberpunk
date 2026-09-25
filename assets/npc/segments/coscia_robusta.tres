@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://pxdwtaolyhal"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_cn6x2"]
+
+[sub_resource type="Curve" id="Curve_1xco2"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.088888936, 1, 1, Vector2(0.45, 0.96), -0.088888936, -0.47272724, 1, 1, Vector2(1, 0.7), -0.47272724, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_pf5b0"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.088888936, 1, 1, Vector2(0.45, 0.96), -0.088888936, -0.47272724, 1, 1, Vector2(1, 0.7), -0.47272724, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "coscia_robusta"
+script = ExtResource("1_cn6x2")
+category = 8
+tags = PackedStringArray()
+width_curve = SubResource("Curve_pf5b0")
+depth_curve = SubResource("Curve_1xco2")
+radius_x = 0.09
+radius_z = 0.096
+sides = 7
+extend_start = 0.12
+extend_end = 0.08
+cap_start = true
+section = PackedFloat32Array()
+color_slot = 2

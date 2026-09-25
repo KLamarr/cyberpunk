@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://cesgvsvjopodm"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_23y5y"]
+
+[sub_resource type="Curve" id="Curve_icp31"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.22857156, 1, 1, Vector2(0.35, 1.08), 0.22857156, -0.46153858, 1, 1, Vector2(1, 0.78), -0.46153858, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_2mm3v"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.22857156, 1, 1, Vector2(0.35, 1.08), 0.22857156, -0.46153858, 1, 1, Vector2(1, 0.78), -0.46153858, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "braccio_muscoloso"
+script = ExtResource("1_23y5y")
+category = 5
+tags = PackedStringArray()
+width_curve = SubResource("Curve_2mm3v")
+depth_curve = SubResource("Curve_icp31")
+radius_x = 0.06
+radius_z = 0.064
+extend_start = 0.18
+extend_end = 0.1
+cap_start = true
+section = PackedFloat32Array()

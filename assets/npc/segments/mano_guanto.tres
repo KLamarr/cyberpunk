@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://c4luhm1400xbw"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_dmgyw"]
+
+[sub_resource type="Curve" id="Curve_84lkp"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.8), 0.0, 0.44444442, 1, 1, Vector2(0.45, 1), 0.44444442, -0.7272726, 1, 1, Vector2(1, 0.6), -0.7272726, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_kebqe"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.95), 0.0, 0.111111134, 1, 1, Vector2(0.45, 1), 0.111111134, -0.7272726, 1, 1, Vector2(1, 0.6), -0.7272726, 0.0, 1, 1]
+point_count = 3
+
+[resource]
+resource_name = "mano_guanto"
+script = ExtResource("1_dmgyw")
+category = 7
+tags = PackedStringArray("guardia")
+width_curve = SubResource("Curve_kebqe")
+depth_curve = SubResource("Curve_84lkp")
+radius_x = 0.025
+radius_z = 0.045
+rings = 3
+extend_start = 0.12
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array()
+band = 4
+color_slot = 4

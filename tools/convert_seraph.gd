@@ -1,20 +1,10 @@
-extends Node3D
-## LIVELLO: Arcologia Nysa, livello 14 — ala laboratori della Seraph Biotek.
-##
-## Pianta (x verso est, z verso sud; misure in metri):
-##
-##          ┌──────────── LABORATORIO C ────────────┐ z -30..-18
-##          │  server   [NUCLEO]   server      ═════╪═══ condotto ═══╗
-##          └──────────────┬[porta]┬────────────────┘                ║
-##                         │ corr. │ torretta                        ║  (segreto)
-##   ┌─────────┐   ┌───────┴───────┴──────────┐   ┌───────────┐ ═════╝
-##   │SICUREZZA│═══│          HALL            │═══│SALA RELAX │ grata
-##   └─────────┘   │  (telecamera NE)         │   └───────────┘
-##   ┌─────────┐═══│                          │
-##   │MAGAZZINO│   └───────────[porta]────────┘
-##   └─────────┘               │ corridoio di servizio ═ [START/ascensore]
-##
-## Tutta la geometria è scavata con brush sottrattivi (vedi LevelBuilder).
+extends Node
+## CONVERTITORE UNA TANTUM: dalla vecchia mappa scritta in codice alla scena
+## levels/seraph/seraph.tscn (+ i SurfaceSet in assets/surfaces).
+## Uso:  godot --headless --path . -- --convert-seraph --force
+## ATTENZIONE: sovrascrive seraph.tscn e i SurfaceSet, cancellando le modifiche
+## fatte nell'editor (per questo serve --force). Tenuto nel repo come esempio di
+## come generare livelli da script.
 
 const Z_START := 1
 const Z_SERV := 2
@@ -25,59 +15,117 @@ const Z_STORE := 32
 const Z_LABC := 64
 const Z_LAB := 128
 const Z_VENT := 256
+const ZONE_NAMES := {1: "Partenza", 2: "Servizio", 4: "Relax", 8: "Hall", 16: "Sicurezza", 32: "Magazzino", 64: "CorridoioLab", 128: "Laboratorio", 256: "Condotti"}
+const SET_FILES := {
+	"start": "partenza", "elev": "ascensore", "frame": "cornice", "frame_hz": "cornice_pericolo",
+	"service": "servizio", "lobby": "hall", "office": "sicurezza", "break": "relax",
+	"store": "magazzino", "labc": "corridoio_lab", "lab": "laboratorio", "vent": "condotto",
+	"pillar": "pilastro",
+}
+const OUT := "res://levels/seraph/seraph.tscn"
 
-var builder: LevelBuilder
-var nav: NavigationRegion3D
-var props_root: Node3D
-var entities: Node3D
-var normal_lights: Array = []
-var emergency_lights: Array = []
+var root: Node3D
+var geo: LevelGeometry
+var solids: CSGCombiner3D
+var zone_nodes := {}
+var groups := {}
+var surfaces := {}
+var counters := {}
 var lab_lights: Array = []
-var turret: Turret
-var player: Player
-var spawn_pos := Vector3(19.4, 0.05, 15.2)
-var spawn_yaw := 90.0
+var turret: Node
 
 
 func _ready() -> void:
-	Game.level = self
+	if FileAccess.file_exists(OUT) and not ("--force" in OS.get_cmdline_user_args()):
+		push_error("%s esiste già: rigenerarla cancella le modifiche fatte nell'editor. Aggiungi --force se sei sicuro." % OUT)
+		get_tree().quit(1)
+		return
+	convert_level()
+	get_tree().quit()
+
+
+func _count(key: String) -> int:
+	counters[key] = int(counters.get(key, 0)) + 1
+	return counters[key]
+
+
+func _own(n: Node, parent: Node) -> Node:
+	parent.add_child(n)
+	n.owner = root
+	return n
+
+
+func _group(group_name: String) -> Node3D:
+	if not groups.has(group_name):
+		var g := Node3D.new()
+		g.name = group_name
+		_own(g, root)
+		groups[group_name] = g
+	return groups[group_name]
+
+
+func convert_level() -> void:
+	root = Node3D.new()
+	root.name = "Seraph"
+	root.set_script(load("res://levels/seraph/seraph.gd"))
 	_environment()
-	builder = LevelBuilder.new(self, Vector3(-24, -1, -34), Vector3(24, 8, 22))
+	geo = LevelGeometry.new()
+	geo.name = "Geometria"
+	_own(geo, root)
+	var solid := CSGBox3D.new()
+	solid.name = "Solido"
+	solid.size = Vector3(48, 9, 56)
+	solid.position = Vector3(0, 3.5, -6)
+	var inv := StandardMaterial3D.new()
+	inv.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	inv.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	inv.albedo_color = Color(0, 0, 0, 0)
+	ResourceSaver.save(inv, "res://assets/materials/solido_invisibile.tres")
+	solid.material = load("res://assets/materials/solido_invisibile.tres")
+	solid.set_meta("_edit_lock_", true)
+	_own(solid, geo)
 	_define_sets()
 	_carve()
-	nav = NavigationRegion3D.new()
-	nav.name = "Navigation"
-	add_child(nav)
-	builder.compile(nav)
-	props_root = Node3D.new()
-	props_root.name = "Props"
-	nav.add_child(props_root)
-	entities = Node3D.new()
-	entities.name = "Entities"
-	add_child(entities)
+	solids = CSGCombiner3D.new()
+	solids.name = "Solidi"
+	_own(solids, geo)
+	_solids()
+	for g in ["Arredo", "Luci", "Porte", "Dispositivi", "Oggetti", "Guardie", "Trigger"]:
+		_group(g)
+	var routes := Node3D.new()
+	routes.name = "Percorsi"
+	_own(routes, _group("Guardie"))
+	groups["Percorsi"] = routes
 	_props()
-	_bake_nav()
 	_lights()
 	_doors()
 	_devices()
 	_items()
 	_guards()
 	_triggers()
-	_spawn_player()
+	var start := PlayerStart.new()
+	start.name = "PartenzaPlayer"
+	start.position = Vector3(19.4, 0, 15.2)
+	start.rotation_degrees.y = 90
+	_own(start, root)
+	var lock := Marker3D.new()
+	lock.name = "PuntoLockdown"
+	lock.position = Vector3(0, 0, -9)
+	_own(lock, root)
+	var ps := PackedScene.new()
+	var err := ps.pack(root)
+	if err != OK:
+		push_error("pack fallito: %d" % err)
+		return
+	DirAccess.make_dir_recursive_absolute("res://levels/seraph")
+	err = ResourceSaver.save(ps, OUT)
+	print("Scena salvata: ", OUT, " (", err, ") nodi: ", root.get_child_count())
+	root.free()
 
 
-# --- interfaccia usata dagli altri script ----------------------------------------------
-func zone_mask_at(p: Vector3) -> int:
-	return builder.zone_mask_at(p)
-
-
-func surface_at(p: Vector3) -> String:
-	return builder.surface_at(p)
-
-
-# --- ambiente -----------------------------------------------------------------------
 func _environment() -> void:
 	var we := WorldEnvironment.new()
+	we.name = "Ambiente"
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.0, 0.0, 0.01)
@@ -90,11 +138,79 @@ func _environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	env.tonemap_exposure = 1.1
 	we.environment = env
-	add_child(we)
+	_own(we, root)
+
+
+# --- brush -------------------------------------------------------------------------
+func define_set(set_name: String, wall: String, floor_tex: String, ceil: String, sound := "concrete", scales := Vector3(0.5, 0.5, 0.5), tint := Color.WHITE) -> void:
+	var s := SurfaceSet.new()
+	s.wall_texture = Util.tex(wall)
+	s.floor_texture = Util.tex(floor_tex)
+	s.ceiling_texture = Util.tex(ceil)
+	s.wall_scale = scales.x
+	s.floor_scale = scales.y
+	s.ceiling_scale = scales.z
+	s.tint = tint
+	s.footsteps = sound
+	var path := "res://assets/surfaces/%s.tres" % SET_FILES[set_name]
+	DirAccess.make_dir_recursive_absolute("res://assets/surfaces")
+	ResourceSaver.save(s, path)
+	surfaces[set_name] = load(path)
+
+
+func _zone(bit: int) -> Zone:
+	if not zone_nodes.has(bit):
+		var z := Zone.new()
+		z.name = "Zona" + ZONE_NAMES[bit]
+		z.layer = bit
+		z.operation = CSGShape3D.OPERATION_SUBTRACTION
+		_own(z, geo)
+		zone_nodes[bit] = z
+	return zone_nodes[bit]
+
+
+func _brush(a: Vector3, b: Vector3, set_name: String) -> Brush:
+	var br := Brush.new()
+	var mn := Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+	var mx := Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+	br.size = _snap(mx - mn)
+	br.position = _snap((mn + mx) * 0.5)
+	br.surface = surfaces[set_name]
+	return br
+
+
+## arrotonda al millimetro calcolando in double (niente 1.5000001 nell'Inspector)
+func _snap(v: Vector3) -> Vector3:
+	return Vector3(snappedf(v.x, 0.001), snappedf(v.y, 0.001), snappedf(v.z, 0.001))
+
+
+func carve(a: Vector3, b: Vector3, set_name: String, zones: int) -> void:
+	var bit := zones & -zones
+	var br := _brush(a, b, set_name)
+	br.extra_zones = zones & ~bit
+	var z := _zone(bit)
+	br.name = SET_FILES[set_name].to_pascal_case() + str(z.get_child_count() + 1)
+	_own(br, z)
+
+
+var _pending_solids: Array = []
+
+
+func add_solid(a: Vector3, b: Vector3, set_name: String, zones: int, rot_deg := Vector3.ZERO) -> void:
+	_pending_solids.append([a, b, set_name, zones, rot_deg])
+
+
+func _solids() -> void:
+	for d in _pending_solids:
+		var br := _brush(d[0], d[1], d[2])
+		br.rotation_degrees = d[4]
+		br.extra_zones = d[3]
+		br.name = SET_FILES[d[2]].to_pascal_case() + str(solids.get_child_count() + 1)
+		_own(br, solids)
 
 
 func _define_sets() -> void:
-	var b := builder
+	var b = self
 	b.define_set("start", "wall_concrete", "floor_grate", "ceiling_dark", "grate")
 	b.define_set("elev", "wall_panel", "floor_grate", "ceiling_panel", "metal", Vector3(0.5, 0.5, 0.5), Color(1.0, 0.9, 0.75))
 	b.define_set("frame", "wall_panel", "floor_grate", "wall_panel", "metal", Vector3(0.5, 0.5, 0.5), Color(0.7, 0.72, 0.75))
@@ -111,7 +227,7 @@ func _define_sets() -> void:
 
 
 func _carve() -> void:
-	var b := builder
+	var b = self
 	# ascensore e stanza di partenza
 	b.carve(Vector3(12, 0, 12), Vector3(18, 3.5, 18), "start", Z_START)
 	b.carve(Vector3(18, 0, 14), Vector3(20.6, 3.0, 16.4), "elev", Z_START)
@@ -147,71 +263,69 @@ func _carve() -> void:
 	b.carve(Vector3(16.6, 1.0, -14), Vector3(20, 2.1, -12.9), "vent", Z_VENT)
 
 
-func _bake_nav() -> void:
-	var nm := NavigationMesh.new()
-	nm.cell_size = 0.2
-	nm.cell_height = 0.2
-	nm.agent_radius = 0.4
-	nm.agent_height = 1.8
-	nm.agent_max_climb = 0.4
-	nm.agent_max_slope = 40.0
-	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
-	nm.geometry_collision_mask = Game.L_WORLD
-	nm.filter_baking_aabb = AABB(Vector3(-23, -0.5, -33), Vector3(46, 7.0, 54))
-	nav.navigation_mesh = nm
-	NavigationServer3D.map_set_cell_size(get_world_3d().navigation_map, 0.2)
-	NavigationServer3D.map_set_cell_height(get_world_3d().navigation_map, 0.2)
-	nav.bake_navigation_mesh(false)
+# --- arredo: dai vecchi materiali alle proprietà dei prop -------------------------------
+func _box_fields(inst: PropBox, m: Material) -> void:
+	var sm := m as StandardMaterial3D
+	inst.texture = sm.albedo_texture
+	inst.tint = Color(sm.albedo_color.r, sm.albedo_color.g, sm.albedo_color.b, 1.0)
+	if sm.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA:
+		inst.opacity = sm.albedo_color.a
+	if sm.albedo_texture != null:
+		if sm.uv1_world_triplanar:
+			inst.uv_mode = 1
+			inst.density = sm.uv1_scale.x
+		else:
+			inst.uv_mode = 0
+	if sm.emission_enabled:
+		inst.emission = sm.emission_energy_multiplier
+		if sm.emission_texture != null and sm.emission_texture != sm.albedo_texture:
+			inst.emission_texture = sm.emission_texture
 
 
-# --- helper ---------------------------------------------------------------------------
-func light(pos: Vector3, col: Color, energy: float, rng: float, zones: int, opts := {}) -> LightFixture:
-	var l := LightFixture.new().setup(pos, col, energy, rng, zones, opts)
-	entities.add_child(l)
-	Util.set_layers_recursive(l, zones)
-	if l.emergency:
-		emergency_lights.append(l)
-	else:
-		normal_lights.append(l)
-	return l
+func prop(size: Vector3, pos: Vector3, m: Material, rot := Vector3.ZERO, collide := true) -> PropBox:
+	var inst: PropBox = load("res://scenes/props/prop_box.tscn").instantiate()
+	inst.name = "Arredo%d" % _count("arredo")
+	inst.size = size
+	inst.position = pos
+	inst.rotation_degrees = rot
+	_box_fields(inst, m)
+	if not collide:
+		inst.collision = 2
+	_own(inst, _group("Arredo"))
+	return inst
 
 
-func prop(size: Vector3, pos: Vector3, m: Material, rot := Vector3.ZERO) -> StaticBody3D:
-	var sb := Util.static_box(props_root, size, pos, m, Game.L_WORLD, rot)
-	Util.set_layers_recursive(sb, zone_mask_at(pos + Vector3(0, size.y * 0.5 + 0.2, 0)))
-	return sb
+func deco(tex_name: String, size: Vector2, pos: Vector3, yaw := 0.0, emission := 0.0, alpha := false) -> void:
+	var q: PropQuad = load("res://scenes/props/prop_quad.tscn").instantiate()
+	q.name = "Pannello_" + tex_name + str(_count("q_" + tex_name))
+	q.size = size
+	q.texture = Util.tex(tex_name)
+	q.emission = emission
+	q.alpha_cut = alpha
+	q.position = pos
+	q.rotation_degrees.y = yaw
+	_own(q, _group("Arredo"))
 
 
-func deco(tex_name: String, size: Vector2, pos: Vector3, yaw := 0.0, emission := 0.0, alpha := false) -> MeshInstance3D:
-	var opts := {"mesh_uv": true}
-	if emission > 0.0:
-		opts["emission"] = emission
-	if alpha:
-		opts["alpha"] = true
-	var q := Util.quad(entities, size, pos, Util.mat(tex_name, opts), Vector3(0, yaw, 0))
-	q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	q.layers = zone_mask_at(pos)
-	return q
-
-
-func _add(n: Node3D) -> Node3D:
-	entities.add_child(n)
-	Util.set_layers_recursive(n, zone_mask_at(n.global_position + Vector3.UP * 0.3))
-	return n
+func cyl(radius: float, length: float, pos: Vector3, tex_name: String, opacity := 1.0, sides := 6, basis := Basis(), tint := Color.WHITE) -> void:
+	var c: PropCylinder = load("res://scenes/props/prop_cylinder.tscn").instantiate()
+	c.name = ("Tubo" if tex_name == "pipe" else "Cilindro") + str(_count("cyl"))
+	c.radius = radius
+	c.length = length
+	c.sides = sides
+	c.texture = Util.tex(tex_name) if tex_name != "" else null
+	c.tint = tint
+	c.opacity = opacity
+	c.transform = Transform3D(basis, pos)
+	_own(c, _group("Arredo"))
 
 
 func pipe(from: Vector3, to: Vector3, r := 0.08) -> void:
-	var mid := (from + to) * 0.5
-	var length := from.distance_to(to)
-	var mi := Util.cylinder(props_root, r, length, mid, Util.mat("pipe", {"fit": Vector3(r * 2, length, r * 2)}), Vector3.ZERO, 6)
 	var dir := (to - from).normalized()
-	if absf(dir.y) < 0.99:
-		mi.look_at_from_position(mid, to, Vector3.UP)
-		mi.rotate_object_local(Vector3.RIGHT, PI * 0.5)
-	mi.layers = zone_mask_at(mid)
+	var q := Quaternion(Vector3.UP, dir) if absf(dir.dot(Vector3.UP)) < 0.999 else Quaternion.IDENTITY
+	cyl(r, from.distance_to(to), (from + to) * 0.5, "pipe", 1.0, 6, Basis(q))
 
 
-# --- arredo ------------------------------------------------------------------------
 func _props() -> void:
 	var crate := Util.mat("crate", {"fit": Vector3(0.9, 0.9, 0.9)})
 	var crate_s := Util.mat("crate", {"fit": Vector3(0.8, 0.8, 0.8)})
@@ -242,14 +356,12 @@ func _props() -> void:
 	prop(Vector3(4.2, 1.1, 0.9), Vector3(0, 0.55, 4.6), panel)
 	prop(Vector3(4.4, 0.06, 1.1), Vector3(0, 1.13, 4.6), desk)
 	for x in [-1.0, 1.0]:
-		var mon := Util.box(props_root, Vector3(0.55, 0.36, 0.05), Vector3(x, 1.4, 4.75), Util.mat("screen_blue", {"fit": Vector3(0.55, 0.36, 0.05), "emission": 1.2}), Vector3(0, 180, 0))
-		mon.layers = Z_LOBBY
+		prop(Vector3(0.55, 0.36, 0.05), Vector3(x, 1.4, 4.75), Util.mat("screen_blue", {"fit": Vector3(0.55, 0.36, 0.05), "emission": 1.2}), Vector3(0, 180, 0), false)
 	for p in [Vector3(-9.3, 0.25, -3.0), Vector3(9.3, 0.25, 4.0)]:
 		prop(Vector3(0.9, 0.5, 2.4), p, desk)
 	for p in [Vector3(-9.2, 0.5, 3.6), Vector3(8.9, 0.5, 6.9), Vector3(-9.2, 0.5, -5.2), Vector3(9.2, 0.5, -5.2)]:
 		prop(Vector3(1.0, 1.0, 1.0), p, Util.mat("wall_concrete", {"fit": Vector3(1, 1, 1)}))
-		var leaves := Util.box(props_root, Vector3(0.8, 0.7, 0.8), p + Vector3(0, 0.85, 0), plant, Vector3(0, 30, 0))
-		leaves.layers = Z_LOBBY
+		prop(Vector3(0.8, 0.7, 0.8), p + Vector3(0, 0.85, 0), plant, Vector3(0, 30, 0), false)
 	deco("sign_seraph", Vector2(5.0, 0.62), Vector3(0, 4.5, -5.68), 0, 1.4)
 	deco("poster", Vector2(0.9, 1.8), Vector3(-9.97, 2.0, -3.2), 90)
 	deco("poster", Vector2(0.9, 1.8), Vector3(9.97, 2.0, 2.2), -90)
@@ -265,9 +377,9 @@ func _props() -> void:
 		deco("screen_blue" if z != 0.0 else "screen_green", Vector2(1.0, 0.62), Vector3(-17.97, 2.2, z), 90, 1.3)
 	prop(Vector3(0.6, 2.0, 0.9), Vector3(-11.35, 1.0, -3.4), Util.mat("locker", {"fit": Vector3(0.6, 2.0, 0.9)}))
 	prop(Vector3(1.0, 0.9, 0.6), Vector3(-12.6, 0.45, -3.6), desk)
-	var glass := Util.static_box(entities, Vector3(0.04, 1.2, 2.0), Vector3(-10.5, 1.6, -1.8), Util.mat("glass_blue", {"transparent": 0.25, "fit": Vector3(0.04, 1.2, 2.0)}), Game.L_GLASS)
-	glass.get_child(0).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	Util.set_layers_recursive(glass, Z_LOBBY | Z_OFFICE)
+	var glass := prop(Vector3(0.04, 1.2, 2.0), Vector3(-10.5, 1.6, -1.8), Util.mat("glass_blue", {"transparent": 0.25, "fit": Vector3(0.04, 1.2, 2.0)}))
+	glass.name = "VetroFinestra"
+	glass.collision = 1
 
 	# --- magazzino
 	prop(Vector3(0.8, 1.2, 5.0), Vector3(-17.5, 0.6, 9.0), desk)
@@ -299,23 +411,138 @@ func _props() -> void:
 		prop(Vector3(0.8, 2.2, 1.2), Vector3(6.2, 1.1, z), srv)
 	prop(Vector3(1.6, 0.9, 0.8), Vector3(-4.5, 0.45, -29.3), desk)
 	prop(Vector3(1.6, 0.9, 0.8), Vector3(5.0, 0.45, -29.3), desk)
-	var bench_scr := Util.box(props_root, Vector3(0.7, 0.45, 0.05), Vector3(5.0, 1.2, -29.55), Util.mat("screen_green", {"fit": Vector3(0.7, 0.45, 0.05), "emission": 1.3}))
-	bench_scr.layers = Z_LAB
+	prop(Vector3(0.7, 0.45, 0.05), Vector3(5.0, 1.2, -29.55), Util.mat("screen_green", {"fit": Vector3(0.7, 0.45, 0.05), "emission": 1.3}), Vector3.ZERO, false)
 	# capsula criogenica con il corpo di Okafor
 	prop(Vector3(1.2, 0.3, 1.2), Vector3(-6.8, 0.15, -28.7), dark)
 	prop(Vector3(1.2, 0.2, 1.2), Vector3(-6.8, 4.1, -28.7), dark)
-	var pod := Util.cylinder(props_root, 0.5, 3.6, Vector3(-6.8, 2.1, -28.7), Util.mat("glass_blue", {"transparent": 0.35, "fit": Vector3(1, 3.6, 1)}), Vector3.ZERO, 8)
-	pod.layers = Z_LAB
-	pod.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var body := Util.box(props_root, Vector3(0.36, 1.7, 0.24), Vector3(-6.8, 1.3, -28.7), Util.color_mat(Color(0.5, 0.6, 0.62)))
-	body.layers = Z_LAB
-	Util.box(props_root, Vector3(0.2, 0.24, 0.22), Vector3(-6.8, 2.3, -28.7), Util.color_mat(Color(0.5, 0.6, 0.62))).layers = Z_LAB
+	cyl(0.5, 3.6, Vector3(-6.8, 2.1, -28.7), "glass_blue", 0.35, 8)
+	prop(Vector3(0.36, 1.7, 0.24), Vector3(-6.8, 1.3, -28.7), Util.color_mat(Color(0.5, 0.6, 0.62)), Vector3.ZERO, false)
+	prop(Vector3(0.2, 0.24, 0.22), Vector3(-6.8, 2.3, -28.7), Util.color_mat(Color(0.5, 0.6, 0.62)), Vector3.ZERO, false)
 	deco("screen_amber", Vector2(0.5, 0.35), Vector3(-6.8, 0.7, -28.08), 0, 1.2)
 	pipe(Vector3(-7.9, 4.2, -18.3), Vector3(7.9, 4.2, -18.3), 0.1)
 	pipe(Vector3(-7.8, 4.25, -29.8), Vector3(7.8, 4.25, -29.8), 0.14)
 
 
-# --- luci ---------------------------------------------------------------------------
+# --- entità: stessa chiamata di prima, ma diventano istanze di scena ---------------------
+const SCENES := {
+	"LightFixture": ["res://scenes/entities/light.tscn", "Luci"],
+	"SlidingDoor": ["res://scenes/entities/door.tscn", "Porte"],
+	"ElevatorPanel": ["res://scenes/entities/elevator_panel.tscn", "Dispositivi"],
+	"SecurityTerminal": ["res://scenes/entities/security_terminal.tscn", "Dispositivi"],
+	"UpgradeStation": ["res://scenes/entities/upgrade_station.tscn", "Dispositivi"],
+	"ServerCore": ["res://scenes/entities/server_core.tscn", "Dispositivi"],
+	"SecurityCamera": ["res://scenes/entities/security_camera.tscn", "Dispositivi"],
+	"Turret": ["res://scenes/entities/turret.tscn", "Dispositivi"],
+	"TurretPanel": ["res://scenes/entities/turret_panel.tscn", "Dispositivi"],
+	"LightSwitch": ["res://scenes/entities/light_switch.tscn", "Dispositivi"],
+	"VentGrate": ["res://scenes/entities/vent_grate.tscn", "Dispositivi"],
+	"Datapad": ["res://scenes/entities/datapad.tscn", "Oggetti"],
+	"Pickup": ["res://scenes/entities/pickup.tscn", "Oggetti"],
+	"Throwable": ["res://scenes/entities/throwable.tscn", "Oggetti"],
+	"Guard": ["res://scenes/entities/guard.tscn", "Guardie"],
+}
+
+
+func _class_of(n: Object) -> String:
+	var s: Script = n.get_script()
+	return s.get_global_name() if s else ""
+
+
+func _entity_name(src: Object, cls: String) -> String:
+	match cls:
+		"LightFixture":
+			return ("LuceEmergenza%d" % _count("le")) if src.emergency else ("Luce%d" % _count("l"))
+		"SlidingDoor":
+			if src.lock_title != "":
+				return "Porta" + src.lock_title.to_pascal_case()
+			return "Porta%d" % _count("p")
+		"Datapad":
+			return "Datapad_" + src.log_id
+		"Pickup":
+			return "%s%d" % [src.kind.capitalize(), _count("pk_" + src.kind)]
+		"Throwable":
+			return "%s%d" % [src.kind.capitalize(), _count("th_" + src.kind)]
+		"Guard":
+			return String(src.guard_name).split(" ")[-1]
+		"SecurityCamera":
+			return "Telecamera%d" % _count("cam")
+		"VentGrate":
+			return "Grata%d" % _count("grate")
+		"Turret":
+			return "Torretta"
+		"TurretPanel":
+			return "PannelloTorretta"
+		"LightSwitch":
+			return "InterruttoreLab"
+		"ElevatorPanel":
+			return "PulsantieraAscensore"
+		"SecurityTerminal":
+			return "TerminaleSicurezza"
+		"UpgradeStation":
+			return "StazionePotenziamento"
+		"ServerCore":
+			return "ServerNucleo"
+	return cls + str(_count(cls))
+
+
+func _add(src: Node3D) -> Node3D:
+	var cls := _class_of(src)
+	var info: Array = SCENES[cls]
+	var inst: Node3D = load(info[0]).instantiate()
+	for p in src.get_property_list():
+		if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) and (p.usage & PROPERTY_USAGE_STORAGE):
+			inst.set(p.name, src.get(p.name))
+	inst.transform = src.transform
+	inst.name = _entity_name(src, cls)
+	_own(inst, _group(info[1]))
+	match cls:
+		"TurretPanel":
+			inst.turret_path = NodePath("../" + String(src.turret.name))
+		"LightSwitch":
+			var t: Array[NodePath] = []
+			for l in src.lights:
+				t.append(NodePath("../../Luci/" + String(l.name)))
+			inst.targets = t
+		"Guard":
+			_guard_extras(src, inst)
+	src.free()
+	return inst
+
+
+func _guard_extras(src: Guard, g: Guard) -> void:
+	g.guard_name = ""   # il nome viene dalla definizione
+	_guard_route(src, g)
+	if src.definition != null:
+		return   # bottino, nome e parametri stanno nel personaggio (.tres)
+	g.guard_name = src.guard_name
+	var loot: Dictionary = src.loot
+	g.loot_ammo = loot.get("ammo", 0)
+	g.loot_credits = loot.get("credits", 0)
+	g.loot_medpatch = loot.get("medpatch", 0)
+	if loot.has("keycard"):
+		g.loot_keycard_id = loot.keycard[0]
+		g.loot_keycard_name = loot.keycard[1]
+
+
+func _guard_route(src: Guard, g: Guard) -> void:
+	if src.waypoints.is_empty():
+		return
+	var route: PatrolRoute = load("res://scenes/entities/patrol_route.tscn").instantiate()
+	route.name = "Percorso" + String(g.name)
+	_own(route, groups["Percorsi"])
+	for i in src.waypoints.size():
+		var wp: Waypoint = load("res://scenes/entities/waypoint.tscn").instantiate()
+		wp.name = "Tappa%d" % (i + 1)
+		wp.position = src.waypoints[i]
+		wp.wait = src.waits[i]
+		_own(wp, route)
+	g.patrol_route = NodePath("../Percorsi/" + String(route.name))
+
+
+func light(pos: Vector3, col: Color, energy: float, rng: float, zones: int, opts := {}) -> Node3D:
+	return _add(LightFixture.new().setup(pos, col, energy, rng, zones, opts))
+
+
 func _lights() -> void:
 	var cold := Color(0.75, 0.85, 1.0)
 	var warm := Color(1.0, 0.8, 0.55)
@@ -352,7 +579,6 @@ func _lights() -> void:
 	light(Vector3(0, 4.4, -19), red, 1.2, 8.0, Z_LAB, {"style": "lamp", "emergency": true})
 
 
-# --- porte ----------------------------------------------------------------------------
 func _doors() -> void:
 	_add(SlidingDoor.new().setup(Vector3(11.5, 0, 15.0), 90, 1.6, 2.5))
 	_add(SlidingDoor.new().setup(Vector3(6.0, 0, 8.5), 0, 1.6, 2.5))
@@ -362,15 +588,12 @@ func _doors() -> void:
 		"title": "Sala Sicurezza", "keycard": "sicurezza", "keycard_name": "Tessera Sicurezza",
 		"code": "0451", "hack": 1, "difficulty": 1,
 	}))
-	var lab_door := SlidingDoor.new().setup(Vector3(0, 0, -17.5), 0, 2.0, 2.6, {
+	_add(SlidingDoor.new().setup(Vector3(0, 0, -17.5), 0, 2.0, 2.6, {
 		"title": "Laboratorio C", "keycard": "lab", "keycard_name": "Tessera Laboratorio C",
 		"hack": 2, "difficulty": 2, "alarm_on_fail": true, "bypass_zone": Z_LAB,
-	})
-	lab_door.tex = "door"
-	_add(lab_door)
+	}))
 
 
-# --- dispositivi -------------------------------------------------------------------
 func _devices() -> void:
 	_add(ElevatorPanel.new().setup(Vector3(19.9, 1.3, 14.04), 0))
 	_add(SecurityTerminal.new().setup(Vector3(-17.3, 0.82, 0.0), 90))
@@ -378,14 +601,13 @@ func _devices() -> void:
 	_add(ServerCore.new().setup(Vector3(0, 0, -27.8), 0))
 	_add(SecurityCamera.new().setup(Vector3(9.3, 4.6, -5.3), 135, 40, Z_LOBBY))
 	_add(SecurityCamera.new().setup(Vector3(-7.4, 3.9, -18.5), -45, 35, Z_LAB))
-	turret = _add(Turret.new().setup(Vector3(0, 3.0, -16.7), 180, Z_LABC)) as Turret
+	turret = _add(Turret.new().setup(Vector3(0, 3.0, -16.7), 180, Z_LABC))
 	_add(TurretPanel.new().setup(Vector3(1.97, 1.3, -14.0), -90, turret))
 	_add(LightSwitch.new().setup(Vector3(-1.6, 1.3, -18.03), 180, lab_lights))
 	_add(VentGrate.new().setup(Vector3(16.05, 1.55, -5.99), 0, Vector2(1.1, 1.1), 0))
 	_add(VentGrate.new().setup(Vector3(7.99, 1.55, -21.45), -90, Vector2(1.1, 1.1), Z_VENT))
 
 
-# --- oggetti --------------------------------------------------------------------------
 func _items() -> void:
 	# registri
 	_add(Datapad.new().setup(Vector3(14.6, 0.81, -1.2), "turni", 20))
@@ -417,78 +639,47 @@ func _items() -> void:
 
 
 # --- guardie ----------------------------------------------------------------------
+## Chi sono (aspetto, sensi, bottino, battute) sta nelle definizioni fatte col creatore di
+## NPC (assets/npc/characters); qui si decide solo dove stanno e che giro fanno.
+func _npc(id: String) -> NPCDefinition:
+	var path := NPCLibrary.CHARACTERS_DIR.path_join(id + ".tres")
+	var d: NPCDefinition = load(path) if ResourceLoader.exists(path) else null
+	if d == null:
+		push_error("Manca %s: uso una guardia generica" % path)
+		d = NPCLibrary.random_npc(NPCDefinition.Archetype.GUARDIA, hash(id))
+	return d
+
+
 func _guards() -> void:
-	_add(Guard.new().setup("Ag. Ruiz", Vector3(-7, 0, -3.5), 0, [
+	_add(Guard.new().setup_def(_npc("ruiz"), Vector3(-7, 0, -3.5), 0, [
 		[Vector3(-7, 0, -3.5), 2.5], [Vector3(0, 0, -9), 3.0], [Vector3(7, 0, -3.5), 3.0],
 		[Vector3(7.5, 0, 5.8), 2.0], [Vector3(-7.5, 0, 5.8), 3.0],
-	], {"keycard": ["sicurezza", "Tessera Sicurezza"], "ammo": 6, "credits": 30}))
-	_add(Guard.new().setup("Op. Hale", Vector3(-16.3, 0, 0.6), 90, [], {"ammo": 4, "credits": 20, "medpatch": 1}))
-	_add(Guard.new().setup("Ag. Kovač", Vector3(-2.8, 0, -19.5), 180, [
+	]))
+	_add(Guard.new().setup_def(_npc("hale"), Vector3(-16.3, 0, 0.6), 90))
+	_add(Guard.new().setup_def(_npc("kovac"), Vector3(-2.8, 0, -19.5), 180, [
 		[Vector3(-2.8, 0, -19.5), 3.0], [Vector3(-2.8, 0, -26.2), 2.0], [Vector3(2.8, 0, -26.2), 4.0],
 		[Vector3(2.8, 0, -19.5), 2.0],
-	], {"ammo": 6, "credits": 15}))
-
-
-func _spawn_reinforcement() -> void:
-	var g := Guard.new().setup("Ag. Mori", Vector3(6.0, 0, 12.5), 180, [
+	]))
+	# rinforzo del lockdown: inattivo finché la missione non lo sveglia
+	var mori := _add(Guard.new().setup_def(_npc("mori"), Vector3(6.0, 0, 12.5), 180, [
 		[Vector3(6, 0, 10.5), 1.0], [Vector3(6, 0, 4), 2.0], [Vector3(-3, 0, 2), 2.0],
 		[Vector3(6, 0, 4), 1.0], [Vector3(6, 0, 11), 2.0], [Vector3(9.5, 0, 15), 2.5],
-	], {"ammo": 8, "credits": 10})
-	_add(g)
-	g.alertness = 1.0
+	]))
+	mori.dormant = true
 
 
-# --- script di missione ---------------------------------------------------------------
+func _trig(center: Vector3, size: Vector3, who: String, what: String, secs: float, trig_name: String) -> void:
+	var t: TriggerZone = load("res://scenes/entities/trigger_zone.tscn").instantiate()
+	t.name = trig_name
+	t.position = center
+	t.size = size
+	t.speaker = who
+	t.text = what
+	t.duration = secs
+	_own(t, _group("Trigger"))
+
+
 func _triggers() -> void:
-	_add(TriggerZone.new().setup(Vector3(0, 2, 1), Vector3(19, 4, 13), _say_lobby))
-	_add(TriggerZone.new().setup(Vector3(0, 2, -24), Vector3(15, 4, 11), _say_lab))
-	_add(TriggerZone.new().setup(Vector3(16.05, 1.5, -9), Vector3(1.1, 1.0, 3), _say_vent))
-
-
-func _say_lobby() -> void:
-	Game.say("VESPER", "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra.", 4.5)
-
-
-func _say_lab() -> void:
-	Game.say("VESPER", "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza.", 4.0)
-
-
-func _say_vent() -> void:
-	Game.notify("Condotto di ventilazione: resta accovacciato.")
-
-
-func start_intro() -> void:
-	Game.read_log("vesper", false)
-	Sfx.start_ambient()
-	Game.say("VESPER", "Sei dentro. Livello 14, laboratori Seraph. Il briefing è nel tuo PDA [Tab].", 4.5)
-	get_tree().create_timer(5.0, false).timeout.connect(_intro_2)
-
-
-func _intro_2() -> void:
-	Game.say("VESPER", "Il nucleo è nel Laboratorio C, a nord della hall. Come ci arrivi è affar tuo.", 4.5)
-
-
-func on_lockdown() -> void:
-	for l in normal_lights:
-		l.set_dim(0.5)
-	for l in emergency_lights:
-		l.set_on(true)
-	Sfx.set_alarm(true)
-	Game.say("SISTEMA PA", "Violazione nel Laboratorio C. Protocollo SERAPH attivo. Vigilanza: bloccare le uscite.", 5.0)
-	for g in get_tree().get_nodes_in_group("guards"):
-		g.on_lockdown(Vector3(0, 0, -9))
-	_spawn_reinforcement()
-	get_tree().create_timer(7.0, false).timeout.connect(_lockdown_followup)
-
-
-func _lockdown_followup() -> void:
-	if Game.alarm_time <= 0.0:
-		Sfx.set_alarm(false)
-	Game.say("VESPER", "Si sono accorti del nucleo. Hanno mandato qualcuno dall'ascensore principale: torna indietro, e veloce.", 5.0)
-
-
-func _spawn_player() -> void:
-	player = Player.new()
-	player.position = spawn_pos
-	player.rotation.y = deg_to_rad(spawn_yaw)
-	add_child(player)
+	_trig(Vector3(0, 2, 1), Vector3(19, 4, 13), "VESPER", "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra.", 4.5, "TriggerHall")
+	_trig(Vector3(0, 2, -24), Vector3(15, 4, 11), "VESPER", "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza.", 4.0, "TriggerLaboratorio")
+	_trig(Vector3(16.05, 1.5, -9), Vector3(1.1, 1.0, 3), "", "Condotto di ventilazione: resta accovacciato.", 4.0, "TriggerCondotto")

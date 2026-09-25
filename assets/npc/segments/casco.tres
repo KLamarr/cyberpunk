@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://ddeptfcm314oc"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_0wnuf"]
+
+[sub_resource type="Curve" id="Curve_itqbo"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.9), 0.0, 0.4000001, 1, 1, Vector2(0.25, 1), 0.4000001, 0.0, 1, 1, Vector2(0.62, 1), 0.0, -0.6666668, 1, 1, Vector2(0.86, 0.84), -0.6666668, -3.5000002, 1, 1, Vector2(1, 0.35), -3.5000002, 0.0, 1, 1]
+point_count = 5
+
+[sub_resource type="Curve" id="Curve_rk1n4"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.86), 0.0, 0.55999994, 1, 1, Vector2(0.25, 1), 0.55999994, 0.0, 1, 1, Vector2(0.62, 1), 0.0, -0.6666668, 1, 1, Vector2(0.86, 0.84), -0.6666668, -3.5000002, 1, 1, Vector2(1, 0.35), -3.5000002, 0.0, 1, 1]
+point_count = 5
+
+[resource]
+resource_name = "casco"
+script = ExtResource("1_0wnuf")
+tags = PackedStringArray("guardia")
+width_curve = SubResource("Curve_rk1n4")
+depth_curve = SubResource("Curve_itqbo")
+radius_x = 0.102
+radius_z = 0.12
+rings = 5
+sides = 8
+extend_start = 0.0
+extend_end = 0.0
+cap_start = true
+cap_end = true
+section = PackedFloat32Array(1, 1.04, 1, 1.04, 0.98, 1.04, 1, 1.04)
+band = 1
+color_slot = 3
+attach_offset = Vector3(0, -0.012, 0.004)
+attach_length = 0.24

@@ -44,4 +44,10 @@ const ENTRIES := {
 		"author": "Logistica Seraph",
 		"text": "Consegna: 12 casse componenti, 2 kit medipatch, 1 cassa munizioni 9mm per vigilanza.\n\nNOTA: le casse leggere si possono spostare a mano. Quelle marcate SB-14 pesano 40 kg: usare il carrello.\n\nFirmato: nessuno, come al solito.",
 	},
+	# --- livello di esempio della guida (levels/guida): copia questo blocco per i tuoi registri
+	"codice_magazzino": {
+		"title": "Post-it",
+		"author": "qualcuno del turno di notte",
+		"text": "Il nuovo codice del magazzino è 2468.\n\nNon scriverlo su un post-it.\n\n...ops.",
+	},
 }

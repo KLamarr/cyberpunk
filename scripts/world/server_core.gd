@@ -1,3 +1,4 @@
+@tool
 class_name ServerCore
 extends StaticBody3D
 ## Il server con il nucleo SERAPH-7. Estrarre il nucleo avvia il lockdown.
@@ -15,7 +16,7 @@ func setup(pos: Vector3, yaw_deg: float) -> ServerCore:
 
 
 func _ready() -> void:
-	collision_layer = Game.L_INTERACT | Game.L_WORLD
+	collision_layer = Layers.INTERACT | Layers.WORLD
 	collision_mask = 0
 	var sm := Util.mat("server", {"fit": Vector3(1.4, 2.4, 0.9), "emission": 1.0, "emission_tex": "server_emit"})
 	Util.box(self, Vector3(1.4, 2.4, 0.9), Vector3(0, 1.2, 0), sm)
@@ -27,11 +28,14 @@ func _ready() -> void:
 	_core = Util.cylinder(self, 0.12, 0.4, Vector3(0, 1.25, 0.5), _core_mat, Vector3(0, 0, 90), 6)
 	_core.set_meta("keep_layers", true)
 	Util.add_box_collider(self, Vector3(1.4, 2.4, 1.0), Vector3(0, 1.2, 0.05))
+	if Engine.is_editor_hint():
+		return
+	add_to_group("server_cores")
 	Sfx.attach_loop("server_hum", self, -4.0, 14.0)
 
 
 func _process(delta: float) -> void:
-	if taken:
+	if Engine.is_editor_hint() or taken:
 		return
 	_t += delta
 	_core_mat.albedo_color = Color(0.3, 0.9, 0.85).lerp(Color(0.8, 1.0, 1.0), 0.5 + 0.5 * sin(_t * 3.0))

@@ -1,10 +1,23 @@
+@tool
 class_name Throwable
 extends RigidBody3D
 ## Oggetto fisico raccoglibile e lanciabile. Quando urta qualcosa abbastanza forte
 ## genera un rumore: è il modo classico per distrarre una guardia.
 
+## can: lattina. bottle: bottiglia (più rumorosa). box: scatola da 4 kg. heavy: cassa da 40 kg (Forza 2).
+@export_enum("can", "bottle", "box", "heavy") var kind := "can":
+	set(v):
+		kind = v
+		_apply_kind()
+		if Engine.is_editor_hint() and is_inside_tree():
+			for c in get_children():
+				if c.owner == null:
+					remove_child(c)
+					c.queue_free()
+			_build()
+
 var display := "Lattina"
-var shape_kind := "can"   # can | bottle | box
+var shape_kind := "can"
 var size := Vector3(0.07, 0.13, 0.07)
 var tex := ""
 var col := Color(0.7, 0.1, 0.1)
@@ -15,9 +28,17 @@ var _last_speed := 0.0
 var _cooldown := 0.0
 
 
-func setup(pos: Vector3, kind: String) -> Throwable:
+func setup(pos: Vector3, k: String) -> Throwable:
 	position = pos
+	kind = k
+	return self
+
+
+func _apply_kind() -> void:
 	shape_kind = kind
+	noise_mult = 1.0
+	heavy = false
+	tex = ""
 	match kind:
 		"can":
 			display = "Lattina di Kaffa-Nova"
@@ -43,17 +64,23 @@ func setup(pos: Vector3, kind: String) -> Throwable:
 			mass = 40.0
 			heavy = true
 			noise_mult = 1.5
-	return self
 
 
 func _ready() -> void:
+	_apply_kind()
+	_build()
+	if Engine.is_editor_hint():
+		return
 	add_to_group("throwables")
-	collision_layer = Game.L_PROP
-	collision_mask = Game.L_WORLD | Game.L_DOOR | Game.L_GLASS | Game.L_PROP | Game.L_NPC | Game.L_PLAYER | Game.L_DEVICE
 	contact_monitor = true
 	max_contacts_reported = 4
 	continuous_cd = true
 	body_entered.connect(_on_body_entered)
+
+
+func _build() -> void:
+	collision_layer = Layers.PROP
+	collision_mask = Layers.WORLD | Layers.DOOR | Layers.GLASS | Layers.PROP | Layers.NPC | Layers.PLAYER | Layers.DEVICE
 	var m: Material
 	if tex != "":
 		m = Util.mat(tex, {"fit": size})
@@ -75,6 +102,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	_last_speed = linear_velocity.length()
 	_cooldown -= delta
 
@@ -108,4 +137,4 @@ func set_held(on: bool) -> void:
 	if on:
 		collision_layer = 0
 	else:
-		collision_layer = Game.L_PROP
+		collision_layer = Layers.PROP

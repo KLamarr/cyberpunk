@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://kyy88j6apjo0"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_cmklp"]
+
+[sub_resource type="Curve" id="Curve_hi8j5"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.2, 1, 1, Vector2(1, 0.8), -0.2, 0.0, 1, 1]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_3hici"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, -0.2, 1, 1, Vector2(1, 0.8), -0.2, 0.0, 1, 1]
+point_count = 2
+
+[resource]
+resource_name = "visiera_berretto"
+script = ExtResource("1_cmklp")
+tags = PackedStringArray()
+width_curve = SubResource("Curve_3hici")
+depth_curve = SubResource("Curve_hi8j5")
+radius_x = 0.07
+radius_z = 0.008
+rings = 2
+sides = 4
+extend_start = 0.0
+extend_end = 0.0
+cap_end = true
+smooth = false
+section = PackedFloat32Array()
+attach_offset = Vector3(0, 0.155, -0.085)
+attach_rotation = Vector3(-80, 0, 0)
+attach_length = 0.07

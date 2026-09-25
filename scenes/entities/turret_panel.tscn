@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bdsnfpd6req1l"]
+
+[ext_resource type="Script" uid="uid://cdmjj77a4ioyk" path="res://scripts/actors/turret_panel.gd" id="1"]
+
+[node name="PannelloTorretta" type="StaticBody3D" unique_id=1152249181]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("1")

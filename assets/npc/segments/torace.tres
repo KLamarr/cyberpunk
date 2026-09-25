@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SegmentShape" format=3 uid="uid://bn6gsawjer6x4"]
+
+[ext_resource type="Script" uid="uid://crrop23ivrjxc" path="res://scripts/npc/segment_shape.gd" id="1_22u6y"]
+
+[sub_resource type="Curve" id="Curve_8fbvv"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.14, 1, 1, Vector2(0.5, 0.07), 0.14, -0.25999996, 1, 1, Vector2(1, -0.06), -0.25999996, 0.0, 1, 1]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_kda43"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.86), 0.0, 0.3111111, 1, 1, Vector2(0.45, 1), 0.3111111, -0.19999997, 1, 1, Vector2(0.8, 0.93), -0.19999997, -1.4500003, 1, 1, Vector2(1, 0.64), -1.4500003, 0.0, 1, 1]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_gvpg4"]
+_limits = [0.0, 1.6, 0.0, 1.0]
+_data = [Vector2(0, 0.8), 0.0, 0.34999996, 1, 1, Vector2(0.4, 0.94), 0.34999996, 0.18749999, 1, 1, Vector2(0.72, 1), 0.18749999, -0.38888896, 1, 1, Vector2(0.9, 0.93), -0.38888896, -3.4999993, 1, 1, Vector2(1, 0.58), -3.4999993, 0.0, 1, 1]
+point_count = 5
+
+[resource]
+resource_name = "torace"
+script = ExtResource("1_22u6y")
+category = 2
+tags = PackedStringArray()
+width_curve = SubResource("Curve_gvpg4")
+depth_curve = SubResource("Curve_kda43")
+bulge_curve = SubResource("Curve_8fbvv")
+radius_x = 0.185
+radius_z = 0.118
+rings = 5
+sides = 8
+extend_start = 0.1
+extend_end = 0.0
+cap_end = true
+section = PackedFloat32Array(0.96, 1.07, 1, 1.07, 1, 1.07, 1, 1.07)
