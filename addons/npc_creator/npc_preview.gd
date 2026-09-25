@@ -9,12 +9,21 @@ extends SubViewportContainer
 signal part_clicked(part: String)
 
 const POST := preload("res://shaders/retro_post.gdshader")
+## Sfondi predefiniti: [nome, colore]. Il primo è quello del gioco.
+const BACKGROUNDS := [
+	["Buio (come in gioco)", Color(0.015, 0.018, 0.024)],
+	["Grigio", Color(0.34, 0.35, 0.37)],
+	["Chiaro", Color(0.74, 0.76, 0.78)],
+	["Verde (contrasto)", Color(0.22, 0.46, 0.28)],
+	["Magenta (contrasto)", Color(0.55, 0.2, 0.5)],
+]
 
 var body: NPCBody
 var viewport: SubViewport
 var camera: Camera3D
 var lamp: OmniLight3D
 var env: Environment
+var floor_mi: MeshInstance3D
 var retro := true:
 	set(v):
 		retro = v
@@ -63,7 +72,7 @@ func _init() -> void:
 	rim.light_energy = 0.25
 	rim.light_color = Color(0.6, 0.75, 1.0)
 	world.add_child(rim)
-	var floor_mi := MeshInstance3D.new()
+	floor_mi = MeshInstance3D.new()
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(8, 8)
 	floor_mi.mesh = pm
@@ -94,6 +103,16 @@ func set_definition(def: NPCDefinition) -> void:
 	if def != null:
 		_target_y = clampf(def.height * 0.55, 0.7, 1.3)
 	_update_camera()
+
+
+## Colore dello sfondo: uno chiaro o saturo fa risaltare le sagome scure (guardie in
+## uniforme nera) che sullo sfondo del gioco si perdono.
+func set_background(c: Color) -> void:
+	env.background_color = c
+
+
+func set_floor_visible(on: bool) -> void:
+	floor_mi.visible = on
 
 
 func set_light(energy: float) -> void:

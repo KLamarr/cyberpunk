@@ -191,6 +191,15 @@ func _selftest() -> void:
 	p.open_definition(ruiz)
 	await _frames(2)
 	p.select_part("torace", true)
+	var bg0 := p.preview.env.background_color
+	p.bg_opt.select(2)
+	p.bg_opt.item_selected.emit(2)
+	_check(p.preview.env.background_color.is_equal_approx(p.Preview.BACKGROUNDS[2][1]) and p.bg_color.color.is_equal_approx(p.Preview.BACKGROUNDS[2][1]), "sfondo dell'anteprima: preset Chiaro")
+	p.bg_color.color_changed.emit(Color(0.1, 0.4, 0.8))
+	_check(p.preview.env.background_color.is_equal_approx(Color(0.1, 0.4, 0.8)) and p.bg_opt.selected == p.Preview.BACKGROUNDS.size(), "sfondo personalizzato dal selettore")
+	_check((EditorInterface.get_editor_settings().get_project_metadata("npc_creator", "preview_bg", Color.BLACK) as Color).is_equal_approx(Color(0.1, 0.4, 0.8)), "lo sfondo scelto resta memorizzato")
+	var shot_bg := OS.get_environment("NPC_CREATOR_SHOT") != ""
+	p.set_preview_background(p.Preview.BACKGROUNDS[2][1] if shot_bg else bg0)
 	await _frames(5)
 	_check(not _scene_marked_unsaved(), "modificare un NPC non marca come modificata la scena aperta")
 	var shot := OS.get_environment("NPC_CREATOR_SHOT")

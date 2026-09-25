@@ -115,7 +115,9 @@ di ventilazione con un ramo segreto.
 Plugin dell'editor (`addons/npc_creator`, già attivo): scheda **NPC** nella barra in alto,
 accanto a 2D, 3D e Script. A sinistra le schede con i controlli, a destra l'anteprima 3D
 che gira nello stesso SubViewport 640×360 con dithering del gioco (disattivabile), con
-le pose Riposo, Cammina, Corri, Mira e A terra e una luce regolabile per vedere l'NPC al buio.
+le pose Riposo, Cammina, Corri, Mira e A terra, una luce regolabile per vedere l'NPC al buio
+e uno sfondo a scelta (buio come in gioco, grigio, chiaro, due colori di contrasto o
+personalizzato, con o senza pavimento): sugli NPC scuri uno sfondo chiaro fa leggere la sagoma.
 
 - **Corpo**: nome, archetipo, fazione; altezza, corporatura, spalle, fianchi, braccia,
   gambe, testa, collo, postura; i 7 colori della tavolozza (pelle, uniforme, secondario,

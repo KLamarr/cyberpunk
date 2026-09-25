@@ -45,6 +45,9 @@ var acc_list: ItemList
 var acc_inspector: EditorInspector
 var acc_note: Label
 var pose_opt: OptionButton
+var bg_opt: OptionButton
+var bg_color: ColorPickerButton
+var floor_check: CheckBox
 var stats_label: Label
 var file_dialog: EditorFileDialog
 var confirm: ConfirmationDialog
@@ -345,11 +348,64 @@ func _build_preview_bar(parent: Control) -> void:
 	light.custom_minimum_size = Vector2(130, 0)
 	light.value_changed.connect(func(x): preview.set_light(x))
 	bar.add_child(light)
+	bar.add_child(VSeparator.new())
+	bg_opt = OptionButton.new()
+	bg_opt.tooltip_text = "Sfondo dell'anteprima: uno chiaro o saturo fa risaltare i dettagli scuri"
+	for b in Preview.BACKGROUNDS:
+		bg_opt.add_item(b[0])
+	bg_opt.add_item("Personalizzato")
+	bg_opt.item_selected.connect(func(i):
+		if i < Preview.BACKGROUNDS.size():
+			set_preview_background(Preview.BACKGROUNDS[i][1]))
+	bar.add_child(bg_opt)
+	bg_color = ColorPickerButton.new()
+	bg_color.edit_alpha = false
+	bg_color.custom_minimum_size = Vector2(32, 0)
+	bg_color.tooltip_text = "Colore dello sfondo"
+	bg_color.color_changed.connect(set_preview_background)
+	bar.add_child(bg_color)
+	floor_check = CheckBox.new()
+	floor_check.text = "Pavimento"
+	floor_check.button_pressed = true
+	floor_check.toggled.connect(func(on):
+		preview.set_floor_visible(on)
+		_save_view_setting("preview_floor", on))
+	bar.add_child(floor_check)
 	stats_label = Label.new()
+	stats_label.clip_text = true
+	stats_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	stats_label.custom_minimum_size = Vector2(60, 0)
 	stats_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stats_label.modulate = Color(1, 1, 1, 0.6)
 	bar.add_child(stats_label)
+	# sfondo e pavimento restano quelli scelti l'ultima volta (per questo progetto)
+	set_preview_background(_load_view_setting("preview_bg", Preview.BACKGROUNDS[0][1]))
+	var fl: bool = _load_view_setting("preview_floor", true)
+	floor_check.set_pressed_no_signal(fl)
+	preview.set_floor_visible(fl)
+
+
+func set_preview_background(c: Color) -> void:
+	preview.set_background(c)
+	bg_color.color = c
+	var idx := Preview.BACKGROUNDS.size()
+	for i in Preview.BACKGROUNDS.size():
+		if (Preview.BACKGROUNDS[i][1] as Color).is_equal_approx(c):
+			idx = i
+	bg_opt.select(idx)
+	_save_view_setting("preview_bg", c)
+
+
+func _load_view_setting(key: String, fallback: Variant) -> Variant:
+	if not Engine.is_editor_hint():
+		return fallback
+	return EditorInterface.get_editor_settings().get_project_metadata("npc_creator", key, fallback)
+
+
+func _save_view_setting(key: String, value: Variant) -> void:
+	if Engine.is_editor_hint():
+		EditorInterface.get_editor_settings().set_project_metadata("npc_creator", key, value)
 
 
 # --- piccoli costruttori -------------------------------------------------------------
@@ -795,7 +851,8 @@ func _update_stats() -> void:
 	if preview == null or preview.body == null or def == null:
 		return
 	var st := preview.body.stats
-	stats_label.text = "%d triangoli · %d ossa · 1 superficie (1 draw call) · occhi a %.2f m" % [st.triangles, NPCRig.BONES.size(), def.eye_height()]
+	stats_label.text = "%d tri · 1 draw call · occhi %.2f m" % [st.triangles, def.eye_height()]
+	stats_label.tooltip_text = "%d triangoli, %d ossa, una sola superficie (1 draw call per passata di luce). Occhi a %.2f m: da lì la guardia guarda." % [st.triangles, NPCRig.BONES.size(), def.eye_height()]
 
 
 # --- forme -----------------------------------------------------------------------------
