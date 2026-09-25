@@ -144,6 +144,15 @@ toggle_dither={
 
 [layer_names]
 
+3d_render/layer_1="Partenza"
+3d_render/layer_2="Servizio"
+3d_render/layer_3="Relax"
+3d_render/layer_4="Hall"
+3d_render/layer_5="Sicurezza"
+3d_render/layer_6="Magazzino"
+3d_render/layer_7="CorridoioLab"
+3d_render/layer_8="Laboratorio"
+3d_render/layer_9="Condotti"
 3d_physics/layer_1="world"
 3d_physics/layer_2="player"
 3d_physics/layer_3="npc"

@@ -47,3 +47,22 @@ jobs:
 
       - name: Test bottoni UI
         run: godot --headless --path . -- --autotest --ui
+
+      - name: Test del livello della guida all'editor
+        run: godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+
+      - name: Validazione dei livelli
+        run: |
+          for f in levels/*/*.tscn; do
+            godot --headless --path . -- --validate --level="res://$f"
+          done
+
+      - name: I livelli si aprono nell'editor senza errori
+        run: |
+          fail=0
+          for f in levels/*/*.tscn; do
+            echo "== editor: $f"
+            out=$(godot --headless --editor --path . "res://$f" --quit-after 400 2>&1)
+            if echo "$out" | grep -E "SCRIPT ERROR|Parse Error|ERROR:"; then fail=1; fi
+          done
+          exit $fail

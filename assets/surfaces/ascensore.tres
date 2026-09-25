@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/ceiling_panel.png" id="1_jamim"]
+[ext_resource type="Texture2D" path="res://assets/textures/floor_grate.png" id="2_js4wj"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="3_djit8"]
+[ext_resource type="Texture2D" path="res://assets/textures/wall_panel.png" id="4_t7n5s"]
+
+[resource]
+script = ExtResource("3_djit8")
+wall_texture = ExtResource("4_t7n5s")
+floor_texture = ExtResource("2_js4wj")
+ceiling_texture = ExtResource("1_jamim")
+tint = Color(1, 0.9, 0.75, 1)
+footsteps = "metal"

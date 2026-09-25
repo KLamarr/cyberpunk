@@ -13,18 +13,9 @@ signal lockdown_started
 signal player_damaged(amount: float, from_pos: Vector3)
 signal state_changed(new_state: int)
 signal settings_changed
+signal log_read(id: String)
 
 enum State { MENU, PLAYING, PANEL, DEAD, COMPLETE }
-
-# --- layer di collisione (bitmask) -------------------------------------------
-const L_WORLD := 1
-const L_PLAYER := 2
-const L_NPC := 4
-const L_DOOR := 8
-const L_GLASS := 16
-const L_PROP := 32
-const L_INTERACT := 64
-const L_DEVICE := 128
 
 # --- skill -------------------------------------------------------------------
 const SKILLS := ["hacking", "armi", "forza", "furtivita"]
@@ -88,6 +79,11 @@ var alarm_time := 0.0
 var security_disabled := false
 var lockdown := false
 var secrets_found: Array[String] = []
+
+## Scena del livello da caricare (vedi scenes/main.tscn).
+var level_path := "res://levels/seraph/seraph.tscn"
+## true = salta il menu iniziale (livello avviato con F6 dall'editor).
+var quick_start := false
 
 var player: Node = null
 var level: Node = null
@@ -159,11 +155,7 @@ func reset_state() -> void:
 		"time": 0.0, "kills": 0, "kos": 0, "alarms": 0, "detections": 0,
 		"pickpockets": 0, "hacks": 0, "shots": 0,
 	}
-	objectives = []
-	add_objective("core", "Recupera il nucleo dati SERAPH-7 dal server del Laboratorio C.")
-	add_objective("okafor", "Scopri cosa è successo al Dr. Okafor.", true)
-	add_objective("nokill", "Nessuna vittima.", true)
-	add_objective("noalarm", "Non far scattare allarmi.", true)
+	objectives = []   # li aggiunge lo script di missione del livello (setup_mission)
 
 
 # --- stato / pausa ------------------------------------------------------------
@@ -277,14 +269,9 @@ func read_log(id: String, open_reader := true) -> void:
 		Sfx.play_ui("datapad")
 		var title: String = Logs.ENTRIES.get(id, {}).get("title", id)
 		notify("Registro aggiunto al PDA: " + title, Color(0.5, 0.9, 1.0))
-		_check_okafor()
+		log_read.emit(id)
 	if open_reader and ui:
 		ui.show_log(id)
-
-
-func _check_okafor() -> void:
-	if is_objective_active("okafor") and ("okafor1" in logs_read) and ("okafor2" in logs_read) and ("intruso" in logs_read):
-		complete_objective("okafor", 1)
 
 
 # --- obiettivi ----------------------------------------------------------------

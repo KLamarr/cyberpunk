@@ -71,8 +71,8 @@ var _last_step_surface := ""
 
 func _ready() -> void:
 	add_to_group("player")
-	collision_layer = Game.L_PLAYER
-	collision_mask = Game.L_WORLD | Game.L_NPC | Game.L_DOOR | Game.L_GLASS | Game.L_PROP | Game.L_DEVICE
+	collision_layer = Layers.PLAYER
+	collision_mask = Layers.WORLD | Layers.NPC | Layers.DOOR | Layers.GLASS | Layers.PROP | Layers.DEVICE
 	floor_snap_length = 0.3
 	floor_max_angle = deg_to_rad(50)
 	max_health = 100.0 + 10.0 * Game.skill("forza")
@@ -440,7 +440,7 @@ func _update_frob() -> void:
 		var space := get_world_3d().direct_space_state
 		var from := camera.global_position
 		var to := from - camera.global_basis.z * FROB_DIST
-		var mask := Game.L_WORLD | Game.L_NPC | Game.L_DOOR | Game.L_PROP | Game.L_INTERACT | Game.L_DEVICE
+		var mask := Layers.WORLD | Layers.NPC | Layers.DOOR | Layers.PROP | Layers.INTERACT | Layers.DEVICE
 		var q := PhysicsRayQueryParameters3D.create(from, to, mask, [get_rid()])
 		q.hit_back_faces = false
 		var hit := space.intersect_ray(q)

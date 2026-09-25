@@ -1,3 +1,4 @@
+@tool
 class_name Guard
 extends CharacterBody3D
 ## Guardia di sicurezza con impianto CALMA.
@@ -25,7 +26,23 @@ const BARK_ALARM := ["Allarme! Mi muovo!", "Ricevuto, controllo il settore."]
 const BARK_HURT := ["Argh! Mi hanno colpito!", "Ah! Maledetto!"]
 const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.", "Il server ronza più forte stanotte.", "Chissà se Okafor è ancora in laboratorio.", "Mi fa male la testa. Sempre dopo l'aggiornamento."]
 
-var guard_name := "Guardia"
+## Nome mostrato nei sottotitoli.
+@export var guard_name := "Guardia"
+## Nodo PatrolRoute con i Waypoint da percorrere. Vuoto = resta di guardia
+## nel punto in cui l'hai messa, guardando verso -Z locale.
+@export var patrol_route: NodePath
+@export var max_hp := 60.0
+## Inattiva e invisibile finché uno script non chiama activate() (es. rinforzi).
+@export var dormant := false
+
+@export_group("Bottino")
+@export var loot_ammo := 0
+@export var loot_credits := 0
+@export var loot_medpatch := 0
+## Tessera che porta con sé (si ottiene perquisendola o borseggiandola).
+@export var loot_keycard_id := ""
+@export var loot_keycard_name := ""
+
 var waypoints: Array[Vector3] = []
 var waits: Array[float] = []
 var post_pos := Vector3.ZERO
@@ -88,10 +105,32 @@ func setup(n: String, pos: Vector3, yaw_deg: float, route: Array = [], loot_tabl
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_build_model()
+		return
+	hp = max_hp
+	post_pos = global_position
+	post_yaw = global_rotation.y
+	if loot.is_empty():
+		if loot_ammo > 0:
+			loot["ammo"] = loot_ammo
+		if loot_credits > 0:
+			loot["credits"] = loot_credits
+		if loot_medpatch > 0:
+			loot["medpatch"] = loot_medpatch
+		if loot_keycard_id != "":
+			loot["keycard"] = [loot_keycard_id, loot_keycard_name if loot_keycard_name != "" else loot_keycard_id]
+	if waypoints.is_empty() and not patrol_route.is_empty():
+		var route := get_node_or_null(patrol_route)
+		if route != null:
+			for wp in route.get_children():
+				if wp is Node3D:
+					waypoints.append((wp as Node3D).global_position)
+					waits.append(float(wp.get("wait")) if wp.get("wait") != null else 2.0)
 	add_to_group("ai")
 	add_to_group("guards")
-	collision_layer = Game.L_NPC
-	collision_mask = Game.L_WORLD | Game.L_DOOR | Game.L_GLASS | Game.L_PLAYER
+	collision_layer = Layers.NPC
+	collision_mask = Layers.WORLD | Layers.DOOR | Layers.GLASS | Layers.PLAYER
 	floor_snap_length = 0.3
 	var cap := CapsuleShape3D.new()
 	cap.radius = 0.3
@@ -120,6 +159,28 @@ func _ready() -> void:
 	add_child(_icon)
 	_last_pos = global_position
 	_idle_bark = randf_range(15.0, 40.0)
+	if dormant:
+		_set_dormant(true)
+
+
+func _set_dormant(on: bool) -> void:
+	visible = not on
+	process_mode = Node.PROCESS_MODE_DISABLED if on else Node.PROCESS_MODE_INHERIT
+	collision_layer = 0 if on else Layers.NPC
+	if on:
+		remove_from_group("ai")
+		remove_from_group("guards")
+	else:
+		add_to_group("ai")
+		add_to_group("guards")
+
+
+## Risveglia una guardia "dormant" (rinforzi, eventi scriptati).
+func activate() -> void:
+	if not dormant:
+		return
+	dormant = false
+	_set_dormant(false)
 
 
 func _build_model() -> void:
@@ -169,6 +230,8 @@ func is_active() -> bool:
 
 # --- ciclo -------------------------------------------------------------------------
 func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	if state == S.DOWN:
 		if not carried:
 			velocity.x = 0.0
@@ -501,7 +564,7 @@ func _shoot(p: Node, dist: float) -> void:
 	else:
 		var miss := aim + Vector3(randf_range(-1.2, 1.2), randf_range(-0.5, 1.0), randf_range(-1.2, 1.2))
 		var dir := (miss - from).normalized()
-		var hit := Util.ray(space, from, from + dir * 40.0, LOS_MASK | Game.L_PROP | Game.L_DEVICE, [get_rid()])
+		var hit := Util.ray(space, from, from + dir * 40.0, LOS_MASK | Layers.PROP | Layers.DEVICE, [get_rid()])
 		var end: Vector3 = hit.get("position", from + dir * 40.0)
 		Effects.tracer(from, end)
 		if not hit.is_empty():
@@ -609,8 +672,8 @@ func _go_down(killed: bool) -> void:
 	dead = killed
 	Game.on_guard_down(self, killed)
 	add_to_group("downed")
-	collision_layer = Game.L_INTERACT
-	collision_mask = Game.L_WORLD
+	collision_layer = Layers.INTERACT
+	collision_mask = Layers.WORLD
 	var bs := BoxShape3D.new()
 	bs.size = Vector3(0.6, 0.3, 1.9)
 	_shape_node.shape = bs
@@ -682,7 +745,7 @@ func set_carried(on: bool) -> void:
 	carried = on
 	visible = not on
 	_shape_node.disabled = on
-	collision_layer = 0 if on else Game.L_INTERACT
+	collision_layer = 0 if on else Layers.INTERACT
 
 
 func drop_at(pos: Vector3, yaw: float) -> void:

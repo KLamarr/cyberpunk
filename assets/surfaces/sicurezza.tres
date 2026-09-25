@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SurfaceSet" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/ceiling_panel.png" id="1_ccvux"]
+[ext_resource type="Texture2D" path="res://assets/textures/floor_carpet.png" id="2_u7qai"]
+[ext_resource type="Script" path="res://scripts/world/level/surface_set.gd" id="3_r6ode"]
+[ext_resource type="Texture2D" path="res://assets/textures/wall_panel.png" id="4_tis71"]
+
+[resource]
+script = ExtResource("3_r6ode")
+wall_texture = ExtResource("4_tis71")
+floor_texture = ExtResource("2_u7qai")
+ceiling_texture = ExtResource("1_ccvux")
+tint = Color(0.95, 0.95, 1, 1)
+footsteps = "carpet"

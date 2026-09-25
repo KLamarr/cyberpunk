@@ -4,7 +4,6 @@ extends Node
 ## shader di quantizzazione/dithering: il look "Dark Engine" nasce qui.
 ## HUD e menu restano a risoluzione piena, sopra.
 
-const LevelScript := preload("res://scripts/world/level_seraph.gd")
 const HudScript := preload("res://scripts/ui/hud.gd")
 const UIScript := preload("res://scripts/ui/ui_root.gd")
 const POST := preload("res://shaders/retro_post.gdshader")
@@ -35,8 +34,14 @@ func _ready() -> void:
 	container.add_child(viewport)
 	_apply_settings()
 
-	level = LevelScript.new()
-	level.name = "Level"
+	if "--convert-seraph" in OS.get_cmdline_user_args():
+		add_child(load("res://tools/convert_seraph.gd").new())
+		return
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--level="):
+			Game.level_path = a.substr(8)
+	var level_scene: PackedScene = load(Game.level_path)
+	level = level_scene.instantiate()
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	viewport.add_child(level)
 
@@ -52,10 +57,36 @@ func _ready() -> void:
 		Game.write_input_map_to_project()
 		get_tree().quit()
 		return
-	if "--autotest" in OS.get_cmdline_user_args() and not get_tree().root.has_node("PostRestartTest"):
+	var tool_script := ""
+	if "--validate" in OS.get_cmdline_user_args():
+		tool_script = "res://tools/validate_level.gd"
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--tool="):
+			tool_script = a.substr(7)
+	if tool_script != "":
+		# strumenti di sviluppo (es. tools/validate_level.gd) che girano sul livello caricato
+		var scr: GDScript = load(tool_script)
+		if scr == null or not scr.can_instantiate():
+			push_error("Script non valido: " + tool_script)
+			get_tree().quit(3)
+			return
+		var tl: Node = scr.new()
+		tl.name = "Tool"
+		add_child(tl)
+	elif "--autotest" in OS.get_cmdline_user_args() and not get_tree().root.has_node("PostRestartTest"):
 		var t: Node = load("res://tools/autotest.gd").new()
 		t.name = "Autotest"
 		add_child(t)
+	elif Game.quick_start:
+		# livello avviato con F6 dall'editor: niente menu, 1 punto in ogni skill
+		for sk in Game.SKILLS:
+			Game.start_alloc[sk] = 1
+		ui._begin()
+		# controlla il livello in sottofondo: errori e avvisi finiscono nell'Output
+		var v: Node = load("res://tools/validate_level.gd").new()
+		v.quit_when_done = false
+		v.name = "Validatore"
+		add_child(v)
 	else:
 		Game.set_state(Game.State.MENU)
 		ui.show_start()

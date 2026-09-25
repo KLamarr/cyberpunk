@@ -1,9 +1,21 @@
+@tool
 class_name Datapad
 extends StaticBody3D
 ## Datapad (si raccoglie e finisce nel PDA) o terminale a muro (resta, si rilegge).
+## I testi stanno in scripts/data/logs.gd: qui metti solo l'id del registro.
 
-var log_id := ""
-var wall_terminal := false
+## Id del registro in Logs.ENTRIES (es. "turni", "okafor1").
+@export var log_id := ""
+## true = schermo a muro che resta al suo posto (guarda verso +Z locale).
+@export var wall_terminal := false:
+	set(v):
+		wall_terminal = v
+		if Engine.is_editor_hint() and is_inside_tree():
+			for c in get_children():
+				if c.owner == null:
+					remove_child(c)
+					c.queue_free()
+			_build()
 
 
 func setup(pos: Vector3, id: String, yaw_deg := 0.0, is_wall := false) -> Datapad:
@@ -15,7 +27,11 @@ func setup(pos: Vector3, id: String, yaw_deg := 0.0, is_wall := false) -> Datapa
 
 
 func _ready() -> void:
-	collision_layer = Game.L_INTERACT
+	_build()
+
+
+func _build() -> void:
+	collision_layer = Layers.INTERACT
 	collision_mask = 0
 	if wall_terminal:
 		Util.box(self, Vector3(0.62, 0.46, 0.08), Vector3.ZERO, Util.color_mat(Color(0.2, 0.22, 0.24)))

@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/level/level.gd" id="1_vc0lg"]
+[ext_resource type="Script" path="res://scripts/world/level/level_geometry.gd" id="2_01ljt"]
+[ext_resource type="Material" path="res://assets/materials/solido_invisibile.tres" id="3_6b00a"]
+[ext_resource type="Script" path="res://scripts/world/level/zone.gd" id="4_e4bft"]
+[ext_resource type="Script" path="res://scripts/world/level/brush.gd" id="5_mf5pk"]
+[ext_resource type="Resource" path="res://assets/surfaces/hall.tres" id="6_jn06u"]
+[ext_resource type="PackedScene" path="res://scenes/entities/light.tscn" id="7_qolxn"]
+[ext_resource type="Script" path="res://scripts/world/light_fixture.gd" id="8_crmpv"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player_start.tscn" id="9_ovr6l"]
+[ext_resource type="Script" path="res://scripts/world/player_start.gd" id="10_aft57"]
+
+[sub_resource type="Environment" id="Environment_rsdoj"]
+background_mode = 1
+background_color = Color(0, 0, 0.01, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.5, 0.62, 1)
+ambient_light_energy = 0.32
+tonemap_exposure = 1.1
+fog_enabled = true
+fog_light_color = Color(0.02, 0.03, 0.045, 1)
+fog_density = 0.035
+
+[node name="Palestra" type="Node3D" unique_id=131504606]
+script = ExtResource("1_vc0lg")
+
+[node name="Ambiente" type="WorldEnvironment" parent="." unique_id=519872859]
+environment = SubResource("Environment_rsdoj")
+
+[node name="Geometria" type="CSGCombiner3D" parent="." unique_id=617902845]
+script = ExtResource("2_01ljt")
+
+[node name="Solido" type="CSGBox3D" parent="Geometria" unique_id=639359933]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+size = Vector3(40, 8, 40)
+material = ExtResource("3_6b00a")
+metadata/_edit_lock_ = true
+
+[node name="ZonaStanza" type="CSGCombiner3D" parent="Geometria" unique_id=1751864221]
+operation = 2
+script = ExtResource("4_e4bft")
+
+[node name="Stanza" type="CSGBox3D" parent="Geometria/ZonaStanza" unique_id=39739735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+size = Vector3(8, 3, 8)
+script = ExtResource("5_mf5pk")
+surface = ExtResource("6_jn06u")
+
+[node name="Arredo" type="Node3D" parent="." unique_id=1534021142]
+
+[node name="Luci" type="Node3D" parent="." unique_id=1005530229]
+
+[node name="Luce1" type="StaticBody3D" parent="Luci" unique_id=1987966075 instance=ExtResource("7_qolxn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, 0)
+script = ExtResource("8_crmpv")
+energy = 2.2
+light_range = 8.0
+
+[node name="Porte" type="Node3D" parent="." unique_id=448699352]
+
+[node name="Dispositivi" type="Node3D" parent="." unique_id=1365333041]
+
+[node name="Oggetti" type="Node3D" parent="." unique_id=957980699]
+
+[node name="Guardie" type="Node3D" parent="." unique_id=1317878183]
+
+[node name="Trigger" type="Node3D" parent="." unique_id=879253950]
+
+[node name="PartenzaPlayer" type="Marker3D" parent="." unique_id=2105907867 instance=ExtResource("9_ovr6l")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+script = ExtResource("10_aft57")

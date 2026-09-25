@@ -1,3 +1,4 @@
+@tool
 class_name VentGrate
 extends StaticBody3D
 ## Grata di un condotto. Con Forza 1 si toglie a mano in silenzio; altrimenti va
@@ -5,9 +6,22 @@ extends StaticBody3D
 ## inner_zone: se il player è nel condotto (zona indicata) può sempre spingerla
 ## via con un calcio (rumore medio).
 
-var size := Vector2(1.1, 1.1)
-var pry_skill := 1
-var inner_zone := 0
+## Larghezza e altezza della grata.
+@export var size := Vector2(1.1, 1.1):
+	set(v):
+		size = v
+		if Engine.is_editor_hint() and is_inside_tree():
+			for c in get_children():
+				if c.owner == null:
+					remove_child(c)
+					c.queue_free()
+			_build()
+## Livello di Forza per toglierla a mano (in silenzio).
+@export_range(0, 4) var pry_skill := 1
+## Zona "interna" (il condotto): da lì il player la può sempre sfondare con un calcio.
+## Il lato esterno della grata è verso +Z locale.
+@export_flags_3d_render var inner_zone := 0
+
 var removed := false
 
 
@@ -20,7 +34,11 @@ func setup(pos: Vector3, yaw_deg: float, sz: Vector2, inner := 0) -> VentGrate:
 
 
 func _ready() -> void:
-	collision_layer = Game.L_WORLD | Game.L_DEVICE
+	_build()
+
+
+func _build() -> void:
+	collision_layer = Layers.WORLD | Layers.DEVICE
 	collision_mask = 0
 	var m := Util.mat("vent_grate", {"fit": Vector3(size.x, size.y, 0.04), "alpha": true})
 	Util.box(self, Vector3(size.x, size.y, 0.04), Vector3.ZERO, m)
@@ -65,7 +83,7 @@ func _remove(snd: String, noise: float) -> void:
 	# lascia la grata a terra (solo visiva)
 	var fallen := Node3D.new()
 	get_parent().add_child(fallen)
-	var down := Util.ray(get_world_3d().direct_space_state, global_position + global_basis.z * 0.6, global_position + global_basis.z * 0.6 + Vector3.DOWN * 4.0, Game.L_WORLD)
+	var down := Util.ray(get_world_3d().direct_space_state, global_position + global_basis.z * 0.6, global_position + global_basis.z * 0.6 + Vector3.DOWN * 4.0, Layers.WORLD)
 	var ground: Vector3 = down.get("position", global_position + Vector3.DOWN * size.y)
 	fallen.global_position = ground + Vector3.UP * 0.03 + global_basis.z * 0.1
 	fallen.rotation_degrees = Vector3(90, rotation_degrees.y + randf_range(-20, 20), 0)

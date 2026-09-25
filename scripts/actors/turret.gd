@@ -1,17 +1,26 @@
+@tool
 class_name Turret
 extends Node3D
 ## Torretta automatica a sensori ottici: come le guardie, vede meglio se sei
 ## illuminato. Si spegne dal terminale di sicurezza, si distrugge a colpi di
 ## pistola, oppure si hackera dal pannello: con Hacking 3 diventa amica e spara
 ## alle guardie.
+## Guarda verso la -Z locale: ruota il nodo per orientarla.
 
 enum T { IDLE, ACQUIRE, FIRE, OFF, FRIENDLY, DESTROYED }
 
-var yaw_center := 180.0
-var sweep := 35.0
-var period := 6.0
-var t_range := 12.0
-var half_fov := 45.0
+## Ampiezza della rotazione in pattuglia (gradi per lato).
+@export_range(0.0, 90.0) var sweep := 35.0
+@export var period := 6.0
+## Portata in metri.
+@export var t_range := 12.0
+## Semiapertura del cono di rilevamento (gradi).
+@export var half_fov := 45.0
+## Parte spenta (es. si attiva solo con un evento).
+@export var start_disabled := false
+@export_flags_3d_render var zones_override := 0
+
+var yaw_center := 0.0
 var zones := 1
 var state: int = T.IDLE
 var hp := 90.0
@@ -34,21 +43,36 @@ var _servo_cd := 0.0
 
 func setup(pos: Vector3, yaw_deg: float, zone_mask: int) -> Turret:
 	position = pos
-	yaw_center = yaw_deg
-	zones = zone_mask
+	rotation_degrees.y = yaw_deg
+	zones_override = zone_mask
 	return self
 
 
 func _ready() -> void:
+	_build()
+	if Engine.is_editor_hint():
+		return
 	add_to_group("turrets")
 	add_to_group("game_lights")
+	add_to_group("level_aware")
+	if start_disabled:
+		set_disabled(true)
+
+
+func on_level_ready(level: Node) -> void:
+	zones = zones_override if zones_override != 0 else level.zone_mask_at(global_position)
+	_spot.light_cull_mask = zones
+	Util.set_layers_recursive(self, zones)
+
+
+func _build() -> void:
 	var dark := Util.color_mat(Color(0.13, 0.14, 0.15))
 	var metal := Util.mat("wall_panel", {"fit": Vector3(0.5, 0.35, 0.6), "color": Color(0.9, 0.8, 0.6)})
-	Util.box(self, Vector3(0.5, 0.12, 0.3), Vector3(0, 0.25, -0.1), dark)
+	Util.box(self, Vector3(0.5, 0.12, 0.3), Vector3(0, 0.25, 0.1), dark)
 	_pivot = Node3D.new()
 	add_child(_pivot)
 	_head = StaticBody3D.new()
-	_head.collision_layer = Game.L_DEVICE
+	_head.collision_layer = Layers.DEVICE
 	_head.collision_mask = 0
 	_head.rotation_degrees.x = -12.0
 	_pivot.add_child(_head)
@@ -67,10 +91,8 @@ func _ready() -> void:
 	_spot.spot_range = t_range
 	_spot.spot_angle = 12.0
 	_spot.light_energy = 0.8
-	_spot.light_cull_mask = zones
 	_spot.position = Vector3(0, 0.08, -0.35)
 	_head.add_child(_spot)
-	Util.set_layers_recursive(self, zones)
 	_apply_look()
 
 
@@ -121,7 +143,7 @@ func light_contribution(p: Vector3) -> float:
 	var d := to.length()
 	if d > t_range or rad_to_deg((-_spot.global_basis.z).angle_to(to)) > _spot.spot_angle:
 		return 0.0
-	if not Util.ray_clear(get_world_3d().direct_space_state, from, p, Game.L_WORLD | Game.L_DOOR, [_head.get_rid()]):
+	if not Util.ray_clear(get_world_3d().direct_space_state, from, p, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 		return 0.0
 	return _spot.light_energy * (1.0 - d / t_range) * 0.5
 
@@ -147,7 +169,7 @@ func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) 
 
 
 func _physics_process(delta: float) -> void:
-	if state == T.OFF or state == T.DESTROYED:
+	if Engine.is_editor_hint() or state == T.OFF or state == T.DESTROYED:
 		return
 	_t += delta
 	_fire_cd -= delta
@@ -208,7 +230,7 @@ func _perceive() -> void:
 			var tp: Vector3 = g.global_position + Vector3.UP * 1.2
 			var d := from.distance_to(tp)
 			if d < t_range and d < best and rad_to_deg(Vector3(fwd.x, 0, fwd.z).angle_to(Vector3(tp.x - from.x, 0, tp.z - from.z))) < 80.0:
-				if Util.ray_clear(space, from, tp, Game.L_WORLD | Game.L_DOOR, [_head.get_rid()]):
+				if Util.ray_clear(space, from, tp, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 					best = d
 					_target = g
 		_sees = _target != null
@@ -222,7 +244,7 @@ func _perceive() -> void:
 	var d := to.length()
 	var fov := half_fov if state == T.IDLE else 80.0
 	if d < t_range and rad_to_deg(Vector3(fwd.x, 0, fwd.z).angle_to(Vector3(to.x, 0, to.z))) < fov:
-		if Util.ray_clear(space, from, aim, Game.L_WORLD | Game.L_DOOR, [_head.get_rid()]):
+		if Util.ray_clear(space, from, aim, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 			_sees = true
 	if _sees:
 		var vis: float = p.visibility
@@ -235,7 +257,7 @@ func _perceive() -> void:
 func _track(delta: float) -> void:
 	if _target == null or not is_instance_valid(_target):
 		return
-	var to: Vector3 = _target.global_position - global_position
+	var to: Vector3 = global_basis.inverse() * (_target.global_position - global_position)
 	var want := atan2(-to.x, -to.z)
 	_pivot.rotation.y = lerp_angle(_pivot.rotation.y, want, clampf(delta * 5.0, 0.0, 1.0))
 	if _servo_cd <= 0.0:
@@ -264,7 +286,7 @@ func _shoot_at(t: Node, base_chance: float, dmg: Vector2) -> void:
 	else:
 		var miss := aim + Vector3(randf_range(-0.9, 0.9), randf_range(-0.4, 0.8), randf_range(-0.9, 0.9))
 		var dir := (miss - from).normalized()
-		var hit := Util.ray(get_world_3d().direct_space_state, from, from + dir * 30.0, Game.L_WORLD | Game.L_DOOR | Game.L_PROP, [_head.get_rid()])
+		var hit := Util.ray(get_world_3d().direct_space_state, from, from + dir * 30.0, Layers.WORLD | Layers.DOOR | Layers.PROP, [_head.get_rid()])
 		var end: Vector3 = hit.get("position", from + dir * 30.0)
 		Effects.tracer(from, end, Color(1.0, 0.4, 0.3))
 		if not hit.is_empty():

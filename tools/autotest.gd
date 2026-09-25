@@ -24,6 +24,8 @@ func _ready() -> void:
 		mode = "death"
 	if "--ui" in OS.get_cmdline_user_args() and mode == "full":
 		mode = "ui"
+	if "--guida" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "guida"
 	# watchdog: nessun test deve restare appeso
 	get_tree().create_timer(240.0, true).timeout.connect(func():
 		print("FAIL: timeout globale")
@@ -35,6 +37,8 @@ func _ready() -> void:
 			run_post_restart()
 		"ui":
 			run_ui()
+		"guida":
+			run_guida()
 		_:
 			run()
 
@@ -130,6 +134,38 @@ func run_ui() -> void:
 	check(_press("OK"), "tastierino: OK")
 	await frames(2)
 	check(not door.locked and Game.state == Game.State.PLAYING, "porta sbloccata dal tastierino")
+	print("RISULTATO: %d ok, %d fail" % [oks, fails])
+	get_tree().quit(0 if fails == 0 else 1)
+
+
+## Il livello d'esempio di docs/GUIDA_EDITOR.md (levels/guida): stanza, porta
+## col codice del datapad, guardia di ronda. Avvio:
+##   godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+func run_guida() -> void:
+	await frames(20)
+	lvl = Game.level
+	p = Game.player
+	p.god_mode = true
+	Game.ui._begin()
+	await wait(0.5)
+	check(Game.state == Game.State.PLAYING, "guida: partita avviata")
+	await shot("guida_01_stanza")
+	await tp(Vector3(2.5, 0.05, 1.6), 180, -30)
+	await face(Vector3(2.5, 0.81, 2.8))
+	await frob_expect("datapad col codice")
+	check("codice_magazzino" in Game.logs_read, "guida: registro col codice letto")
+	await close_ui()
+	var door: Node = lvl.find_child("PortaMagazzino", true, false)
+	check(door != null and door.locked, "guida: porta del magazzino chiusa")
+	check(not door.try_code("0000") and door.try_code("2468"), "guida: il codice 2468 apre la porta")
+	var rossi := guard("Ag. Rossi")
+	var from: Vector3 = rossi.global_position
+	await wait(6.0)
+	check(rossi.global_position.distance_to(from) > 1.0, "guida: la guardia fa la ronda (%.1f m)" % rossi.global_position.distance_to(from))
+	await tp(Vector3(2.2, 0.05, -10.2), 0, 0)
+	await face(Vector3(-0.8, 1.1, -5.5))
+	await wait(0.8)
+	await shot("guida_02_magazzino")
 	print("RISULTATO: %d ok, %d fail" % [oks, fails])
 	get_tree().quit(0 if fails == 0 else 1)
 
@@ -297,8 +333,9 @@ func run() -> void:
 		g.global_position = g.post_pos
 	await tp(Vector3(6.0, 0.05, 12.0), 0)
 	await wait(3.0)
-	lvl.turret.awareness = 0.0
-	lvl.turret.state = Turret.T.IDLE
+	var turret := lvl.find_child("Torretta", true, false) as Turret
+	turret.awareness = 0.0
+	turret.state = Turret.T.IDLE
 
 	# --- porta di servizio + hall
 	await tp(Vector3(6.0, 0.05, 10.0), 0)
@@ -385,7 +422,7 @@ func run() -> void:
 
 	# --- terminale di sicurezza via minigioco di hacking (forzato)
 	var term: Node = null
-	for e in lvl.entities.get_children():
+	for e in lvl.find_children("*", "", true, false):
 		if e is SecurityTerminal:
 			term = e
 	Game.ui.open_lock(term)
@@ -407,7 +444,7 @@ func run() -> void:
 	var cams_off := true
 	for c in get_tree().get_nodes_in_group("security_cameras"):
 		cams_off = cams_off and c.disabled
-	check(cams_off and not lvl.turret.is_hostile_active(), "telecamere e torretta disattivate")
+	check(cams_off and not turret.is_hostile_active(), "telecamere e torretta disattivate")
 
 	# --- IA: una guardia mi vede in piena luce
 	var hale := guard("Op. Hale")

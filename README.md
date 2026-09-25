@@ -22,6 +22,9 @@ Laboratorio C e tornare all'ascensore. Come ci arrivi è affar tuo.
 Una partita dura 10–25 minuti. Nessun asset esterno: texture e suoni sono generati dagli
 script in `tools/` e sono già inclusi.
 
+**Vuoi modificare la mappa o farne una nuova?** I livelli sono scene che si modificano
+nell'editor di Godot: leggi la [guida all'editor](docs/GUIDA_EDITOR.md), che parte da zero.
+
 ## Comandi
 
 | Tasto | Azione |
@@ -93,9 +96,9 @@ di ventilazione con un ramo segreto.
 
 ## Come è fatto il look Dark Engine
 
-- **Brush sottrattivi** (`scripts/world/level_builder.gd`): si parte da un blocco solido e
-  si scavano volumi d'aria con CSG, come in DromEd. Il CSG viene "compilato" in mesh
-  statiche e una collisione trimesh.
+- **Brush sottrattivi** (`scripts/world/level/`): nella scena del livello un blocco solido
+  (`Solido`) viene scavato da volumi d'aria (`Brush` dentro le `Zone`), come in DromEd.
+  All'avvio `LevelBuilder` "compila" il CSG in mesh statiche e una collisione trimesh.
 - **Zone di luce**: ogni triangolo è assegnato alla zona (stanza) del brush che l'ha
   generato e ogni zona è un bit dei render layer. Le luci illuminano solo la loro zona:
   la luce non attraversa i muri anche senza ombre, come con le lightmap del Dark Engine.
@@ -111,48 +114,53 @@ di ventilazione con un ramo segreto.
 ## Struttura del progetto
 
 ```
-scenes/main.tscn            scena principale (tutto il resto è costruito da codice)
+levels/seraph/seraph.tscn   LA MAPPA: geometria, luci, porte, oggetti, guardie (si modifica nell'editor)
+levels/seraph/seraph.gd     logica della missione: obiettivi, battute, lockdown
+levels/palestra/            livello vuoto da cui partire (vedi la guida)
+levels/guida/               il livello costruito passo passo in docs/GUIDA_EDITOR.md
+scenes/main.tscn            scena principale: carica il livello, HUD e menu
+scenes/entities/*.tscn      entità da trascinare nei livelli (porte, luci, guardie, datapad…)
+scenes/props/*.tscn         arredo: scatole, pannelli, cilindri
+assets/surfaces/*.tres      SurfaceSet: texture e passi delle superfici delle stanze
 scripts/main.gd             SubViewport retro, HUD, UI, input globale
 scripts/core/game.gd        autoload Game: skill, inventario, obiettivi, rumore, allarmi
 scripts/core/sfx.gd         autoload Sfx: suoni 2D/3D e loop
 scripts/core/util.gd        materiali nearest, primitive, raycast, evidenziazione frob
+scripts/core/layers.gd      layer di collisione (mondo, player, npc, porte…)
 scripts/core/effects.gd     scintille, polvere, traccianti, lampi
-scripts/world/level_builder.gd   brush → mesh a zone → collisione
-scripts/world/level_seraph.gd    LA MAPPA: brush, luci, porte, oggetti, guardie, script di missione
+scripts/world/level/        Level (base dei livelli), LevelGeometry, Zone, Brush, SurfaceSet,
+                            LevelBuilder (brush → mesh a zone → collisione)
 scripts/world/*.gd          porte, luci, pickup, datapad, oggetti fisici, grate, terminale,
-                            stazione di potenziamento, nucleo, ascensore, interruttori, trigger
+                            stazione di potenziamento, nucleo, ascensore, interruttori, trigger,
+                            percorsi di ronda, PlayerStart
+scripts/world/props/        PropBox, PropQuad, PropCylinder
 scripts/actors/player.gd    controller, mantle, lean, visibilità, passi, armi, frob, trasporto
 scripts/actors/guard.gd     IA guardia (percezione, stati, KO, borseggio, corpi)
 scripts/actors/security_camera.gd, turret.gd, turret_panel.gd
 scripts/ui/hud.gd           gemma di luce, rumore, salute, arma, prompt, sottotitoli
 scripts/ui/ui_root.gd       menu, PDA, serrature/tastierino, hacking, potenziamento, terminali, fine
 scripts/data/logs.gd        testi dei registri
+tools/validate_level.gd     validatore dei livelli (gira anche a ogni F6)
+tools/autotest.gd           test end-to-end
+tools/convert_seraph.gd     il convertitore usato una volta per passare dalla mappa in codice alla scena
 tools/gen_textures.py       generatore delle texture (Python + numpy + Pillow)
 tools/gen_sounds.py         generatore degli effetti sonori
-tools/autotest.gd           test end-to-end
 ```
 
 ## Estendere la mappa
 
-Tutto il livello è in `level_seraph.gd`. Una nuova stanza collegata alla hall:
+Tutto si fa nell'editor: apri `levels/seraph/seraph.tscn` (o la palestra), scava stanze con
+i `Brush` dentro le `Zone`, trascina le entità da `scenes/entities/`, premi **F6** per
+provare. La [guida all'editor](docs/GUIDA_EDITOR.md) spiega tutto passo passo.
 
-```gdscript
-# in _carve(): volume d'aria della stanza e passaggio nel muro (1 m)
-b.carve(Vector3(-18, 0, -12), Vector3(-11, 3.5, -6), "office", Z_NUOVA)
-b.carve(Vector3(-11, 0, -5.2), Vector3(-10, 2.5, -3.6), "frame", Z_LOBBY | Z_NUOVA)
-# in _lights():
-light(Vector3(-14.5, 3.45, -9), Color(0.8, 0.9, 1.0), 1.5, 6.0, Z_NUOVA)
-# in _doors(): porta con codice e hack
-_add(SlidingDoor.new().setup(Vector3(-10.5, 0, -4.4), 90, 1.6, 2.5, {"title": "Archivio", "code": "1234", "hack": 1, "difficulty": 1}))
-# in _guards(): nome, posizione, direzione, percorso [[punto, attesa]], bottino
-_add(Guard.new().setup("Ag. Nuova", Vector3(-15, 0, -9), 0, [[Vector3(-15, 0, -9), 3.0], [Vector3(-12, 0, -9), 2.0]], {"ammo": 4}))
-```
-
-Le zone sono bit (`const Z_NUOVA := 512`). I registri si aggiungono in `scripts/data/logs.gd`
-e si piazzano con `Datapad.new().setup(pos, "id")`. Un oggetto qualsiasi diventa
-interattivo se ha i metodi `get_frob_text()` e `frob(player)`; un bersaglio se ha
-`take_damage(amount, hit_pos, dir, kind)`; una serratura se espone `get_lock_info()`,
-`try_code()` e `on_hack_result()`.
+Dal lato codice: i registri si aggiungono in `scripts/data/logs.gd`; la logica di missione
+di un livello si scrive estendendo `Level` (vedi `levels/seraph/seraph.gd`: `setup_mission`,
+`start_intro`, `on_lockdown`). Un oggetto qualsiasi diventa interattivo se ha i metodi
+`get_frob_text()` e `frob(player)`; un bersaglio se ha `take_damage(amount, hit_pos, dir,
+kind)`; una serratura se espone `get_lock_info()`, `try_code()` e `on_hack_result()`. Le
+entità nuove seguono lo schema di quelle esistenti: script `@tool` con proprietà `@export`
+commentate (il commento diventa il tooltip dell'Inspector) e una scena in
+`scenes/entities/`.
 
 ## Test automatico
 
@@ -162,8 +170,13 @@ godot --headless --path . -- --autotest            # 63 controlli: navmesh, frob
                                                    # lancio, mantle nel condotto, lockdown, estrazione
 godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
 godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino
+godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
 godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
 ```
+
+La CI (`.github/workflows/test.yml`) esegue i test, valida tutti i livelli in `levels/` e li
+apre nell'editor per scovare errori negli script `@tool`.
 
 Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sounds.py`
 (servono `numpy` e `Pillow`), poi riapri l'editor per il reimport.
