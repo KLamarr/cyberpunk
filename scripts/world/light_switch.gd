@@ -36,6 +36,16 @@ func get_frob_text() -> String:
 	return tr("Light switch (turn off)") if is_on else tr("Light switch (turn on)")
 
 
+func save_state() -> Dictionary:
+	return {"on": is_on}
+
+
+## Le luci collegate si salvano da sole: qui solo la leva.
+func load_state(d: Dictionary) -> void:
+	is_on = d.on
+	_lever.position.y = 0.04 if is_on else -0.04
+
+
 func frob(_player: Node) -> void:
 	is_on = not is_on
 	_lever.position.y = 0.04 if is_on else -0.04

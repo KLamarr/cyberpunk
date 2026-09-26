@@ -727,9 +727,19 @@ func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, kind: String) -
 
 
 func _go_down(killed: bool) -> void:
+	_set_down(killed)
+	Game.on_guard_down(self, killed)
+	var tw := create_tween()
+	tw.tween_property(_model, "rotation:x", PI * 0.5, 0.55).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_model, "position:y", 0.14, 0.55)
+	Sfx.play_3d("body_fall", global_position, 0.0)
+	Game.emit_noise(global_position, 6.0, "body", self)
+
+
+## Stato «a terra» (KO o morta), senza animazione né rumore: serve anche ai salvataggi.
+func _set_down(killed: bool) -> void:
 	state = S.DOWN
 	dead = killed
-	Game.on_guard_down(self, killed)
 	add_to_group("downed")
 	collision_layer = Layers.INTERACT
 	collision_mask = Layers.WORLD
@@ -741,11 +751,6 @@ func _go_down(killed: bool) -> void:
 	_model.set_glow(Color(0.05, 0.05, 0.06) if killed else _model.default_glow() * 0.35)
 	_model.set_down(true)
 	_model.lod_interval = 0.0
-	var tw := create_tween()
-	tw.tween_property(_model, "rotation:x", PI * 0.5, 0.55).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	tw.parallel().tween_property(_model, "position:y", 0.14, 0.55)
-	Sfx.play_3d("body_fall", global_position, 0.0)
-	Game.emit_noise(global_position, 6.0, "body", self)
 
 
 # --- frob: perquisire, borseggiare, trasportare ------------------------------------
@@ -818,6 +823,50 @@ func drop_at(pos: Vector3, yaw: float) -> void:
 	set_carried(false)
 	Sfx.play_3d("body_fall", pos, -4.0)
 	Game.emit_noise(pos, 3.5 * (1.0 - 0.12 * Game.skill("furtivita")), "body", Game.player)
+
+
+# --- salvataggi (vedi SaveGame) --------------------------------------------------------
+func save_state() -> Dictionary:
+	return {
+		"pos": global_position, "yaw": rotation.y, "hp": hp, "state": state, "dead": dead,
+		"awareness": awareness, "alertness": alertness, "last_known": last_known, "target": target_pos,
+		"discovered": discovered, "carried": carried, "loot": loot.duplicate(true), "dormant": dormant,
+		"wp": _wp, "wait": _wait, "search": _search_timer, "arrived": _arrived, "look": _look_timer,
+		"look_base": _look_base, "reaction": _reaction, "lost": _lost_timer,
+	}
+
+
+func load_state(d: Dictionary) -> void:
+	if dormant and not bool(d.dormant):
+		activate()
+	global_position = d.pos
+	rotation.y = d.yaw
+	velocity = Vector3.ZERO
+	hp = d.hp
+	awareness = d.awareness
+	alertness = d.alertness
+	last_known = d.last_known
+	target_pos = d.target
+	discovered = d.discovered
+	loot = d.loot
+	_wp = clampi(int(d.wp), 0, maxi(waypoints.size() - 1, 0))
+	_wait = d.wait
+	_search_timer = d.search
+	_arrived = d.arrived
+	_look_timer = d.look
+	_look_base = d.look_base
+	_reaction = d.reaction
+	_lost_timer = d.lost
+	_last_pos = global_position
+	_last_nav_target = Vector3(INF, INF, INF)
+	if int(d.state) == S.DOWN:
+		_set_down(bool(d.dead))
+		_model.rotation.x = PI * 0.5
+		_model.position.y = 0.14
+		if bool(d.carried):
+			set_carried(true)
+	else:
+		state = int(d.state)
 
 
 # --- presentazione -------------------------------------------------------------------

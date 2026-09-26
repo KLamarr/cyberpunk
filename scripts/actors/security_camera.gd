@@ -100,13 +100,32 @@ func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) 
 	hp -= amount
 	Effects.sparks(hit_pos, Color(0.6, 0.9, 1.0), 10, 3.0)
 	if hp <= 0.0:
-		destroyed = true
-		_spot.visible = false
-		_set_color(Color(0.05, 0.05, 0.05))
-		_head.rotation_degrees.x = -70.0
+		_set_destroyed()
 		Sfx.play_3d("glass_break", global_position)
 		Game.emit_noise(global_position, 10.0, "glass", Game.player)
 		Game.notify(tr("Camera destroyed."))
+
+
+func _set_destroyed() -> void:
+	destroyed = true
+	_spot.visible = false
+	_set_color(Color(0.05, 0.05, 0.05))
+	_head.rotation_degrees.x = -70.0
+
+
+func save_state() -> Dictionary:
+	return {"disabled": disabled, "destroyed": destroyed, "hp": hp, "t": _t, "awareness": awareness, "alarm_cd": _alarm_cd}
+
+
+func load_state(d: Dictionary) -> void:
+	hp = d.hp
+	_t = d.t
+	awareness = float(d.awareness)
+	_alarm_cd = float(d.alarm_cd)
+	if bool(d.destroyed):
+		_set_destroyed()
+	elif bool(d.disabled):
+		set_disabled(true)
 
 
 func set_disabled(on: bool) -> void:

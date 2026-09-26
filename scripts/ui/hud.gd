@@ -313,7 +313,7 @@ func _process(delta: float) -> void:
 	health_bar.col = UITheme.GOOD if hp_frac > 0.5 else (UITheme.ACCENT if hp_frac > 0.25 else UITheme.DANGER)
 	health_bar.queue_redraw()
 	health_label.text = tr("HEALTH %d / %d") % [int(ceil(p.health)), int(p.max_health)]
-	items_label.text = tr("MEDIPATCH x%d [H]   MODULES %d   CREDITS %d") % [Game.medpatches, Game.modules, Game.credits]
+	items_label.text = tr("MEDIPATCH x%d [%s]   MODULES %d   CREDITS %d") % [Game.medpatches, Game.key_label("medpatch"), Game.modules, Game.credits]
 	if p.weapon == 0:
 		weapon_label.text = tr("WRENCH")
 		ammo_label.text = "—"

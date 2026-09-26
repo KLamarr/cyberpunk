@@ -17,7 +17,12 @@ const NAV_GROUP := "nav_source"
 var builder: LevelBuilder
 var nav: NavigationRegion3D
 var player: Player
+## Percorsi dei nodi salvabili presenti all'avvio: quelli che mancano al momento del
+## salvataggio (oggetti raccolti...) vengono tolti al caricamento (vedi SaveGame).
+var initial_savables: Array[String] = []
 var _redirecting := false
+## Chiamate ritardate in attesa: [[metodo, secondi rimasti], ...] (vedi later()).
+var _later: Array = []
 
 
 func _ready() -> void:
@@ -48,6 +53,8 @@ func _ready() -> void:
 	get_tree().call_group("level_aware", "on_level_ready", self)
 	_spawn_player()
 	setup_mission()
+	for n in SaveGame.savables(self):
+		initial_savables.append(String(get_path_to(n)))
 
 
 func _find_geometry(n: Node) -> LevelGeometry:
@@ -139,3 +146,38 @@ func start_intro() -> void:
 ## Chiamato da Game.start_lockdown().
 func on_lockdown() -> void:
 	pass
+
+
+## Chiama un metodo del livello fra `seconds` secondi di gioco (la pausa li ferma).
+## Come get_tree().create_timer(), ma finisce nei salvataggi: usalo per le battute e
+## gli eventi della missione, es. later(5.0, "_intro_2").
+func later(seconds: float, method: StringName) -> void:
+	_later.append([String(method), seconds])
+
+
+func _process(delta: float) -> void:
+	var i := 0
+	while i < _later.size():
+		_later[i][1] -= delta
+		if _later[i][1] <= 0.0:
+			var m: String = _later[i][0]
+			_later.remove_at(i)
+			call(m)
+		else:
+			i += 1
+
+
+## Stato della logica di missione da mettere nei salvataggi, oltre a quello di Game e
+## delle entità. Se la missione ha variabili sue, sovrascrivi chiamando super:
+##   func save_state() -> Dictionary:
+##       var d := super()
+##       d.mia_variabile = mia_variabile
+##       return d
+func save_state() -> Dictionary:
+	return {"later": _later.duplicate(true)}
+
+
+func load_state(d: Dictionary) -> void:
+	_later = []
+	for c in d.get("later", []):
+		_later.append([String(c[0]), float(c[1])])

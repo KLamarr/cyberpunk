@@ -52,6 +52,14 @@ func _ready() -> void:
 	body_entered.connect(_on_body)
 
 
+func save_state() -> Dictionary:
+	return {"fired": _fired}
+
+
+func load_state(d: Dictionary) -> void:
+	_fired = d.fired
+
+
 func _on_body(b: Node) -> void:
 	if _fired and once:
 		return

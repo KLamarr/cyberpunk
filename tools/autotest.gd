@@ -4,6 +4,7 @@ extends Node
 ##   xvfb-run godot --path . -- --autotest --shots   (anche screenshot)
 ##   godot --path . -- --autotest --npc      (generatore di NPC: libreria, mesh, scheletro, pose)
 ##   godot --path . -- --autotest --stress   (10/25/50/100 guardie nella hall: tempi e draw call)
+##   godot --path . -- --autotest --save     (salvataggi: slot, F5/F9, stato identico dopo il caricamento)
 ##   aggiungi --lang=it per fare gli stessi test con i testi in italiano
 ## Stampa OK/FAIL per ogni controllo ed esce con codice 0 se tutto passa.
 
@@ -13,7 +14,10 @@ var shots := false
 var shot_dir := "user://shots"
 var p: Node
 var lvl: Node
-var mode := "full"   # full | death | post_restart | ui | npc | stress
+var mode := "full"   # full | death | post_restart | ui | npc | stress | save | post_load
+## Per il test dei salvataggi: lo stato atteso dopo il caricamento e dove cercare le cose.
+var expected := {}
+var expect_info := {}
 ## Errori di script durante il test (condiviso anche col test dopo il riavvio).
 static var _script_errors: ScriptErrors
 
@@ -56,6 +60,8 @@ func _ready() -> void:
 		mode = "npc"
 	if "--stress" in OS.get_cmdline_user_args() and mode == "full":
 		mode = "stress"
+	if "--save" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "save"
 	# watchdog: nessun test deve restare appeso
 	get_tree().create_timer(240.0, true).timeout.connect(func():
 		print("FAIL: timeout globale")
@@ -73,6 +79,10 @@ func _ready() -> void:
 			run_npc()
 		"stress":
 			run_stress()
+		"save":
+			run_save()
+		"post_load":
+			run_post_load()
 		_:
 			run()
 
@@ -170,19 +180,38 @@ func run_ui() -> void:
 	await close_ui()
 	Game.ui.open_pause()
 	await frames(2)
-	var sc: int = Game.settings.pixel_scale
-	check(_press(_label("Internal resolution: %s  [F2]")), "pausa: risoluzione")
-	check(Game.settings.pixel_scale != sc, "risoluzione cambiata")
-	check(_press(_label("15-bit dithering: %s  [F3]")), "pausa: dithering")
-	check(_press(_label("Language: %s")), "pausa: lingua")
+	var sv := _find_button(Game.ui.root, tr("Save game"))
+	check(sv != null and not sv.disabled and _find_button(Game.ui.root, tr("Load game")) != null, "pausa: salva e carica")
+	check(_press(tr("Options")), "pausa: opzioni")
 	await frames(2)
-	check(Game.settings.language != lang and Game.ui.current_kind == "pause" and _find_button(Game.ui.root, tr("Resume")) != null,
-		"pausa ridisegnata in %s" % Game.language_name())
-	check(_press(_label("Language: %s")), "pausa: di nuovo la lingua")
+	check(Game.ui.current_kind == "options", "pannello opzioni aperto")
+	var sc: int = Game.settings.pixel_scale
+	check(_press(_label("Internal resolution: %s  [%s]")), "opzioni: risoluzione")
+	await frames(2)
+	check(Game.settings.pixel_scale != sc and Game.ui.current_kind == "options", "risoluzione cambiata")
+	var dt: bool = Game.settings.dither
+	check(_press(_label("15-bit dithering: %s  [%s]")) and Game.settings.dither != dt, "opzioni: dithering")
+	await frames(2)
+	var fs: bool = Game.settings.fullscreen
+	check(_press(_label("Fullscreen: %s")) and Game.settings.fullscreen != fs, "opzioni: schermo intero")
+	await frames(2)
+	_press(_label("Fullscreen: %s"))
+	await frames(2)
+	var vs: bool = Game.settings.vsync
+	check(_press(_label("V-Sync: %s")) and Game.settings.vsync != vs, "opzioni: V-Sync")
+	await frames(2)
+	_press(_label("V-Sync: %s"))
+	await frames(2)
+	check(Game.settings.fullscreen == fs and Game.settings.vsync == vs, "schermo intero e V-Sync tornati com'erano")
+	check(_press(_label("Language: %s")), "opzioni: lingua")
+	await frames(2)
+	check(Game.settings.language != lang and Game.ui.current_kind == "options" and _find_button(Game.ui.root, tr("Back  [Esc]")) != null,
+		"opzioni ridisegnate in %s" % Game.language_name())
+	check(_press(_label("Language: %s")), "opzioni: di nuovo la lingua")
 	await frames(2)
 	check(Game.settings.language == lang, "lingua tornata com'era")
 	var cap0: String = Game.settings.env_captions
-	check(cap0 == "auto" and _press(_label("Captions for signs and writings: %s")), "pausa: didascalie (predefinite: auto)")
+	check(cap0 == "auto" and _press(_label("Captions for signs and writings: %s")), "opzioni: didascalie (predefinite: auto)")
 	await frames(2)
 	var cap1: String = Game.settings.env_captions
 	_press(_label("Captions for signs and writings: %s"))
@@ -191,6 +220,15 @@ func run_ui() -> void:
 	_press(_label("Captions for signs and writings: %s"))
 	await frames(2)
 	check([cap1, cap2, Game.settings.env_captions] == ["always", "off", "auto"], "didascalie: auto → sempre → no → auto")
+	await _check_rebinding()
+	check(_press(tr("Back  [Esc]")), "opzioni: indietro")
+	await frames(2)
+	check(Game.ui.current_kind == "pause", "dalle opzioni si torna alla pausa")
+	check(_press(tr("Options")), "pausa: di nuovo le opzioni")
+	await frames(2)
+	Game.ui.close_panel()   # come Esc
+	await frames(2)
+	check(Game.ui.current_kind == "pause", "Esc nelle opzioni torna alla pausa")
 	check(_press(tr("Resume")), "pausa: riprendi")
 	await frames(2)
 	check(Game.state == Game.State.PLAYING, "ripreso")
@@ -209,6 +247,273 @@ func run_ui() -> void:
 	check(not door.locked and Game.state == Game.State.PLAYING, "porta sbloccata dal tastierino")
 	await _check_env_captions()
 	finish()
+
+
+## Rimappatura dal pannello Comandi (già aperto): tasto nuovo, scambio con un altro
+## comando, Esc che annulla, Backspace che svuota, tasto del mouse, ripristino.
+func _check_rebinding() -> void:
+	var press_slot := func(action: String, i: int) -> bool:
+		var b: Button = Game.ui.root.find_child("%s_%d" % [action, i], true, false)
+		if b == null:
+			return false
+		b.pressed.emit()
+		return Game.ui.capturing_key()
+	var send_key := func(code: int) -> void:
+		var ev := InputEventKey.new()
+		ev.physical_keycode = code as Key
+		ev.keycode = code as Key
+		ev.pressed = true
+		Input.parse_input_event(ev)
+	check(press_slot.call("reload", 0), "comandi: in attesa di un tasto")
+	send_key.call(KEY_T)
+	await frames(3)
+	check(Game.binding("reload")[0] == ["key", KEY_T] and not Game.ui.capturing_key() and Game.ui.current_kind == "options",
+		"ricarica su T")
+	var t_in_map := false
+	for e in InputMap.action_get_events("reload"):
+		if e is InputEventKey and (e as InputEventKey).physical_keycode == KEY_T:
+			t_in_map = true
+	check(t_in_map and Game.key_label("reload") == "T" and Game.ui.controls_text().contains("[b]T[/b]"), "T nell'InputMap e nei testi dei comandi")
+	press_slot.call("reload", 0)
+	send_key.call(KEY_W)
+	await frames(3)
+	check(Game.binding("reload")[0] == ["key", KEY_W] and Game.binding("move_forward")[0] == ["key", KEY_T], "W già usato da «avanti»: i due tasti si scambiano")
+	press_slot.call("reload", 0)
+	send_key.call(KEY_ESCAPE)
+	await frames(3)
+	check(Game.binding("reload")[0] == ["key", KEY_W] and not Game.ui.capturing_key() and Game.ui.current_kind == "options", "Esc annulla senza chiudere il pannello")
+	var click := func(button: MouseButton, pos: Vector2) -> void:
+		var mb := InputEventMouseButton.new()
+		mb.button_index = button
+		mb.position = pos
+		mb.global_position = pos
+		mb.pressed = true
+		Input.parse_input_event(mb)
+		var up := mb.duplicate() as InputEventMouseButton
+		up.pressed = false
+		Input.parse_input_event(up)
+	# posizione nella finestra (gli eventi del mouse arrivano in coordinate della finestra)
+	var slot_center := func(action: String, i: int) -> Vector2:
+		var b: Button = Game.ui.root.find_child("%s_%d" % [action, i], true, false)
+		return get_viewport().get_final_transform() * b.get_global_rect().get_center() if b else Vector2.ZERO
+	# un clic altrove annulla, senza assegnare il tasto del mouse
+	press_slot.call("reload", 1)
+	click.call(MOUSE_BUTTON_LEFT, Vector2(4, 4))
+	await frames(3)
+	check(Game.binding("reload")[1] == [] and Game.binding("attack")[0] == ["mouse", MOUSE_BUTTON_LEFT] and not Game.ui.capturing_key(),
+		"clic fuori dal tasto: annulla senza assegnare")
+	# il secondo clic di un doppio clic non conta
+	press_slot.call("reload", 1)
+	click.call(MOUSE_BUTTON_LEFT, slot_center.call("reload", 1))
+	await frames(3)
+	check(Game.binding("reload")[1] == [] and Game.ui.capturing_key(), "doppio clic: non assegna il tasto sinistro")
+	await wait(0.35)
+	click.call(MOUSE_BUTTON_MIDDLE, slot_center.call("reload", 1))
+	await frames(3)
+	check(Game.binding("reload")[1] == ["mouse", MOUSE_BUTTON_MIDDLE] and Game.key_label("reload") == "W/" + tr("MMB"), "tasto del mouse come secondo tasto")
+	# «rubare» il solo tasto di un comando lo lascia senza tasti: il pannello avvisa
+	press_slot.call("medpatch", 1)
+	await wait(0.35)
+	click.call(MOUSE_BUTTON_LEFT, slot_center.call("medpatch", 1))
+	await frames(3)
+	var warn := tr("Careful: «%s» has no key now.") % tr(Game.ACTION_LABELS.attack)
+	check(Game.binding("medpatch")[1] == ["mouse", MOUSE_BUTTON_LEFT] and Game.key_label("attack") == "—"
+		and Game.ui.root.find_children("*", "Label", true, false).any(func(l): return l.text == warn),
+		"tasto preso a un comando che resta senza: avviso")
+	press_slot.call("reload", 1)
+	send_key.call(KEY_BACKSPACE)
+	await frames(3)
+	check(Game.binding("reload")[1] == [], "Backspace toglie il tasto")
+	check(_press(tr("Restore default keys")), "comandi: ripristina")
+	await frames(2)
+	check(Game.binding("reload")[0] == ["key", KEY_R] and Game.binding("move_forward")[0] == ["key", KEY_W] and Game.settings.bindings.is_empty(), "tasti predefiniti ripristinati")
+
+
+## Salvataggi: autosalvataggio, pannelli salva/carica, F5, caricamento con lo stesso
+## stato (continua in run_post_load, dopo che la scena si è ricaricata).
+func run_save() -> void:
+	await frames(20)
+	lvl = Game.level
+	p = Game.player
+	p.god_mode = true
+	check(SaveGame.dir == "user://saves_test", "i test salvano in user://saves_test")
+	for s in SaveGame.slots():
+		SaveGame.delete(s)
+	Game.ui._begin()
+	await wait(0.3)
+	check(SaveGame.exists("auto") and SaveGame.latest() == "auto", "autosalvataggio a inizio missione")
+	# cambia il mondo: guardie a terra e perquisite, porta aperta, oggetto raccolto, luce
+	# rotta, telecamera distrutta, moduli, ferite, un corpo in spalla
+	var kov := guard("Ofc. Kovač")
+	kov.knock_out()
+	var ruiz := guard("Ofc. Ruiz")
+	ruiz.knock_out()
+	ruiz.frob(p)
+	var door: Node = null
+	for d in get_tree().get_nodes_in_group("doors"):
+		if d.locked and d.lock.get("code", "") == "0451":
+			door = d
+	door.try_code("0451")
+	var pk: Node = lvl.find_children("*", "", true, false).filter(func(n): return n is Pickup)[0]
+	var pk_path := String(lvl.get_path_to(pk))
+	pk.frob(p)
+	var lamp: Node = lvl.find_children("*", "", true, false).filter(func(n): return n is LightFixture and n.style != "none" and not n.emergency)[0]
+	lamp.take_damage(1.0, Vector3.ZERO, Vector3.ZERO, "bullet")
+	var cam: Node = get_tree().get_nodes_in_group("security_cameras")[0]
+	cam.take_damage(100.0, cam.global_position, Vector3.ZERO, "bullet")
+	Game.add_modules(3)
+	await tp(Vector3(0, 0.05, 3), 90, -10)
+	p.take_damage(35.0, p.global_position, Vector3.FORWARD, "test")
+	p.carry_body(kov)
+	await frames(3)
+	# tornando dalle Opzioni si può ancora salvare
+	Game.ui.open_pause()
+	await frames(2)
+	check(_press(tr("Options")), "pausa: opzioni")
+	await frames(2)
+	Game.ui.close_panel()
+	await frames(2)
+	var sv := _find_button(Game.ui.root, tr("Save game"))
+	check(Game.ui.current_kind == "pause" and sv != null and not sv.disabled, "tornando dalle opzioni «Salva partita» è attivo")
+	# pannello Salva della pausa: slot vuoto, poi sovrascrittura con conferma
+	check(_press(tr("Save game")), "pausa: salva")
+	await frames(2)
+	check(Game.ui.current_kind == "save" and _press(tr("Save")), "slot vuoto: salva")
+	await frames(2)
+	check(SaveGame.exists("1") and Game.ui.current_kind == "save", "salvato nello slot 1")
+	check(_press(tr("Overwrite")) and SaveGame.exists("1"), "sovrascrivere chiede conferma")
+	await frames(1)
+	check(_press(tr("Click to confirm")), "conferma della sovrascrittura")
+	await frames(2)
+	var snap := SaveGame.collect(lvl)
+	var m := SaveGame.meta("1")
+	check(String(m.get("saved_at", "")).length() == 16 and float(m.get("playtime", -1.0)) >= 0.0 and m.get("objectives", "") != "",
+		"metadati dello slot: %s" % str(m))
+	Game.ui.close_panel()
+	await frames(2)
+	check(Game.ui.current_kind == "pause", "dal pannello Salva si torna alla pausa")
+	check(_press(tr("Load game")), "pausa: carica")
+	await frames(2)
+	var load_btns: Array = Game.ui.root.find_children("*", "Button", true, false).filter(func(b): return b.text == tr("Load"))
+	check(load_btns.size() == SaveGame.slots().size() and load_btns.filter(func(b): return not b.disabled).size() == 2,
+		"pannello Carica: %d slot, 2 pieni (auto, 1)" % load_btns.size())
+	Game.ui.close_panel()
+	await frames(2)
+	Game.ui.close_panel()
+	await frames(2)
+	check(Game.state == Game.State.PLAYING, "ripreso")
+	# F5
+	var ev := InputEventAction.new()
+	ev.action = "quicksave"
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	await frames(3)
+	check(SaveGame.exists("quick") and SaveGame.latest() == "quick", "F5: salvataggio rapido (ora è il più recente)")
+	# carica lo slot 1: la scena si ricarica e questo nodo sparisce, continua l'aiutante
+	var helper := Node.new()
+	helper.set_script(load("res://tools/autotest.gd"))
+	helper.mode = "post_load"
+	helper.name = "PostRestartTest"
+	helper.oks = oks
+	helper.fails = fails
+	helper.expected = snap
+	helper.expect_info = {"door": String(lvl.get_path_to(door)), "pickup": pk_path}
+	get_tree().root.add_child(helper)
+	Game.add_modules(10)   # cambiato dopo il salvataggio: al caricamento torna com'era
+	check(Game.load_game("1"), "caricamento dello slot 1 avviato")
+
+
+func run_post_load() -> void:
+	await Game.game_loaded
+	var got := SaveGame.collect(Game.level)
+	var diffs := _diff("game", expected.game, got.game) + _diff("entities", expected.entities, got.entities)
+	check(diffs.is_empty(), "stato caricato identico a quello salvato (%d entità)%s" % [got.entities.size(), "" if diffs.is_empty() else " — differenze: " + str(diffs.slice(0, 6))])
+	var r1: Array = expected.removed.duplicate()
+	var r2: Array = got.removed.duplicate()
+	r1.sort()
+	r2.sort()
+	check(r1 == r2 and r1.has(expect_info.pickup), "oggetti raccolti restano raccolti: %s" % str(r2))
+	lvl = Game.level
+	p = Game.player
+	check(Game.level.get_node_or_null(NodePath(expect_info.pickup)) == null, "l'oggetto raccolto non c'è")
+	check(not Game.level.get_node(NodePath(expect_info.door)).locked, "la porta sbloccata resta sbloccata")
+	check(p.carried_body != null and p.carried_body.carried and p.carried_body.state == Guard.S.DOWN, "il corpo è ancora in spalla")
+	check(Game.has_keycard("sicurezza") and Game.modules == int(expected.game.modules), "inventario: tessera e moduli com'erano")
+	check(Game.state == Game.State.PLAYING and Game.ui.current_kind == "", "si riprende subito a giocare")
+	check(lvl._later.any(func(c): return c[0] == "_intro_2"), "la battuta di Vesper in sospeso resta in sospeso (Level.later)")
+	await frames(10)
+	# F9: salvataggio rapido
+	var ev := InputEventAction.new()
+	ev.action = "quickload"
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	await Game.game_loaded
+	check(Game.level != null and Game.player.carried_body != null, "F9: caricato il salvataggio rapido")
+	await frames(5)
+	# i ritardi della partita lasciata (furto del nucleo → lockdown, ascensore → fine
+	# missione) non devono scattare in quella caricata
+	var core: Node = Game.level.find_children("*", "", true, false).filter(func(n): return n is ServerCore)[0]
+	core.frob(Game.player)
+	await frames(2)
+	Game.quickload()
+	await Game.game_loaded
+	await wait(4.5)
+	core = Game.level.find_children("*", "", true, false).filter(func(n): return n is ServerCore)[0]
+	check(not Game.lockdown and not core.taken and not Game.has_item("core"), "furto del nucleo e subito F9: niente lockdown dopo il caricamento")
+	var lift: Node = Game.level.find_children("*", "", true, false).filter(func(n): return n is ElevatorPanel)[0]
+	Game.give_item("core")
+	lift.frob(Game.player)
+	await frames(2)
+	Game.quickload()
+	await Game.game_loaded
+	await wait(2.8)
+	check(Game.state == Game.State.PLAYING, "ascensore e subito F9: la missione non finisce da sola")
+	# slot rovinato: ignorato
+	var f := FileAccess.open(SaveGame.path("5"), FileAccess.WRITE)
+	f.store_string("{rotto")
+	f.close()
+	check(SaveGame.meta("5").is_empty() and not Game.load_game("5"), "uno slot rovinato si ignora (e non si carica)")
+	# morte: si può ripartire dall'ultimo salvataggio
+	Game.player.god_mode = false
+	Game.player.take_damage(999.0, Game.player.global_position, Vector3.FORWARD, "test")
+	await wait(3.0)
+	check(Game.state == Game.State.DEAD and _find_button(Game.ui.root, tr("Load last save")) != null, "schermata di morte: «carica l'ultimo salvataggio»")
+	for s in SaveGame.slots():
+		SaveGame.delete(s)
+	finish()
+
+
+## Differenze fra due stati salvati (i numeri con un margine minimo).
+func _diff(path: String, a: Variant, b: Variant) -> Array:
+	var num := [TYPE_INT, TYPE_FLOAT]
+	if typeof(a) != typeof(b) and not (typeof(a) in num and typeof(b) in num):
+		return [path]
+	match typeof(a):
+		TYPE_DICTIONARY:
+			var out := []
+			for k in a:
+				if not b.has(k):
+					out.append("%s/%s (manca)" % [path, k])
+				else:
+					out.append_array(_diff("%s/%s" % [path, k], a[k], b[k]))
+			for k in b:
+				if not a.has(k):
+					out.append("%s/%s (in più)" % [path, k])
+			return out
+		TYPE_ARRAY:
+			if a.size() != b.size():
+				return [path + " (lunghezza)"]
+			var out := []
+			for i in a.size():
+				out.append_array(_diff("%s[%d]" % [path, i], a[i], b[i]))
+			return out
+		TYPE_INT, TYPE_FLOAT:
+			return [] if absf(float(a) - float(b)) < 0.01 else [path]
+		TYPE_VECTOR3:
+			return [] if (a as Vector3).distance_to(b) < 0.01 else [path]
+		TYPE_TRANSFORM3D:
+			return [] if (a as Transform3D).origin.distance_to((b as Transform3D).origin) < 0.01 and (a as Transform3D).basis.is_equal_approx((b as Transform3D).basis) else [path]
+	return [] if a == b else [path]
 
 
 ## Didascalie dei testi ambientali: regole della modalità "auto" e didascalia in gioco
@@ -833,7 +1138,7 @@ func run() -> void:
 	await face(Vector3(16.05, 1.55, -6.0))
 	var grate := await frob_expect("grata sala relax")
 	await wait(0.2)
-	check(grate == null or not is_instance_valid(grate), "grata rimossa")
+	check(grate is VentGrate and grate.removed and grate.collision_layer == 0, "grata rimossa")
 	# mantle nel condotto
 	await tp(Vector3(16.05, 0.05, -5.55), 0, 0)
 	Input.action_press("jump")
@@ -859,7 +1164,7 @@ func run() -> void:
 	await face(Vector3(8.0, 1.55, -21.45))
 	var g2 := await frob_expect("grata lato laboratorio")
 	await wait(0.2)
-	check(g2 == null or not is_instance_valid(g2), "grata del laboratorio sfondata")
+	check(g2 is VentGrate and g2.removed and g2.collision_layer == 0, "grata del laboratorio sfondata")
 	await tp(Vector3(9.0, 1.05, -21.45), 90, -15)
 	await shot("05_laboratorio_dal_condotto")
 

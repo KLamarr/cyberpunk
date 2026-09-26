@@ -458,9 +458,9 @@ func _update_frob() -> void:
 
 func get_frob_prompt() -> String:
 	if held != null:
-		return tr("[LMB] Throw   [RMB/F] Put down")
+		return tr("[%s] Throw   [%s] Put down") % [Game.key_label("attack"), Game.key_label("frob")]
 	if carried_body != null:
-		return tr("[RMB/F] Put down the body")
+		return tr("[%s] Put down the body") % Game.key_label("frob")
 	if frob_target != null and is_instance_valid(frob_target):
 		return frob_target.get_frob_text()
 	return ""
@@ -671,7 +671,7 @@ func carry_body(body: Node) -> void:
 	Util.set_highlight(body, false)
 	frob_target = null
 	Sfx.play_3d("body_fall", global_position, -10.0)
-	Game.notify(tr("Carrying the body. [RMB/F] to put it down."))
+	Game.notify(tr("Carrying the body. [%s] to put it down.") % Game.key_label("frob"))
 	_update_weapon_visibility()
 
 
@@ -690,6 +690,46 @@ func _drop_body() -> void:
 		spot = down.position
 	carried_body.drop_at(spot, yaw)
 	carried_body = null
+	_update_weapon_visibility()
+
+
+# --- salvataggi (vedi SaveGame) --------------------------------------------------------
+func save_state() -> Dictionary:
+	var lvl: Node = Game.level
+	return {
+		"pos": global_position, "vel": velocity, "yaw": yaw, "pitch": pitch, "health": health, "weapon": weapon,
+		"crouch": crouching, "crouch_toggled": crouch_toggled,
+		"held": String(lvl.get_path_to(held)) if held != null and is_instance_valid(held) else "",
+		"carried": String(lvl.get_path_to(carried_body)) if carried_body != null and is_instance_valid(carried_body) else "",
+	}
+
+
+func load_state(d: Dictionary) -> void:
+	global_position = d.pos
+	velocity = d.vel   # anche a mezz'aria: la caduta (e il suo danno) continua
+	yaw = d.yaw
+	rotation.y = yaw
+	pitch = d.pitch
+	head.rotation.x = pitch
+	max_health = 100.0 + 10.0 * Game.skill("forza")
+	health = clampf(float(d.health), 1.0, max_health)
+	weapon = int(d.weapon)
+	crouch_toggled = bool(d.crouch_toggled)
+	if bool(d.crouch):
+		_set_crouch(true)
+		_eye = EYE_CROUCH
+		head.position.y = _eye
+	var lvl: Node = Game.level
+	if String(d.held) != "":
+		var h := lvl.get_node_or_null(NodePath(d.held)) as Throwable
+		if h != null:
+			held = h
+			h.set_held(true)
+	if String(d.carried) != "":
+		var b := lvl.get_node_or_null(NodePath(d.carried))
+		if b != null and b.has_method("set_carried"):
+			carried_body = b
+			b.set_carried(true)
 	_update_weapon_visibility()
 
 

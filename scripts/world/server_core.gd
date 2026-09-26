@@ -41,6 +41,18 @@ func _process(delta: float) -> void:
 	_core_mat.albedo_color = Color(0.3, 0.9, 0.85).lerp(Color(0.8, 1.0, 1.0), 0.5 + 0.5 * sin(_t * 3.0))
 
 
+func save_state() -> Dictionary:
+	return {"taken": taken}
+
+
+func load_state(d: Dictionary) -> void:
+	taken = d.taken
+	_core.visible = not taken
+	# salvato nei pochi secondi fra il furto e il lockdown: il lockdown parte adesso
+	if taken and not Game.lockdown:
+		_start_lockdown.call_deferred()
+
+
 func get_frob_text() -> String:
 	if taken:
 		return ""
@@ -58,4 +70,10 @@ func frob(_player: Node) -> void:
 	Game.complete_objective("core", 2)
 	Game.add_objective("extract", "Get back to the service elevator with the core.")
 	Game.say("???", tr("...don't shut me down... get me out..."), 3.5)
-	get_tree().create_timer(3.8, false).timeout.connect(Game.start_lockdown)
+	# collegato a un metodo del nodo, non di Game: se nel frattempo si carica una partita
+	# o si ricomincia, il nodo sparisce con la scena e il timer non fa più nulla
+	get_tree().create_timer(3.8, false).timeout.connect(_start_lockdown)
+
+
+func _start_lockdown() -> void:
+	Game.start_lockdown()

@@ -135,6 +135,27 @@ func set_friendly() -> void:
 	_apply_look()
 
 
+func save_state() -> Dictionary:
+	return {"state": state, "hp": hp, "t": _t, "awareness": awareness}
+
+
+func load_state(d: Dictionary) -> void:
+	hp = d.hp
+	_t = d.t
+	awareness = float(d.awareness)
+	state = int(d.state)
+	if state == T.ACQUIRE or state == T.FIRE:
+		state = T.IDLE   # la mira si riprende da sola se ti vede ancora
+	match state:
+		T.OFF:
+			_head.rotation_degrees.x = -45.0
+		T.FRIENDLY:
+			_head.rotation_degrees.x = -12.0
+		T.DESTROYED:
+			_head.rotation_degrees.x = -50.0
+	_apply_look()
+
+
 func light_contribution(p: Vector3) -> float:
 	if not _spot.visible:
 		return 0.0

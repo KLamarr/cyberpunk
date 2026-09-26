@@ -186,6 +186,16 @@ func set_on(on: bool) -> void:
 	_mesh_set_on(on)
 
 
+func save_state() -> Dictionary:
+	return {"on": is_on, "broken": broken, "dim": dim}
+
+
+func load_state(d: Dictionary) -> void:
+	dim = d.dim
+	broken = d.broken
+	set_on(bool(d.on) and not broken)
+
+
 func set_dim(f: float) -> void:
 	dim = f
 

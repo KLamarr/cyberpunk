@@ -134,6 +134,17 @@ func frob(player: Node) -> void:
 	player.pick_up(self)
 
 
+func save_state() -> Dictionary:
+	return {"xf": global_transform, "lv": linear_velocity, "av": angular_velocity}
+
+
+## Se era in mano al giocatore ci pensa il player (Player.load_state).
+func load_state(d: Dictionary) -> void:
+	global_transform = d.xf
+	linear_velocity = d.lv   # un oggetto lanciato continua il volo (e fa rumore dove cade)
+	angular_velocity = d.av
+
+
 func set_held(on: bool) -> void:
 	held = on
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC

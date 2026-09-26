@@ -28,8 +28,8 @@ func _on_log_read(_id: String) -> void:
 func start_intro() -> void:
 	Game.read_log("vesper", false)
 	Sfx.start_ambient()
-	Game.say(tr("VESPER"), tr("You're in. Level 14, Seraph labs. The briefing's on your PDA [Tab]."), 4.5)
-	get_tree().create_timer(5.0, false).timeout.connect(_intro_2)
+	Game.say(tr("VESPER"), tr("You're in. Level 14, Seraph labs. The briefing's on your PDA [%s].") % Game.key_label("pda"), 4.5)
+	later(5.0, "_intro_2")
 
 
 func _intro_2() -> void:
@@ -55,7 +55,7 @@ func on_lockdown() -> void:
 		if g is Guard and g.dormant:
 			g.activate()
 			g.alertness = 1.0
-	get_tree().create_timer(7.0, false).timeout.connect(_lockdown_followup)
+	later(7.0, "_lockdown_followup")
 
 
 func _lockdown_followup() -> void:
