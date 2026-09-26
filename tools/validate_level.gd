@@ -39,6 +39,7 @@ func _ready() -> void:
 		if i >= 10 and NavigationServer3D.map_get_iteration_id(map) > 1:
 			break
 	_check_player_start()
+	_check_cables()
 	_check_guards()
 	_finish()
 
@@ -138,7 +139,7 @@ func _is_entity(n: Node) -> bool:
 		or n is Guard or n is SecurityCamera or n is Turret or n is TurretPanel or n is LightSwitch \
 		or n is VentGrate or n is ElevatorPanel or n is SecurityTerminal or n is UpgradeStation \
 		or n is ServerCore or n is PropBox or n is PropCylinder or n is PropQuad or n is TriggerZone \
-		or n is Waypoint
+		or n is Waypoint or n is LiveCable
 
 
 func _check_positions() -> void:
@@ -146,6 +147,8 @@ func _check_positions() -> void:
 	for n in _all(_is_entity):
 		count += 1
 		var p: Vector3 = (n as Node3D).global_position
+		if n is LiveCable:
+			p = n.tip_position()   # l'attacco è sul soffitto: conta dove arriva la punta
 		# gli oggetti appoggiati a terra hanno l'origine sul pavimento: controlla poco sopra
 		if lvl.builder.air_brush_at(p + Vector3.UP * 0.05, 0.35).is_empty():
 			_warn(_path(n), "è fuori dalle stanze (dentro un muro o fuori mappa?) a %s" % _v(p))
@@ -164,10 +167,13 @@ func _check_links() -> void:
 			_err(_path(tp), "'Turret Path' non punta a una Torretta")
 	for ls in _all(func(n): return n is LightSwitch):
 		if ls.targets.is_empty():
-			_warn(_path(ls), "interruttore senza luci collegate ('Targets')")
+			_warn(_path(ls), "interruttore senza luci o cavi collegati ('Targets')")
 		for np in ls.targets:
-			if not (ls.get_node_or_null(np) is LightFixture):
-				_err(_path(ls), "'Targets' contiene %s che non è una luce" % np)
+			var t: Node = ls.get_node_or_null(np)
+			if not (t is LightFixture or t is LiveCable):
+				_err(_path(ls), "'Targets' contiene %s che non è una luce né un cavo scoperto" % np)
+			elif t is LiveCable and ls.switch_type != "power":
+				_warn(_path(ls), "comanda un cavo scoperto: metti Switch Type su \"power\" (il giocatore leggerà «interruttore della corrente»)")
 	for g in _all(func(n): return n is Guard):
 		if g.patrol_route.is_empty():
 			continue
@@ -184,6 +190,22 @@ func _check_links() -> void:
 	for pk in _all(func(n): return n is Pickup):
 		if pk.kind == "keycard" and pk.item_id == "":
 			_err(_path(pk), "tessera senza 'Item Id' (serve alle porte per riconoscerla)")
+
+
+# --- stimoli: cavi scoperti -----------------------------------------------------------
+func _check_cables() -> void:
+	var space := lvl.get_world_3d().direct_space_state
+	for c in _all(func(n): return n is LiveCable):
+		var tip: Vector3 = c.tip_position()
+		var hit := Util.ray(space, tip + Vector3.UP * 0.05, tip + Vector3.DOWN * 8.0, Layers.WORLD | Layers.PROP)
+		if hit.is_empty():
+			_err(_path(c), "sotto la punta del cavo non c'è pavimento")
+			continue
+		var h: float = tip.y - (hit.position as Vector3).y
+		if h < 0.0:
+			_err(_path(c), "la punta del cavo entra nel pavimento: accorcia Length")
+		elif h > 0.8:
+			_warn(_path(c), "la punta del cavo è a %.1f m dal pavimento: non elettrifica le pozze (allunga Length)" % h)
 
 
 # --- porte chiuse: si possono aprire? ----------------------------------------------

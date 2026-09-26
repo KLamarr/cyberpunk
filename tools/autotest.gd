@@ -5,6 +5,7 @@ extends Node
 ##   godot --path . -- --autotest --npc      (generatore di NPC: libreria, mesh, scheletro, pose)
 ##   godot --path . -- --autotest --stress   (10/25/50/100 guardie nella hall: tempi e draw call)
 ##   godot --path . -- --autotest --save     (salvataggi: slot, F5/F9, stato identico dopo il caricamento)
+##   godot --path . -- --autotest --stimoli  (stimoli e materiali: cocci, urti, acqua e corrente, fumo, casse)
 ##   aggiungi --lang=it per fare gli stessi test con i testi in italiano
 ## Stampa OK/FAIL per ogni controllo ed esce con codice 0 se tutto passa.
 
@@ -14,7 +15,7 @@ var shots := false
 var shot_dir := "user://shots"
 var p: Node
 var lvl: Node
-var mode := "full"   # full | death | post_restart | ui | npc | stress | save | post_load
+var mode := "full"   # full | death | post_restart | ui | npc | stress | save | post_load | stimoli
 ## Per il test dei salvataggi: lo stato atteso dopo il caricamento e dove cercare le cose.
 var expected := {}
 var expect_info := {}
@@ -40,6 +41,17 @@ class ScriptErrors extends Logger:
 		_lock.unlock()
 
 
+## Orecchio di prova (test degli stimoli): sente i rumori come una guardia e li annota.
+class NoiseProbe extends Node:
+	var heard: Array = []   # [kind, radius, source]
+
+	func hear(_pos: Vector3, radius: float, kind: String, source: Node, _info := {}) -> void:
+		heard.append([kind, radius, source])
+
+	func has_kind(kind: String) -> bool:
+		return heard.any(func(h): return h[0] == kind)
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if _script_errors == null:
@@ -62,6 +74,8 @@ func _ready() -> void:
 		mode = "stress"
 	if "--save" in OS.get_cmdline_user_args() and mode == "full":
 		mode = "save"
+	if "--stimoli" in OS.get_cmdline_user_args() and mode == "full":
+		mode = "stimoli"
 	# watchdog: nessun test deve restare appeso
 	get_tree().create_timer(240.0, true).timeout.connect(func():
 		print("FAIL: timeout globale")
@@ -83,6 +97,8 @@ func _ready() -> void:
 			run_save()
 		"post_load":
 			run_post_load()
+		"stimoli":
+			run_stimoli()
 		_:
 			run()
 
@@ -362,6 +378,10 @@ func run_save() -> void:
 	var cam: Node = get_tree().get_nodes_in_group("security_cameras")[0]
 	cam.take_damage(100.0, cam.global_position, Vector3.ZERO, "bullet")
 	Game.add_modules(3)
+	# stimoli: bottiglia in cocci, tanica in pozza, estintore scaricato, cavo spento
+	for n in ["Bottle1", "Tanica3", "Estintore1"]:
+		(lvl.find_child(n, true, false) as Throwable).shatter()
+	(lvl.find_child("InterruttoreCorrente", true, false) as LightSwitch).frob(p)
 	await tp(Vector3(0, 0.05, 3), 90, -10)
 	p.take_damage(35.0, p.global_position, Vector3.FORWARD, "test")
 	p.carry_body(kov)
@@ -441,6 +461,10 @@ func run_post_load() -> void:
 	check(Game.has_keycard("sicurezza") and Game.modules == int(expected.game.modules), "inventario: tessera e moduli com'erano")
 	check(Game.state == Game.State.PLAYING and Game.ui.current_kind == "", "si riprende subito a giocare")
 	check(lvl._later.any(func(c): return c[0] == "_intro_2"), "la battuta di Vesper in sospeso resta in sospeso (Level.later)")
+	check(Stimuli.fields(Stimuli.SHARDS).size() == 1 and Stimuli.fields(Stimuli.WATER).size() == 1 and Stimuli.fields(Stimuli.SMOKE).size() == 1,
+		"cocci, pozza e nube di fumo ritrovati dopo il caricamento")
+	var cable := lvl.find_child("CavoScoperto", true, false) as LiveCable
+	check(not cable.powered and not Stimuli.fields(Stimuli.CURRENT).any(func(f): return f.source == cable), "il cavo spento resta spento")
 	await frames(10)
 	# F9: salvataggio rapido
 	var ev := InputEventAction.new()
@@ -481,6 +505,272 @@ func run_post_load() -> void:
 	for s in SaveGame.slots():
 		SaveGame.delete(s)
 	finish()
+
+
+## Stimoli e materiali: bottiglie che si rompono in cocci rumorosi, oggetti lanciati che
+## rompono le luci (non le lattine), pozze elettrificate (luce rotta = KO, cavo scoperto =
+## morte, interruttore della corrente), fumo che acceca guardie e torrette, casse pesanti
+## (Forza 2) che si impilano.
+func run_stimoli() -> void:
+	await frames(20)
+	lvl = Game.level
+	p = Game.player
+	p.god_mode = true
+	Game.start_alloc = {"hacking": 1, "armi": 1, "forza": 2, "furtivita": 0}
+	Game.ui._begin()
+	await wait(0.5)
+	var probe := NoiseProbe.new()
+	probe.add_to_group("ai")
+	add_child(probe)
+	# le guardie restano ferme dove il test le mette (sentono e prendono la scossa lo stesso)
+	for g in get_tree().get_nodes_in_group("guards"):
+		g.process_mode = Node.PROCESS_MODE_DISABLED
+
+	# --- materiali
+	var kinds := ["can", "bottle", "box", "heavy", "jug", "extinguisher"]
+	check(kinds.all(func(k): return load("res://assets/prop_materials/%s.tres" % k) is PropMaterial), "un PropMaterial per ogni Kind dei Throwable")
+	var box1 := lvl.find_child("Box1", true, false) as Throwable
+	var crate1 := lvl.find_child("CassaPesante1", true, false) as Throwable
+	var crate2 := lvl.find_child("CassaPesante2", true, false) as Throwable
+	check(box1.tex == "crate_light" and crate1.tex == "crate" and crate1.mass >= 40.0, "SB-14 solo sulle casse pesanti (40 kg)")
+
+	# --- cocci: la bottiglia lanciata si rompe; sui cocci i passi fanno rumore
+	var bottle := lvl.find_child("Bottle2", true, false) as Throwable
+	await tp(Vector3(13.0, 0.05, -4.7), 180, -30)
+	check(bottle.get_frob_text() == tr("Take: %s") % tr("Bottle"), "bottiglia: %s" % bottle.get_frob_text())
+	bottle.frob(p)
+	await frames(3)
+	check(p.held == bottle, "bottiglia in mano")
+	await face(p.camera.global_position + Vector3(3.0, -0.4, 0.0))
+	probe.heard.clear()
+	p._drop_held(true)
+	for i in 30:
+		await wait(0.1)
+		if bottle.broken:
+			break
+	check(bottle.broken and Stimuli.fields(Stimuli.SHARDS).size() == 1, "bottiglia lanciata: si rompe in cocci")
+	check(probe.has_kind("glass"), "la bottiglia rotta fa rumore di vetri")
+	check(lvl.surface_at(bottle.fx_pos) == "glass", "sotto i cocci la superficie è vetro")
+	if shots:
+		await tp(bottle.fx_pos + Vector3(-1.4, 0.05, 0.6), -60, -35)
+		await face(bottle.fx_pos)
+		await shot("stimoli_01_cocci")
+	var r_glass: float = await _crouch_step_noise(bottle.fx_pos + Vector3.UP * 0.05)
+	var r_floor: float = await _crouch_step_noise(bottle.fx_pos + Vector3(0, 0.05, 2.2))
+	check(r_glass > 4.0 and r_glass > r_floor * 2.0, "accovacciati sui cocci si fa rumore (%.1f m contro %.1f m)" % [r_glass, r_floor])
+
+	# --- urti: una lattina non rompe la lampada, una scatola sì (e fa scintille)
+	var lamp := lvl.find_child("Luce8", true, false) as LightFixture
+	var can := lvl.find_child("Can4", true, false) as Throwable
+	await tp(Vector3(0, 0.05, 7.0), 180)
+	can.global_position = lamp.global_position + Vector3(1.2, 0.05, 0)
+	can.linear_velocity = Vector3(-9.5, 0, 0)
+	probe.heard.clear()
+	await wait(0.6)
+	check(probe.heard.any(func(h): return h[0] == "impact" and h[2] == can) and not lamp.broken, "una lattina lanciata colpisce la lampada ma non la rompe")
+	can.global_position = Vector3(-1.6, 1.23, 4.4)   # via dalla traiettoria della scatola
+	can.linear_velocity = Vector3.ZERO
+	var box3 := lvl.find_child("Box3", true, false) as Throwable
+	box3.global_position = lamp.global_position + Vector3(1.4, 0.08, 0)
+	box3.linear_velocity = Vector3(-4.8, 0.4, 0)
+	await wait(0.8)
+	check(lamp.broken, "una scatola lanciata rompe la lampada")
+	check(Stimuli.fields(Stimuli.CURRENT).any(func(f): return f.source == lamp), "la lampada rotta fa scintille (corrente a bassa tensione)")
+
+	# --- acqua e bassa tensione: pozza sotto la luce della sala relax, la luce si rompe
+	var jug1 := lvl.find_child("Tanica1", true, false) as Throwable
+	var light12 := lvl.find_child("Luce12", true, false) as LightFixture
+	await tp(Vector3(13.2, 0.05, -4.6), 0)
+	probe.heard.clear()
+	jug1.global_position = Vector3(15.6, 1.2, -2.6)
+	jug1.linear_velocity = Vector3(0, -5.0, 0)
+	await wait(2.0)
+	check(jug1.broken and lvl.surface_at(Vector3(15.6, 0.02, -2.6)) == "water", "tanica rotta: pozza d'acqua")
+	check(probe.has_kind("splash"), "la tanica rotta fa rumore")
+	var ruiz := guard("Ofc. Ruiz")
+	ruiz.global_position = Vector3(16.2, 0.0, -2.9)
+	await frames(3)
+	check(Stimuli.voltage_of(jug1._field) == 0 and ruiz.is_active(), "acqua senza corrente: innocua")
+	light12.take_damage(30.0, light12.global_position, Vector3.DOWN, "bullet")
+	await wait(0.4)
+	check(ruiz.state == Guard.S.DOWN and not ruiz.dead, "luce rotta sopra la pozza: la guardia nell'acqua sviene (bassa tensione)")
+	if shots:
+		await tp(Vector3(13.2, 0.05, -4.6), 0)
+		await face(Vector3(15.6, 0.0, -2.4))
+		await shot("stimoli_02_pozza_elettrificata")
+	check(Game.stats.kos >= 1 and Game.is_objective_active("nokill"), "lo svenimento non conta come uccisione")
+	var hp0: float = p.health
+	await tp(Vector3(15.8, 0.05, -2.2), 0)
+	await wait(1.0)
+	check(p.health < hp0, "anche il giocatore prende la scossa nell'acqua elettrificata (salute %d)" % int(p.health))
+	p.health = p.max_health
+	light12._spark_t = 0.05
+	await wait(0.3)
+	check(Stimuli.voltage_of(jug1._field) == 0, "finite le scintille l'acqua torna innocua")
+
+	# --- alta tensione: il cavo scoperto del magazzino
+	var cable := lvl.find_child("CavoScoperto", true, false) as LiveCable
+	check(cable.powered and Stimuli.fields(Stimuli.CURRENT).any(func(f): return f.source == cable and int(f.strength) == Stimuli.HIGH_VOLTAGE),
+		"il cavo scoperto porta corrente ad alta tensione a terra")
+	var tip := cable.tip_position()
+	if shots:
+		await tp(Vector3(-14.8, 0.05, 8.2), 0)
+		await face(tip + Vector3.UP * 1.0)
+		await shot("stimoli_03_cavo_scoperto")
+	await tp(Vector3(tip.x + 0.38, 0.05, tip.z), 90)
+	hp0 = p.health
+	await wait(0.5)
+	check(p.health < hp0 - 30.0, "toccare il cavo: scossa forte (salute %d)" % int(p.health))
+	await tp(Vector3(-14.5, 0.05, 9.5), 0)
+	p.health = p.max_health
+	var jug2 := lvl.find_child("Tanica2", true, false) as Throwable
+	jug2.global_position = Vector3(-12.1, 1.0, 6.1)
+	jug2.linear_velocity = Vector3(0, -5.0, 0)
+	await wait(2.0)
+	check(jug2.broken and Stimuli.voltage_of(jug2._field) == Stimuli.HIGH_VOLTAGE, "pozza che tocca il cavo: elettrificata ad alta tensione")
+	var kov := guard("Ofc. Kovač")
+	kov.global_position = Vector3(-13.3, 0.0, 6.9)
+	await wait(0.4)
+	check(kov.state == Guard.S.DOWN and kov.dead, "la guardia nell'acqua elettrificata dal cavo muore")
+	check(not Game.is_objective_active("nokill"), "morta di scossa: conta come uccisione")
+	var sw := lvl.find_child("InterruttoreCorrente", true, false) as LightSwitch
+	check(sw.get_frob_text() == tr("Power switch (turn off)"), "interruttore della corrente: %s" % sw.get_frob_text())
+	sw.frob(p)
+	await frames(2)
+	check(not cable.powered and Stimuli.voltage_of(jug2._field) == 0, "corrente staccata: l'acqua torna innocua")
+	await tp(Vector3(-12.9, 0.05, 6.4), 0)
+	hp0 = p.health
+	await wait(1.0)
+	check(p.health == hp0 and lvl.surface_at(p.global_position) == "water", "si cammina nell'acqua senza scossa")
+	if shots:
+		kov.visible = false   # (ferma dal test, è rimasta in piedi: toglila dall'inquadratura)
+		await tp(Vector3(-12.2, 0.05, 9.4), 0)
+		await face(jug2.fx_pos)
+		await shot("stimoli_03b_pozza_magazzino")
+		kov.visible = true
+
+	# --- casse pesanti: Forza 2, si posano una sull'altra, ci si arrampica
+	Game.skills["forza"] = 1
+	check(crate2.get_frob_text() == tr("%s — too heavy (Strength %d)") % [tr("SB-14 crate"), 2], "cassa SB-14 con Forza 1: troppo pesante")
+	Game.skills["forza"] = 2
+	await tp(Vector3(-14.2, 0.05, 8.5), 90)
+	await face(crate2.global_position)
+	await frob_expect("cassa pesante")
+	check(p.held == crate2, "cassa pesante sollevata con Forza 2")
+	await tp(Vector3(-14.07, 0.05, crate1.global_position.z), 90, 0)
+	await wait(0.6)
+	p._drop_held(false)
+	await wait(1.2)
+	var flat := Vector2(crate2.global_position.x - crate1.global_position.x, crate2.global_position.z - crate1.global_position.z).length()
+	check(crate2.global_position.y > 0.95 and flat < 0.35, "cassa posata sull'altra: impilate (y %.2f)" % crate2.global_position.y)
+	if shots:
+		await tp(Vector3(-13.0, 0.05, 8.2), 0)
+		await face(crate1.global_position + Vector3.UP * 0.5)
+		await shot("stimoli_04_casse_impilate")
+	await tp(Vector3(crate1.global_position.x + 0.95, 0.05, crate1.global_position.z), 90, 0)
+	Input.action_press("jump")
+	await frames(2)
+	Input.action_release("jump")
+	await wait(0.9)
+	check(p.global_position.y > 1.3, "mantle in cima alla pila (y %.2f)" % p.global_position.y)
+	# due casse sotto la mensola alta: le munizioni si raggiungono
+	crate1.global_position = Vector3(-11.85, 0.36, 12.3)
+	crate1.linear_velocity = Vector3.ZERO
+	crate2.global_position = Vector3(-11.85, 1.08, 12.3)
+	crate2.linear_velocity = Vector3.ZERO
+	await tp(Vector3(-13.0, 0.05, 10.5), 0)
+	await wait(0.8)
+	await tp(Vector3(-11.85, 1.48, 12.3), -90)
+	await wait(0.3)
+	var ammo0: int = Game.ammo_reserve
+	await face(lvl.find_child("Ammo3", true, false).global_position + Vector3.UP * 0.04)
+	await frob_expect("munizioni sulla mensola alta")
+	check(Game.ammo_reserve > ammo0, "munizioni raccolte in piedi su due casse")
+
+	# --- fumo: la guardia non vede il giocatore in piena luce a 3 m; senza fumo sì
+	var hale := guard("Op. Hale")
+	var ext1 := lvl.find_child("Estintore1", true, false) as Throwable
+	await tp(Vector3(-13.0, 0.05, 0.6), 90, 0)
+	ext1.global_position = Vector3(-14.6, 0.3, 0.6)
+	ext1.linear_velocity = Vector3.ZERO
+	await frames(2)
+	probe.heard.clear()
+	ext1.take_damage(30.0, ext1.global_position, Vector3.ZERO, "bullet")
+	check(ext1.broken and probe.has_kind("hiss"), "estintore colpito: si scarica con un sibilo")
+	await wait(1.6)
+	check(Stimuli.smoke_between(Vector3(-16.3, 1.7, 0.6), p.get_aim_point()) >= Stimuli.SMOKE_BLOCKS, "nube di fumo fra la guardia e il giocatore")
+	if shots:
+		await tp(Vector3(-11.6, 0.05, -2.8), 50, 0)
+		await face(Vector3(-15.0, 1.2, 0.8))
+		await shot("stimoli_05_fumo_sala_sicurezza")
+		await tp(Vector3(-13.0, 0.05, 0.6), 90, 0)
+	hale.global_position = hale.post_pos
+	hale.post_yaw = deg_to_rad(-90)
+	hale.rotation.y = hale.post_yaw
+	hale.state = Guard.S.PATROL
+	hale.awareness = 0.0
+	hale.process_mode = Node.PROCESS_MODE_INHERIT
+	var seen := false
+	for i in 30:
+		await wait(0.1)
+		seen = seen or hale.can_see_player or hale.state == Guard.S.COMBAT
+	check(not seen, "nel fumo la guardia non vede il giocatore (visibilità %.2f)" % p.visibility)
+	ext1.fx_t = ext1.mat.effect_duration - 0.05
+	await wait(0.3)
+	check(Stimuli.fields(Stimuli.SMOKE).is_empty(), "la nube si dirada e sparisce")
+	await tp(Vector3(-13.0, 0.05, 0.6), 90, 0)
+	hale.global_position = hale.post_pos
+	hale.rotation.y = hale.post_yaw
+	hale.state = Guard.S.PATROL
+	hale.awareness = 0.0
+	for i in 40:
+		await wait(0.1)
+		if hale.state == Guard.S.COMBAT:
+			seen = true
+			break
+	check(seen, "senza fumo la stessa guardia lo vede subito")
+	hale.process_mode = Node.PROCESS_MODE_DISABLED
+	hale.state = Guard.S.PATROL
+	hale.awareness = 0.0
+	p.health = p.max_health
+	# i rumori nuovi fanno indagare le guardie
+	hale.hear(hale.global_position + Vector3(2.0, 0, 0), 9.0, "splash", null)
+	check(hale.state == Guard.S.INVESTIGATE, "una guardia va a vedere il rumore di una pozza")
+	hale.state = Guard.S.PATROL
+	hale.awareness = 0.0
+
+	# --- fumo e torretta: nel corridoio la torretta non spara
+	var turret := lvl.find_child("Torretta", true, false) as Turret
+	var ext2 := lvl.find_child("Estintore2", true, false) as Throwable
+	await tp(Vector3(0.3, 0.05, -6.5), 0)
+	ext2.global_position = Vector3(0.3, 1.0, -12.5)
+	ext2.linear_velocity = Vector3.ZERO
+	await frames(2)
+	ext2.take_damage(30.0, ext2.global_position, Vector3.ZERO, "melee")
+	await wait(1.6)
+	turret.awareness = 0.0
+	turret.state = Turret.T.IDLE
+	await tp(Vector3(0.3, 0.05, -10.5), 0)
+	hp0 = p.health
+	await wait(4.0)
+	check(p.health == hp0 and turret.state != Turret.T.FIRE, "nel fumo la torretta non vede il giocatore")
+	await shot("stimoli_fumo_corridoio")
+	finish()
+
+
+## Raggio del rumore di un passo accovacciato in quel punto.
+func _crouch_step_noise(pos: Vector3) -> float:
+	await tp(pos, 0)
+	p._set_crouch(true)
+	var probe: NoiseProbe = get_children().filter(func(c): return c is NoiseProbe)[0]
+	probe.heard.clear()
+	p._footstep(false)
+	p._set_crouch(false)
+	var r := 0.0
+	for h in probe.heard:
+		if h[0] == "step" and h[2] == p:
+			r = h[1]
+	return r
 
 
 ## Differenze fra due stati salvati (i numeri con un margine minimo).

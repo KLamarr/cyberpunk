@@ -4,11 +4,18 @@ extends StaticBody3D
 ## Luce di gioco: OmniLight3D + plafoniera colpibile.
 ## Tutte le LightFixture stanno nel gruppo "game_lights": il player somma i loro
 ## contributi (con raycast di occlusione) per calcolare quanto è visibile.
-## Sparare o colpire la plafoniera la rompe: meno luce, ma rumore di vetri.
+## Sparare, colpire la plafoniera o lanciarle contro qualcosa (una bottiglia, una
+## scatola: una lattina è troppo leggera) la rompe: meno luce, ma rumore di vetri.
+## Rotta, fa scintille per qualche secondo: una corrente a bassa tensione sul pavimento
+## sotto di lei, che elettrifica una pozza d'acqua (chi ci sta dentro sviene, vedi Stimuli).
 ## In gioco illumina solo la zona in cui si trova (vedi Zone).
 
 ## le energie visive sono più alte di quelle "di gioco": questo le riporta in scala
 const VIS_SCALE := 0.6
+## Danno minimo per romperla con un oggetto lanciato (una lattina non basta).
+const BREAK_DAMAGE := 6.0
+## Secondi di scintille dopo la rottura.
+const SPARK_TIME := 8.0
 
 @export var color := Color(0.75, 0.85, 1.0):
 	set(v):
@@ -52,6 +59,9 @@ var _built: Array[Node] = []
 var _flick := 1.0
 var _flick_t := 0.0
 var _t := 0.0
+var _spark_t := 0.0
+var _spark_cd := 0.0
+var _current: Stimuli.Field
 
 
 ## Usato dal codice (e dal convertitore) per creare una luce senza editor.
@@ -136,7 +146,11 @@ func _mesh_set_on(on: bool) -> void:
 
 
 func _process(delta: float) -> void:
-	if Engine.is_editor_hint() or not is_on or broken:
+	if Engine.is_editor_hint():
+		return
+	if _spark_t > 0.0:
+		_update_sparks(delta)
+	if not is_on or broken:
 		return
 	_t += delta
 	if emergency:
@@ -187,24 +201,54 @@ func set_on(on: bool) -> void:
 
 
 func save_state() -> Dictionary:
-	return {"on": is_on, "broken": broken, "dim": dim}
+	return {"on": is_on, "broken": broken, "dim": dim, "sparks": _spark_t}
 
 
 func load_state(d: Dictionary) -> void:
 	dim = d.dim
 	broken = d.broken
 	set_on(bool(d.on) and not broken)
+	if float(d.sparks) > 0.0:
+		_start_sparks(float(d.sparks))
 
 
 func set_dim(f: float) -> void:
 	dim = f
 
 
-func take_damage(_amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) -> void:
-	if broken or style == "none":
+func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, kind: String) -> void:
+	if broken or style == "none" or (kind == "impact" and amount < BREAK_DAMAGE):
 		return
 	broken = true
 	set_on(false)
 	Sfx.play_3d("glass_break", global_position, 2.0)
 	Game.emit_noise(global_position, 12.0, "glass", Game.player)
 	Effects.sparks(global_position if hit_pos == Vector3.ZERO else hit_pos, Color(1, 0.9, 0.6))
+	_start_sparks(SPARK_TIME)
+
+
+# --- scintille: corrente a bassa tensione sul pavimento sotto la luce rotta ----------
+func _start_sparks(t: float) -> void:
+	_spark_t = t
+	if _current == null:
+		var floor_pt := Stimuli.floor_below(get_world_3d().direct_space_state, global_position, [get_rid()])
+		_current = Stimuli.add_field(Stimuli.CURRENT, floor_pt, 0.9, Stimuli.LOW_VOLTAGE, self)
+
+
+func _update_sparks(delta: float) -> void:
+	_spark_t -= delta
+	_spark_cd -= delta
+	if _spark_cd <= 0.0:
+		_spark_cd = randf_range(0.2, 0.6)
+		Effects.sparks(global_position + Vector3(randf_range(-0.3, 0.3), -0.1, randf_range(-0.2, 0.2)), Color(1, 0.85, 0.5), 5, 1.2)
+		if randf() < 0.4:
+			Sfx.play_3d("spark", global_position, -6.0)
+	if _spark_t <= 0.0:
+		_spark_t = 0.0
+		Stimuli.remove_field(_current)
+		_current = null
+
+
+func _exit_tree() -> void:
+	Stimuli.remove_field(_current)
+	_current = null

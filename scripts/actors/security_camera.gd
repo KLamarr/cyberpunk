@@ -4,7 +4,8 @@ extends Node3D
 ## Telecamera di sorveglianza: ruota avanti e indietro; se vede il player
 ## abbastanza a lungo (dipende da luce e distanza) fa scattare l'allarme.
 ## Il suo cono di luce illumina davvero il player (conta per la visibilità).
-## Si disattiva dal terminale di sicurezza o si distrugge con la pistola.
+## Si disattiva dal terminale di sicurezza o si distrugge con la pistola (o lanciandole
+## contro qualcosa di pesante). Non vede attraverso il fumo (vedi Stimuli).
 ## Guarda verso la -Z locale: ruota il nodo per decidere il centro della rotazione.
 
 ## Ampiezza della rotazione, in gradi per lato.
@@ -174,9 +175,10 @@ func _physics_process(delta: float) -> void:
 			var d := to.length()
 			var fwd := -_head.global_basis.z
 			if d < cam_range and rad_to_deg(fwd.angle_to(to)) < half_fov + 4.0:
-				if Util.ray_clear(get_world_3d().direct_space_state, from, target, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
+				var smoke := Stimuli.smoke_between(from, target)
+				if smoke < Stimuli.SMOKE_BLOCKS and Util.ray_clear(get_world_3d().direct_space_state, from, target, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 					sees = true
-					var vis: float = p.visibility
+					var vis: float = p.visibility * (1.0 - smoke)
 					var df := 1.0 - d / cam_range
 					awareness += vis * (0.5 + 2.4 * df * df) * 0.1
 		if not sees:

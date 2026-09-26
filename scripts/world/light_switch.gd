@@ -1,10 +1,13 @@
 @tool
 class_name LightSwitch
 extends StaticBody3D
-## Interruttore a muro: accende/spegne un gruppo di LightFixture.
+## Interruttore a muro: accende/spegne un gruppo di luci (LightFixture) o toglie la
+## corrente a un cavo scoperto (LiveCable). Funziona con qualunque nodo che abbia set_on().
 
-## Le luci (LightFixture) comandate da questo interruttore.
+## Le luci o i cavi comandati da questo interruttore.
 @export var targets: Array[NodePath] = []
+## light: interruttore della luce. power: interruttore della corrente (per i cavi).
+@export_enum("light", "power") var switch_type := "light"
 
 var lights: Array = []
 var is_on := true
@@ -33,6 +36,8 @@ func _ready() -> void:
 
 
 func get_frob_text() -> String:
+	if switch_type == "power":
+		return tr("Power switch (turn off)") if is_on else tr("Power switch (turn on)")
 	return tr("Light switch (turn off)") if is_on else tr("Light switch (turn on)")
 
 

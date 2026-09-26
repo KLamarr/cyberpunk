@@ -61,6 +61,11 @@ jobs:
           timeout 300 godot --headless --path . -- --autotest --save
           timeout 300 godot --headless --path . -- --autotest --save --lang=it
 
+      - name: Test stimoli e materiali (cocci, pozze, corrente, fumo, casse pesanti)
+        run: |
+          timeout 300 godot --headless --path . -- --autotest --stimoli
+          timeout 300 godot --headless --path . -- --autotest --stimoli --lang=it
+
       - name: Test generatore di NPC
         run: timeout 300 godot --headless --path . -- --autotest --npc
 

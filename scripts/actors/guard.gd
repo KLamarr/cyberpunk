@@ -412,9 +412,13 @@ func _perceive(dt: float) -> void:
 				var seen := Util.ray_clear(space, eye, target, LOS_MASK, ex)
 				if not seen:
 					seen = Util.ray_clear(space, eye, p.get_head_point(), LOS_MASK, ex)
+				# il fumo (vedi Stimuli) copre come un muro, o in parte se è rado
+				var smoke := Stimuli.smoke_between(eye, target) if seen else 0.0
+				if smoke >= Stimuli.SMOKE_BLOCKS:
+					seen = false
 				if seen:
 					can_see_player = true
-					var vis: float = p.visibility
+					var vis: float = p.visibility * (1.0 - smoke)
 					var df := 1.0 - dist / sight_range
 					var rate := vis * fov * (0.3 + 3.2 * df * df) * perception
 					match state:
@@ -455,6 +459,8 @@ func _check_bodies() -> void:
 		var flat := Vector3(to.x, 0.0, to.z)
 		if rad_to_deg(fwd.angle_to(flat)) > 60.0:
 			continue
+		if Stimuli.smoke_between(eye, g.global_position + Vector3.UP * 0.3) >= Stimuli.SMOKE_BLOCKS:
+			continue
 		if Util.ray_clear(get_world_3d().direct_space_state, eye, g.global_position + Vector3.UP * 0.3, LOS_MASK, [get_rid(), g.get_rid()]):
 			g.discovered = true
 			_bark(BARK_BODY, true)
@@ -484,7 +490,7 @@ func hear(pos: Vector3, radius: float, kind: String, source: Node, info := {}) -
 				_set_search_point(pos)
 			elif awareness >= 0.35:
 				_investigate(pos, false)
-		"impact", "clang", "glass", "grate":
+		"impact", "clang", "glass", "grate", "splash", "hiss", "zap":
 			if state == S.COMBAT or not definition.investigates_noises:
 				return
 			awareness = maxf(awareness, 0.45)
@@ -751,6 +757,16 @@ func _set_down(killed: bool) -> void:
 	_model.set_glow(Color(0.05, 0.05, 0.06) if killed else _model.default_glow() * 0.35)
 	_model.set_down(true)
 	_model.lod_interval = 0.0
+
+
+## Scossa elettrica (vedi Stimuli.shock): bassa tensione = KO (non conta come
+## uccisione), alta = morta.
+func on_shock(voltage: int, _pos: Vector3) -> void:
+	if state == S.DOWN:
+		return
+	if voltage >= Stimuli.HIGH_VOLTAGE:
+		hp = 0.0
+	_go_down(voltage >= Stimuli.HIGH_VOLTAGE)
 
 
 # --- frob: perquisire, borseggiare, trasportare ------------------------------------

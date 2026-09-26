@@ -72,8 +72,9 @@ func frob(player: Node) -> void:
 		Game.notify(tr("The grate is bolted down. You need Strength %d to remove it by hand, or you can smash it.") % pry_skill, Color(1, 0.75, 0.4))
 
 
-func take_damage(_amount: float, _hit_pos: Vector3, _dir: Vector3, kind: String) -> void:
-	if kind == "melee" or kind == "bullet":
+func take_damage(amount: float, _hit_pos: Vector3, _dir: Vector3, kind: String) -> void:
+	# anche un oggetto molto pesante lanciato contro (una cassa SB-14)
+	if kind == "melee" or kind == "bullet" or (kind == "impact" and amount >= 20.0):
 		_remove("grate_break", 13.0)
 
 
