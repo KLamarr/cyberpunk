@@ -1,4 +1,6 @@
-# PROTOCOLLO SERAPH — vertical slice
+# SERAPH PROTOCOL — vertical slice
+
+*(in italiano: Protocollo Seraph)*
 
 Immersive sim FPS/RPG cyberpunk in **Godot 4.7**, con grafica in stile **Dark Engine**
 (il motore di *Thief* e *System Shock 2*): texture a 64 px con filtro nearest, rendering
@@ -18,6 +20,9 @@ Laboratorio C e tornare all'ascensore. Come ci arrivi è affar tuo.
 1. Installa **Godot 4.7.x** (testato su 4.7.2 stable, build standard, non serve .NET).
 2. Apri `project.godot` dall'editor: al primo avvio importa texture e suoni (pochi secondi).
 3. Premi **F5**. Nel menu iniziale distribuisci 4 punti fra le skill e inizia.
+
+Il gioco è in **inglese**; l'**italiano** si sceglie con il bottone *Language* del menu
+iniziale o della pausa, e la scelta resta per le partite successive (vedi [Lingue](#lingue)).
 
 Una partita dura 10–25 minuti. Nessun asset esterno: texture e suoni sono generati dagli
 script in `tools/` e sono già inclusi.
@@ -224,12 +229,15 @@ scripts/npc/*.gd            NPC: definizione, forme, scheletro, costruzione dell
 scripts/actors/security_camera.gd, turret.gd, turret_panel.gd
 scripts/ui/hud.gd           gemma di luce, rumore, salute, arma, prompt, sottotitoli
 scripts/ui/ui_root.gd       menu, PDA, serrature/tastierino, hacking, potenziamento, terminali, fine
-scripts/data/logs.gd        testi dei registri
+scripts/data/logs.gd        testi dei registri (in inglese)
+locale/it.po                traduzione italiana di tutti i testi del gioco
 addons/npc_creator/         plugin dell'editor: creatore di NPC (scheda "NPC")
 assets/npc/segments/        libreria delle forme dei segmenti (.tres)
 assets/npc/characters/      definizioni degli NPC: Ruiz, Hale, Kovač, Mori (.tres)
 shaders/npc_body.gdshader   materiale unico degli NPC (atlante + vertex color + luce per istanza)
 tools/validate_level.gd     validatore dei livelli (gira anche a ogni F6)
+tools/aggiorna_traduzioni.gd aggiorna locale/it.po dall'editor (File → Run)
+tools/i18n.gd, i18n_core.gd  estrazione dei testi e controllo delle traduzioni (anche per la CI)
 tools/autotest.gd           test end-to-end
 tools/convert_seraph.gd     il convertitore usato una volta per passare dalla mappa in codice alla scena
 tools/npc_seed.gd           scrive libreria e personaggi predefiniti
@@ -244,7 +252,8 @@ Tutto si fa nell'editor: apri `levels/seraph/seraph.tscn` (o la palestra), scava
 i `Brush` dentro le `Zone`, trascina le entità da `scenes/entities/`, premi **F6** per
 provare. La [guida all'editor](docs/GUIDA_EDITOR.md) spiega tutto passo passo.
 
-Dal lato codice: i registri si aggiungono in `scripts/data/logs.gd`; la logica di missione
+Dal lato codice: i testi per il giocatore si scrivono in inglese dentro `tr()` (vedi
+[Lingue](#lingue)); i registri si aggiungono in `scripts/data/logs.gd`; la logica di missione
 di un livello si scrive estendendo `Level` (vedi `levels/seraph/seraph.gd`: `setup_mission`,
 `start_intro`, `on_lockdown`). Un oggetto qualsiasi diventa interattivo se ha i metodi
 `get_frob_text()` e `frob(player)`; un bersaglio se ha `take_damage(amount, hit_pos, dir,
@@ -253,14 +262,45 @@ entità nuove seguono lo schema di quelle esistenti: script `@tool` con propriet
 commentate (il commento diventa il tooltip dell'Inspector) e una scena in
 `scenes/entities/`.
 
+## Lingue
+
+L'**inglese** è la lingua sorgente: i testi sono scritti in inglese nel codice (dentro
+`tr()`), nelle scene e nei personaggi. L'**italiano** è una traduzione gettext in
+`locale/it.po`; una frase senza traduzione resta in inglese. Al primo avvio il gioco è
+sempre in inglese; lingua, risoluzione, dithering, sensibilità e volume scelti dal
+giocatore si salvano in `user://settings.cfg`. Gli strumenti di sviluppo (validatore,
+creatore di NPC, guide) restano in italiano.
+
+| | |
+|---|---|
+| ![Menu in inglese](docs/screenshots/ui_01_menu_iniziale.png) | ![Menu in italiano](docs/screenshots/ui_01_menu_iniziale_it.png) |
+
+- **Nel codice**: `tr("Pick up: %s") % nome` (il segnaposto, non la concatenazione: in
+  un'altra lingua l'ordine delle parole cambia). Dati che si mostrano più tardi (obiettivi,
+  registri, battute, nomi) si salvano in inglese e si traducono quando si mostrano; le
+  costanti con testi si marcano con una riga `# i18n` sopra. I titoli dei nomi (`Ofc.`,
+  `Tech.`…) si traducono con `Game.person_name()`.
+- **Aggiornare e controllare `it.po`**: dall'editor `tools/aggiorna_traduzioni.gd` → *File →
+  Run*; da riga di comando `tools/i18n.gd -- --update` e `-- --check --strict` (la CI
+  fallisce se manca una traduzione, se cambia un segnaposto `%s`/`%d`, un tag `[b]` o un
+  numero, per esempio il codice di un tastierino). Il procedimento completo è nella
+  [guida all'editor](docs/GUIDA_EDITOR.md#7-testi-e-traduzioni).
+- **Insegne e poster con scritte**: una texture per lingua, `sign_sec.png` (inglese) e
+  accanto `sign_sec_it.png`; nel gioco `Util.tex()` sceglie da sola la variante della
+  lingua attiva, anche quando il giocatore la cambia a partita in corso.
+- **Una lingua nuova**: `tools/i18n.gd -- --new=fr`, poi aggiungi `locale/fr.po` alle
+  traduzioni del progetto e `"fr"` a `Game.LANGUAGES`.
+
 ## Test automatico
 
 ```
-godot --headless --path . -- --autotest            # 63 controlli: navmesh, frob, porte, codice,
+godot --headless --path . -- --autotest            # 72 controlli: navmesh, frob, porte, codice,
                                                    # hacking, telecamera, torretta, IA, KO, borseggio,
-                                                   # lancio, mantle nel condotto, lockdown, estrazione
+                                                   # lancio, mantle nel condotto, lockdown, estrazione,
+                                                   # lingua e impostazioni
+godot --headless --path . -- --autotest --lang=it  # lo stesso in italiano (--lang vale per ogni test)
 godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
-godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino
+godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino, lingua
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
 godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache
@@ -270,10 +310,12 @@ NPC_CREATOR_SELFTEST=1 godot --headless --editor --path .   # il creatore nell'e
 godot --path . -- --autotest --stress              # 10/25/50/100 guardie: tempo di frame (media e 95%)
                                                    # e draw call (non passa/fallisce)
 godot --path . -- --autotest --shots --shot-dir=/percorso   # anche screenshot (serve una GPU/display)
+godot --headless --path . --script res://tools/i18n.gd -- --check --strict   # traduzioni
 ```
 
-La CI (`.github/workflows/test.yml`) esegue i test, valida tutti i livelli in `levels/` e li
-apre nell'editor per scovare errori negli script `@tool`.
+La CI (`.github/workflows/test.yml`) controlla le traduzioni, esegue i test (quelli di
+gioco anche in italiano), valida tutti i livelli in `levels/` e li apre nell'editor per
+scovare errori negli script `@tool`.
 
 Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sounds.py`
 (servono `numpy` e `Pillow`), poi riapri l'editor per il reimport.

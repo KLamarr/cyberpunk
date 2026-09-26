@@ -1202,9 +1202,9 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -10.
 [node name="PortaSalaSicurezza" parent="Porte" unique_id=17079190 instance=ExtResource("49_pbi0a")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -10.5, 0, 1.8)
 locked = true
-lock_title = "Sala Sicurezza"
+lock_title = "Security Room"
 keycard_id = "sicurezza"
-keycard_name = "Tessera Sicurezza"
+keycard_name = "Security Keycard"
 code = "0451"
 hack_level = 1
 
@@ -1213,9 +1213,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -17.5)
 width = 2.0
 height = 2.6
 locked = true
-lock_title = "Laboratorio C"
+lock_title = "Lab C"
 keycard_id = "lab"
-keycard_name = "Tessera Laboratorio C"
+keycard_name = "Lab C Keycard"
 hack_level = 2
 hack_difficulty = 2
 alarm_on_fail = true
@@ -1326,7 +1326,7 @@ secret_id = "condotto"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 0.91, -3.6)
 kind = "keycard"
 item_id = "lab"
-display = "Tessera Laboratorio C"
+display = "Lab C Keycard"
 
 [node name="Medpatch4" parent="Oggetti" unique_id=628129662 instance=ExtResource("71_vgtmr")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 0.91, -29.1)
@@ -1471,19 +1471,19 @@ dormant = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 1)
 size = Vector3(19, 4, 13)
 speaker = "VESPER"
-text = "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra."
+text = "The lobby. Camera in the northeast corner and a guard on patrol. Stay in the shadows."
 duration = 4.5
 
 [node name="TriggerLaboratorio" parent="Trigger" unique_id=1189527506 instance=ExtResource("81_q6lpp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -24)
 size = Vector3(15, 4, 11)
 speaker = "VESPER"
-text = "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza."
+text = "You're in the lab. The core is in the central server, the one that's humming."
 
 [node name="TriggerCondotto" parent="Trigger" unique_id=1065144450 instance=ExtResource("81_q6lpp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.05, 1.5, -9)
 size = Vector3(1.1, 1, 3)
-text = "Condotto di ventilazione: resta accovacciato."
+text = "Ventilation duct: stay crouched."
 
 [node name="PartenzaPlayer" type="Marker3D" parent="." unique_id=2071493012]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 19.4, 0, 15.2)

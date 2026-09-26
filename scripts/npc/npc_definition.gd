@@ -16,7 +16,8 @@ const SLOT_NAMES: Array[String] = ["Pelle", "Uniforme", "Secondario", "Armatura"
 var revision := 0
 
 @export_group("Identità")
-@export var display_name := "Guardia":
+## Nome mostrato nel gioco, in inglese (es. "Ofc. Rossi": il titolo viene tradotto).
+@export var display_name := "Guard":
 	set(v):
 		display_name = v
 		_touch()
@@ -301,7 +302,7 @@ static func is_library_shape(s: Resource) -> bool:
 func loot() -> Dictionary:
 	var l := {}
 	if keycard_id != "":
-		l["keycard"] = [keycard_id, keycard_name if keycard_name != "" else "Tessera " + keycard_id.capitalize()]
+		l["keycard"] = [keycard_id, keycard_name]   # nome vuoto = "<Id> Keycard" (Game.keycard_label)
 	if ammo > 0:
 		l["ammo"] = ammo
 	if credits > 0:

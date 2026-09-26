@@ -53,10 +53,10 @@ func _player_inside(player: Node) -> bool:
 
 func get_frob_text() -> String:
 	if _player_inside(Game.player):
-		return "Spingi via la grata (calcio)"
+		return tr("Kick the grate out")
 	if Game.skill("forza") >= pry_skill:
-		return "Rimuovi la grata"
-	return "Grata fissata (Forza %d, o sfondala)" % pry_skill
+		return tr("Remove the grate")
+	return tr("Grate bolted down (Strength %d, or smash it)") % pry_skill
 
 
 func frob(player: Node) -> void:
@@ -66,7 +66,7 @@ func frob(player: Node) -> void:
 	if Game.skill("forza") >= pry_skill:
 		_remove("grate_pry", 2.5)
 	else:
-		Game.notify("La grata è avvitata. Serve Forza %d per toglierla a mano, oppure puoi sfondarla." % pry_skill, Color(1, 0.75, 0.4))
+		Game.notify(tr("The grate is bolted down. You need Strength %d to remove it by hand, or you can smash it.") % pry_skill, Color(1, 0.75, 0.4))
 
 
 func take_damage(_amount: float, _hit_pos: Vector3, _dir: Vector3, kind: String) -> void:

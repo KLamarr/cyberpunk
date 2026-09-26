@@ -14,16 +14,27 @@ enum S { PATROL, INVESTIGATE, COMBAT, SEARCH, DOWN }
 const GRAVITY := 18.0
 const LOS_MASK := 1 | 8   # mondo + porte (il vetro non blocca la vista)
 
-const BARK_SIGHT := ["Eh? C'è qualcuno?", "Chi va là?", "Ho visto qualcosa laggiù...", "Hm? Un'ombra..."]
-const BARK_NOISE := ["Cos'era quel rumore?", "Hm? Vado a controllare.", "Sento qualcosa...", "Chi c'è?"]
-const BARK_GIVEUP := ["Sarà stato il CALMA che mi fa sentire le cose.", "Niente. Torno al giro.", "Mi sto immaginando tutto.", "Topi. Sempre i topi."]
-const BARK_COMBAT := ["Intruso!", "Eccoti! Fermo lì!", "Contatto! Livello 14!", "Ti ho visto!"]
-const BARK_SEARCH := ["Dov'è finito?", "So che sei qui dentro.", "Esci fuori, non peggiorare le cose.", "Controllate gli angoli!"]
-const BARK_SEARCH_END := ["L'ho perso. Resto all'erta.", "Maledizione, è sparito.", "Torno in posizione, ma occhi aperti."]
-const BARK_BODY := ["Uomo a terra! Uomo a terra!", "Chi ti ha fatto questo?!", "C'è qualcuno qui dentro!"]
-const BARK_ALARM := ["Allarme! Mi muovo!", "Ricevuto, controllo il settore."]
-const BARK_HURT := ["Argh! Mi hanno colpito!", "Ah! Maledetto!"]
-const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.", "Il server ronza più forte stanotte.", "Chissà se Okafor è ancora in laboratorio.", "Mi fa male la testa. Sempre dopo l'aggiornamento."]
+## Battute in inglese: _bark() le traduce (italiano in locale/it.po).
+# i18n
+const BARK_SIGHT := ["Huh? Someone there?", "Who goes there?", "I saw something over there...", "Hm? A shadow..."]
+# i18n
+const BARK_NOISE := ["What was that noise?", "Hm? Better check it out.", "I hear something...", "Who's there?"]
+# i18n
+const BARK_GIVEUP := ["Must be the CALMA making me hear things.", "Nothing. Back to my rounds.", "Must be imagining things.", "Just rats. It's always rats."]
+# i18n
+const BARK_COMBAT := ["Intruder!", "There you are! Freeze!", "Contact! Level 14!", "I see you!"]
+# i18n
+const BARK_SEARCH := ["Where did they go?", "I know you're in here.", "Come on out. Don't make this worse for yourself.", "Check the corners!"]
+# i18n
+const BARK_SEARCH_END := ["Lost them. Staying alert.", "Damn it, they're gone.", "Back to my post. Eyes open."]
+# i18n
+const BARK_BODY := ["Man down! Man down!", "Who did this to you?!", "Someone's in here!"]
+# i18n
+const BARK_ALARM := ["Alarm's up! On my way!", "Copy that, checking the sector."]
+# i18n
+const BARK_HURT := ["Argh! I'm hit!", "Ah! Bastard!"]
+# i18n
+const BARK_IDLE := ["...you hear that hum too?", "Six more hours to go.", "The server's humming louder tonight.", "Wonder if Okafor's still in the lab.", "My head hurts. Always after the update."]
 
 ## Chi è: aspetto, sensi, mira, velocità, bottino e battute. Trascina qui un personaggio
 ## di assets/npc/characters (si creano nella scheda NPC in alto). Vuoto = una guardia
@@ -33,7 +44,8 @@ const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.
 		definition = v
 		_editor_rebuild()
 		update_configuration_warnings()
-## Nome mostrato nei sottotitoli. Vuoto = quello della definizione.
+## Nome mostrato nei sottotitoli, in inglese (es. "Ofc. Rossi": il titolo viene
+## tradotto, vedi Game.person_name). Vuoto = quello della definizione.
 @export var guard_name := ""
 ## Nodo PatrolRoute con i Waypoint da percorrere. Vuoto = resta di guardia
 ## nel punto in cui l'hai messa, guardando verso -Z locale.
@@ -60,6 +72,7 @@ const BARK_IDLE := ["...lo senti anche tu, il ronzio?", "Altre sei ore di turno.
 	set(v):
 		loot_keycard_id = v
 		update_configuration_warnings()
+## Nome della tessera, in inglese (es. "Security Keycard"). Vuoto = "<Id> Keycard".
 @export var loot_keycard_name := ""
 
 var sight_range := 20.0
@@ -174,7 +187,7 @@ func _ready() -> void:
 		if loot_medpatch > 0:
 			loot["medpatch"] = loot_medpatch
 		if loot_keycard_id != "":
-			loot["keycard"] = [loot_keycard_id, loot_keycard_name if loot_keycard_name != "" else loot_keycard_id]
+			loot["keycard"] = [loot_keycard_id, loot_keycard_name]   # nome vuoto = "<Id> Keycard"
 	if waypoints.is_empty() and not patrol_route.is_empty():
 		var route := get_node_or_null(patrol_route)
 		if route != null:
@@ -745,12 +758,13 @@ func _pickpocketable() -> bool:
 
 
 func get_frob_text() -> String:
+	var who := Game.person_name(guard_name)
 	if state == S.DOWN:
 		if not loot.is_empty():
-			return "Perquisisci " + guard_name + (" (morto)" if dead else " (svenuto)")
-		return "Solleva il corpo di " + guard_name
+			return (tr("Search %s (dead)") if dead else tr("Search %s (unconscious)")) % who
+		return tr("Pick up %s's body") % who
 	if not loot.is_empty() and _pickpocketable():
-		return "Borseggia " + guard_name
+		return tr("Pickpocket %s") % who
 	return ""
 
 
@@ -773,19 +787,21 @@ func _give_loot() -> void:
 		match k:
 			"ammo":
 				Game.add_ammo(int(loot.ammo))
-				got.append("%d munizioni" % int(loot.ammo))
+				var n := int(loot.ammo)
+				got.append((tr("%d round") if n == 1 else tr("%d rounds")) % n)
 			"credits":
 				Game.add_credits(int(loot.credits))
-				got.append("%d crediti" % int(loot.credits))
+				var n := int(loot.credits)
+				got.append((tr("%d credit") if n == 1 else tr("%d credits")) % n)
 			"medpatch":
 				Game.add_medpatch(int(loot.medpatch))
-				got.append("medipatch")
+				got.append(tr("medipatch"))
 			"keycard":
 				Game.give_keycard(loot.keycard[0], loot.keycard[1])
-				got.append(loot.keycard[1])
+				got.append(Game.keycard_label(loot.keycard[0], loot.keycard[1]))
 	loot.clear()
 	Sfx.play_ui("pickup")
-	Game.notify("Trovato: " + ", ".join(got))
+	Game.notify(tr("Found: %s") % ", ".join(got))
 
 
 func set_carried(on: bool) -> void:
@@ -813,7 +829,7 @@ func _bark(lines: Array, force := false) -> void:
 		return
 	if global_position.distance_to(Game.player.global_position) > 20.0:
 		return
-	Game.say(guard_name, lines[randi() % lines.size()], 2.8)
+	Game.say(Game.person_name(guard_name), tr(lines[randi() % lines.size()]), 2.8)
 
 
 func _update_icon() -> void:

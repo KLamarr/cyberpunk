@@ -458,9 +458,9 @@ func _update_frob() -> void:
 
 func get_frob_prompt() -> String:
 	if held != null:
-		return "[LMB] Lancia   [RMB/F] Posa"
+		return tr("[LMB] Throw   [RMB/F] Put down")
 	if carried_body != null:
-		return "[RMB/F] Posa il corpo"
+		return tr("[RMB/F] Put down the body")
 	if frob_target != null and is_instance_valid(frob_target):
 		return frob_target.get_frob_text()
 	return ""
@@ -510,10 +510,10 @@ func _select_weapon(w: int) -> void:
 
 func use_medpatch() -> void:
 	if Game.medpatches <= 0:
-		Game.notify("Nessun medipatch.", Color(1, 0.6, 0.4))
+		Game.notify(tr("No medipatches."), Color(1, 0.6, 0.4))
 		return
 	if health >= max_health:
-		Game.notify("Sei già in piena salute.")
+		Game.notify(tr("You're already at full health."))
 		return
 	Game.medpatches -= 1
 	health = min(health + 40.0, max_health)
@@ -671,7 +671,7 @@ func carry_body(body: Node) -> void:
 	Util.set_highlight(body, false)
 	frob_target = null
 	Sfx.play_3d("body_fall", global_position, -10.0)
-	Game.notify("Trasporti il corpo. [RMB/F] per posarlo.")
+	Game.notify(tr("Carrying the body. [RMB/F] to put it down."))
 	_update_weapon_visibility()
 
 

@@ -131,7 +131,7 @@ func set_friendly() -> void:
 		return
 	state = T.FRIENDLY
 	_head.rotation_degrees.x = -12.0
-	Game.notify("Torretta riprogrammata: ora spara alle guardie.", Color(0.4, 0.8, 1.0))
+	Game.notify(tr("Turret reprogrammed: now targeting guards."), Color(0.4, 0.8, 1.0))
 	_apply_look()
 
 
@@ -164,7 +164,7 @@ func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) 
 		Effects.sparks(global_position, Color(1.0, 0.6, 0.2), 30, 5.0)
 		Sfx.play_3d("grate_break", global_position, 3.0)
 		Game.emit_noise(global_position, 16.0, "clang", Game.player)
-		Game.notify("Torretta distrutta.")
+		Game.notify(tr("Turret destroyed."))
 		_apply_look()
 
 

@@ -40,10 +40,16 @@ Unità: metri. L'asse **Y va in alto**, il pavimento è a `y = 0`. Nella vista d
 **Aprire il progetto.** Avvia Godot 4.7, nel Project Manager scegli *Import*, seleziona il
 file `project.godot` della cartella del gioco e poi *Edit*.
 
-**Lingua.** Nella guida uso i nomi inglesi dei menu, come quasi tutti i tutorial. Se il tuo
-editor è in italiano puoi passare all'inglese da *Editor → Editor Settings → Interface →
-Editor → Editor Language* (serve riavviare l'editor), oppure tenerlo in italiano e
-cercare la voce corrispondente.
+**Lingua dell'editor.** Nella guida uso i nomi inglesi dei menu, come quasi tutti i
+tutorial. Se il tuo editor è in italiano puoi passare all'inglese da *Editor → Editor
+Settings → Interface → Editor → Editor Language* (serve riavviare l'editor), oppure
+tenerlo in italiano e cercare la voce corrispondente.
+
+**Lingua del gioco.** Il gioco è in **inglese**, con l'italiano come traduzione: tutto quello
+che il giocatore legge e che scrivi nel livello (nomi delle porte, battute, registri,
+nomi delle guardie) va scritto **in inglese**. La traduzione italiana si aggiunge dopo, in
+un file a parte: è spiegato nella sezione 7. Gli strumenti (validatore, scheda NPC,
+questa guida) restano in italiano.
 
 **I pannelli.**
 
@@ -183,7 +189,8 @@ Non devi dire alla luce in che stanza è: lo capisce dalla posizione. Tieni le l
 2. **Position** `(0, 0, -4.5)`: a terra, al centro del passaggio. La porta si estende
    lungo X; se il passaggio attraversa un muro che corre da nord a sud, ruotala di 90°
    (*Rotation* Y = 90).
-3. Apri il gruppo **Serratura**: **Locked** ✔, **Lock Title** `Magazzino`, **Code** `2468`.
+3. Apri il gruppo **Serratura**: **Locked** ✔, **Lock Title** `Storeroom` (in inglese:
+   in italiano diventerà «Magazzino», vedi la sezione 7), **Code** `2468`.
 4. **Bypass Zones**: accendi il quadratino 2. Dall'interno del magazzino la porta si apre
    sempre (le guardie le aprono comunque: hanno l'accesso).
 
@@ -197,7 +204,8 @@ Un codice deve essere scritto da qualche parte, se no il giocatore non lo trova 
 
 1. **Il testo.** I registri stanno in `scripts/data/logs.gd` (doppio clic per aprirlo).
    In fondo c'è già la voce `"codice_magazzino"`. Per scrivere i tuoi registri copia quel
-   blocco, cambia l'id e il testo, e attento a virgole e virgolette; `\n` va a capo.
+   blocco, cambia l'id e il testo (in inglese), e attento a virgole e virgolette; `\n` va
+   a capo. La traduzione italiana va in `locale/it.po` (sezione 7).
 2. **Il tavolo.** Trascina `scenes/props/prop_box.tscn` su `Arredo`, rinominalo `Tavolo`:
    **Size** `(1.2, 0.8, 0.7)`, **Position** `(2.5, 0.4, 2.8)`, **Texture**
    `assets/textures/desk.png`, **Uv Mode** `densita`. L'origine di un PropBox è il centro:
@@ -234,7 +242,7 @@ Gli altri pezzi d'arredo: `prop_quad.tscn` per insegne, poster e schermi appoggi
    Nell'editor il percorso è una linea gialla, che torna alla prima tappa. L'ordine è quello
    dei figli nell'albero.
 2. **La guardia.** Trascina `guard.tscn` su `Guardie`, rinominala `Rossi`: **Position**
-   `(-1.2, 0, -6.5)`, **Guard Name** `Ag. Rossi`, **Patrol Route**: *Assign…* e scegli
+   `(-1.2, 0, -6.5)`, **Guard Name** `Ofc. Rossi`, **Patrol Route**: *Assign…* e scegli
    `PercorsoRossi`. Nel gruppo **Bottino (senza definizione)**: **Loot Credits** `20`.
 
 Qui la guardia non ha una **Definition**, quindi è una guardia generica: il suo aspetto è
@@ -243,6 +251,9 @@ personaggio vero trascina nella proprietà **Definition** un file di
 `assets/npc/characters/` (per esempio `ruiz.tres`): nell'editor la guardia cambia subito
 aspetto, e sensi, mira, velocità, bottino e battute diventano quelli del personaggio. I
 personaggi si creano e si modificano nella scheda **NPC** in alto (il creatore di NPC).
+
+I nomi si scrivono in inglese col titolo davanti: `Ofc.` (agente), `Tech.`, `Dr.`, `Dir.`,
+`Op.`. In italiano il titolo viene tradotto da solo («Ag. Rossi»); il cognome resta com'è.
 
 Tieni le tappe ad almeno 0.6 m da muri e mobili: la guardia è larga 80 cm. Senza percorso
 una guardia resta ferma di piantone, guardando verso la sua -Z.
@@ -283,7 +294,7 @@ spiegazione nel tooltip dell'Inspector.
 | `turret.tscn` + `turret_panel.tscn` | torretta e suo pannello di manutenzione | Sweep, T Range, Start Disabled; il pannello ha Turret Path | la torretta guarda verso -Z |
 | `light_switch.tscn` | interruttore | Targets (le luci che comanda) | a muro |
 | `vent_grate.tscn` | grata di un condotto | Size, Pry Skill, Inner Zone | lato esterno verso +Z |
-| `trigger_zone.tscn` | volume che mostra una battuta quando entri | Size, Speaker, Text, Duration, Once | centro del volume |
+| `trigger_zone.tscn` | volume che mostra una battuta quando entri | Size, Speaker, Text (in inglese), Duration, Once | centro del volume |
 | `security_terminal.tscn`, `upgrade_station.tscn`, `server_core.tscn`, `elevator_panel.tscn` | pezzi della missione di Seraph | — | — |
 | `player_start.tscn` | partenza del giocatore (uno per livello) | — | a terra; il giocatore guarda verso -Z |
 | `props/prop_box.tscn` | scatola: mobili, casse, vetri, schermi | Size, Texture, Uv Mode, Tint, Emission, Opacity, Collision | **centro** |
@@ -326,6 +337,8 @@ probabile svista.
 | "porta chiusa che non si può aprire" | Locked senza codice, tessera né hack | aggiungi almeno un modo |
 | "il codice … non compare in nessun datapad" | nessun registro del livello contiene il codice | scrivilo in un registro e piazza il datapad |
 | "manca il PlayerStart" | — | trascina `player_start.tscn` nel livello |
+| "manca la traduzione (it) di …" | un testo nuovo del livello non è ancora in `locale/it.po` | aggiorna e traduci (sezione 7); finché manca, in italiano quel testo resta in inglese |
+| "il codice … non compare nella traduzione (it)" | la traduzione del registro ha perso o cambiato il codice | correggi la frase in `locale/it.po` |
 | clicco nella vista 3D e si seleziona un'altra cosa | i brush si sovrappongono | seleziona dall'albero Scene |
 
 ---
@@ -337,9 +350,9 @@ grande (9 zone). La logica della missione (obiettivi, battute di Vesper, lockdow
 `levels/seraph/seraph.gd`, l'unica parte che resta codice. Lo script cerca per nome solo il
 punto `PuntoLockdown` (dove accorrono le guardie dopo il furto); il resto lo trova da sé.
 
-**Attenzione al test automatico.** Ad ogni push GitHub gioca Seraph da solo con 63 controlli
-a coordinate fisse (entra dalla porta di servizio, legge quel datapad, sale in quel
-condotto…). Se sposti porte, stanze o oggetti che il test usa, fallirà: è normale, va
+**Attenzione al test automatico.** Ad ogni push GitHub gioca Seraph da solo, in inglese e in
+italiano, con 72 controlli a coordinate fisse (entra dalla porta di servizio, legge quel
+datapad, sale in quel condotto…). Se sposti porte, stanze o oggetti che il test usa, fallirà: è normale, va
 aggiornato insieme alla mappa. Per sperimentare liberamente fai una copia (FileSystem →
 tasto destro su `seraph.tscn` → *Duplicate…* → `seraph_prova.tscn`) e prova quella con `F6`.
 
@@ -352,13 +365,79 @@ cambiano in *Project → Project Settings → Layer Names → 3D Render*.
 
 ---
 
-## 7. Da riga di comando (facoltativo)
+## 7. Testi e traduzioni
+
+Il gioco parte in **inglese** (la prima volta sempre, poi nella lingua scelta dal giocatore
+con il bottone *Language* del menu iniziale o della pausa). L'inglese è la lingua in cui si
+scrivono i testi; l'italiano è una traduzione in `locale/it.po`. Se una frase non ha
+traduzione, in italiano compare in inglese: il gioco non si rompe, ma è una svista.
+
+**Cosa scrivere in inglese.** Tutto quello che legge il giocatore: *Lock Title* e *Keycard
+Name* delle porte, *Display* dei pickup, *Speaker* e *Text* dei trigger, *Guard Name* e
+*Loot Keycard Name* delle guardie, nome, tessera e battute dei personaggi nella scheda NPC,
+i registri in `scripts/data/logs.gd`, gli obiettivi e le battute di missione in
+`levels/<livello>/<livello>.gd`. I nomi dei nodi, gli id (*Log Id*, *Keycard Id*, *Item Id*)
+e i commenti restano come vuoi: il giocatore non li vede.
+
+**Aggiungere la traduzione, in tre passi.**
+
+1. **Aggiorna il file.** Nel FileSystem apri `tools/aggiorna_traduzioni.gd` (doppio clic):
+   si apre nell'editor degli script. Scegli *File → Run* (`Ctrl+Shift+X`). Lo strumento
+   trova i testi nuovi del gioco e li aggiunge in fondo a `locale/it.po`, ancora da
+   tradurre; nel pannello **Output** scrive quanti sono.
+2. **Traduci.** Apri `locale/it.po` con [Poedit](https://poedit.net) (gratuito: mostra
+   solo le frasi da tradurre) o con un editor di testo. Ogni frase è fatta così:
+
+   ```
+   #: levels/guida/guida.tscn:114
+   msgid "Storeroom"
+   msgstr "Magazzino"
+   ```
+
+   `msgid` è l'inglese (non toccarlo: viene dal livello), `msgstr` la traduzione, che
+   all'inizio è vuota (`msgstr ""`). La riga `#:` dice dove si trova la frase. Le voci con
+   `msgctxt "title"` sono i titoli dei nomi (`Ofc.` → `Ag.`).
+3. **Controlla.** Riesegui `aggiorna_traduzioni.gd`: in fondo all'Output c'è `RISULTATO
+   TRADUZIONI: 0 errori, 0 avvisi`, oppure l'elenco dei problemi. Poi `F6`, `Esc` e il
+   bottone *Language* per vedere il livello in italiano (la scelta resta anche ai lanci
+   successivi, finché non la cambi).
+
+**Regole per tradurre.**
+
+- Tieni i **segnaposto** `%s` e `%d` (nomi e numeri inseriti dal gioco), nello stesso
+  ordine, e i **tag** come `[b]…[/b]` o `[color=#ffcc55]…[/color]`.
+- Tieni i **numeri**: soprattutto i codici dei tastierini nei registri. Il controllo e il
+  validatore ti avvisano se un codice sparisce dalla traduzione.
+- `\n` è un a capo: una frase lunga si può spezzare su più righe tra virgolette, Poedit lo
+  fa da solo.
+- Se cambi un testo inglese già tradotto, al passo 1 la vecchia traduzione viene
+  riproposta e segnata `#, fuzzy`: finché resta così il gioco mostra l'inglese. Correggila
+  e togli la riga `#, fuzzy` (in Poedit: togli il segno *Needs Work*).
+
+**Insegne e poster.** Le scritte dipinte nelle texture non passano da `it.po`: per ogni
+lingua serve un'immagine a parte, con lo stesso nome più `_it`, nella stessa cartella. In
+Seraph `sign_sec.png` dice «SECURITY» e `sign_sec_it.png` «SICUREZZA» (le genera
+`tools/gen_textures.py`). Nel livello metti sempre quella inglese: in italiano il gioco usa
+da solo la variante `_it`, anche se il giocatore cambia lingua a partita in corso. Vale per
+le texture di `prop_quad.tscn` e `prop_box.tscn`; nell'editor vedi sempre l'inglese.
+
+**E la CI?** Ad ogni push controlla che `locale/it.po` sia completo e coerente: un testo
+nuovo senza traduzione italiana fa fallire la CI, anche se il gioco funziona.
+
+---
+
+## 8. Da riga di comando (facoltativo)
 
 ```
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn
 godot --headless --path . -- --autotest                 # il test completo di Seraph
+godot --headless --path . -- --autotest --lang=it       # lo stesso, con i testi in italiano
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+godot --headless --path . --script res://tools/i18n.gd -- --update           # come aggiorna_traduzioni.gd
+godot --headless --path . --script res://tools/i18n.gd -- --check --strict   # il controllo della CI
 ```
 
-La CI su GitHub esegue il validatore su tutti i livelli in `levels/`, li apre nell'editor per
-scovare errori negli script e gioca Seraph e il livello della guida.
+`--lang=it` (o `--lang=en`) sceglie la lingua solo per quel lancio. La CI su GitHub esegue
+il validatore su tutti i livelli in `levels/`, li apre nell'editor per scovare errori negli
+script, controlla le traduzioni e gioca Seraph (in inglese e in italiano) e il livello
+della guida.

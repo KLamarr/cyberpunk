@@ -28,10 +28,12 @@ extends Node3D
 	set(v):
 		locked = v
 		_editor_rebuild()
-## Nome mostrato nel pannello della serratura.
+## Nome mostrato nel pannello della serratura, in inglese (es. "Lab C"): la
+## traduzione va in locale/it.po. Vuoto = "Door".
 @export var lock_title := ""
 ## Id della tessera che la apre (vuoto = nessuna). Es. "lab", "sicurezza".
 @export var keycard_id := ""
+## Nome della tessera, in inglese (es. "Lab C Keycard"). Vuoto = "<Id> Keycard".
 @export var keycard_name := ""
 ## Codice del tastierino (vuoto = nessun tastierino). Mettilo in un registro!
 @export var code := "":
@@ -81,10 +83,10 @@ func setup(pos: Vector3, yaw_deg: float, w: float, h: float, lock_info := {}) ->
 func _make_lock() -> Dictionary:
 	if not locked:
 		return {}
-	var d := {"title": lock_title if lock_title != "" else "Porta"}
+	var d := {"title": lock_title}   # testi in inglese: li traduce get_lock_info()
 	if keycard_id != "":
 		d["keycard"] = keycard_id
-		d["keycard_name"] = keycard_name if keycard_name != "" else keycard_id
+		d["keycard_name"] = keycard_name
 	if code != "":
 		d["code"] = code
 	if hack_level > 0:
@@ -234,8 +236,13 @@ func close() -> void:
 # --- frob / serratura ----------------------------------------------------------
 func get_frob_text() -> String:
 	if locked:
-		return "Porta bloccata — " + String(lock.get("title", ""))
-	return "Chiudi porta" if is_open() else "Apri porta"
+		return tr("Locked door — %s") % _title()
+	return tr("Close door") if is_open() else tr("Open door")
+
+
+func _title() -> String:
+	var t := String(lock.get("title", ""))
+	return tr(t) if t != "" else tr("Door")
 
 
 func frob(player: Node) -> void:
@@ -243,13 +250,13 @@ func frob(player: Node) -> void:
 		var bz: int = lock.get("bypass_zone", 0)
 		if bz != 0 and Game.level and (Game.level.zone_mask_at(player.global_position) & bz) != 0:
 			unlock(false)
-			Game.notify("Sblocchi la porta dall'interno.")
+			Game.notify(tr("You unlock the door from the inside."))
 			open()
 			return
 		var kc: String = lock.get("keycard", "")
 		if kc != "" and Game.has_keycard(kc):
 			unlock()
-			Game.notify("Usi: " + String(Game.keycards[kc]))
+			Game.notify(tr("Using: %s") % Game.keycard_name(kc))
 			open()
 			return
 		Sfx.play_3d("door_locked", global_position + Vector3.UP * 1.3, -2.0)
@@ -262,9 +269,13 @@ func frob(player: Node) -> void:
 		open()
 
 
+## Dati per il pannello della serratura, con i testi tradotti.
 func get_lock_info() -> Dictionary:
 	var info := lock.duplicate()
 	info["kind"] = "door"
+	info["title"] = _title()
+	if info.has("keycard"):
+		info["keycard_name"] = Game.keycard_label(info.keycard, info.get("keycard_name", ""))
 	return info
 
 

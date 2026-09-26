@@ -50,7 +50,7 @@ func _build() -> void:
 
 func get_frob_text() -> String:
 	var t: String = Logs.ENTRIES.get(log_id, {}).get("title", "")
-	return ("Leggi terminale: " if wall_terminal else "Leggi datapad: ") + t
+	return (tr("Read terminal: %s") if wall_terminal else tr("Read datapad: %s")) % tr(t)
 
 
 func frob(_player: Node) -> void:

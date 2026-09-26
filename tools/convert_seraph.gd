@@ -4,7 +4,8 @@ extends Node
 ## Uso:  godot --headless --path . -- --convert-seraph --force
 ## ATTENZIONE: sovrascrive seraph.tscn e i SurfaceSet, cancellando le modifiche
 ## fatte nell'editor (per questo serve --force). Tenuto nel repo come esempio di
-## come generare livelli da script.
+## come generare livelli da script. I testi del livello sono in inglese (lingua
+## sorgente del gioco): l'italiano è in locale/it.po.
 
 const Z_START := 1
 const Z_SERV := 2
@@ -585,11 +586,11 @@ func _doors() -> void:
 	_add(SlidingDoor.new().setup(Vector3(10.5, 0, -1.0), 90, 1.6, 2.5))
 	_add(SlidingDoor.new().setup(Vector3(-10.5, 0, 6.4), 90, 1.6, 2.5))
 	_add(SlidingDoor.new().setup(Vector3(-10.5, 0, 1.8), 90, 1.6, 2.5, {
-		"title": "Sala Sicurezza", "keycard": "sicurezza", "keycard_name": "Tessera Sicurezza",
+		"title": "Security Room", "keycard": "sicurezza", "keycard_name": "Security Keycard",
 		"code": "0451", "hack": 1, "difficulty": 1,
 	}))
 	_add(SlidingDoor.new().setup(Vector3(0, 0, -17.5), 0, 2.0, 2.6, {
-		"title": "Laboratorio C", "keycard": "lab", "keycard_name": "Tessera Laboratorio C",
+		"title": "Lab C", "keycard": "lab", "keycard_name": "Lab C Keycard",
 		"hack": 2, "difficulty": 2, "alarm_on_fail": true, "bypass_zone": Z_LAB,
 	}))
 
@@ -625,7 +626,7 @@ func _items() -> void:
 	_add(Pickup.new().setup(Vector3(-17.4, 1.21, 7.6), "medpatch"))
 	_add(Pickup.new().setup(Vector3(-13.5, 0.02, 12.65), "module", 1, "", "", "magazzino"))
 	_add(Pickup.new().setup(Vector3(19.5, 1.02, -13.6), "module", 1, "", "", "condotto"))
-	_add(Pickup.new().setup(Vector3(-12.6, 0.91, -3.6), "keycard", 1, "lab", "Tessera Laboratorio C"))
+	_add(Pickup.new().setup(Vector3(-12.6, 0.91, -3.6), "keycard", 1, "lab", "Lab C Keycard"))
 	_add(Pickup.new().setup(Vector3(5.4, 0.91, -29.1), "medpatch"))
 	_add(Pickup.new().setup(Vector3(1.8, 1.17, 4.4), "credits", 40))
 	_add(Pickup.new().setup(Vector3(-17.3, 1.21, 8.8), "ammo", 6))
@@ -680,6 +681,6 @@ func _trig(center: Vector3, size: Vector3, who: String, what: String, secs: floa
 
 
 func _triggers() -> void:
-	_trig(Vector3(0, 2, 1), Vector3(19, 4, 13), "VESPER", "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra.", 4.5, "TriggerHall")
-	_trig(Vector3(0, 2, -24), Vector3(15, 4, 11), "VESPER", "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza.", 4.0, "TriggerLaboratorio")
-	_trig(Vector3(16.05, 1.5, -9), Vector3(1.1, 1.0, 3), "", "Condotto di ventilazione: resta accovacciato.", 4.0, "TriggerCondotto")
+	_trig(Vector3(0, 2, 1), Vector3(19, 4, 13), "VESPER", "The lobby. Camera in the northeast corner and a guard on patrol. Stay in the shadows.", 4.5, "TriggerHall")
+	_trig(Vector3(0, 2, -24), Vector3(15, 4, 11), "VESPER", "You're in the lab. The core is in the central server, the one that's humming.", 4.0, "TriggerLaboratorio")
+	_trig(Vector3(16.05, 1.5, -9), Vector3(1.1, 1.0, 3), "", "Ventilation duct: stay crouched.", 4.0, "TriggerCondotto")

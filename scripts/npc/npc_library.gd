@@ -8,7 +8,12 @@ extends RefCounted
 const SHAPES_DIR := "res://assets/npc/segments"
 const CHARACTERS_DIR := "res://assets/npc/characters"
 const ARCH_KEYS: Array[String] = ["guardia", "tecnico", "scienziato", "dirigente", "civile"]
+## Nomi degli archetipi nel creatore di NPC (interfaccia dell'editor, in italiano).
 const ARCH_LABELS: Array[String] = ["Guardia", "Tecnico", "Scienziato", "Dirigente", "Civile"]
+## Nome predefinito di un NPC di quell'archetipo: è un testo del gioco, quindi in
+## inglese (tradotto con Game.person_name()).
+# i18n
+const ARCH_NAMES: Array[String] = ["Guard", "Technician", "Scientist", "Executive", "Civilian"]
 
 const C := SegmentShape.Category
 const B := SegmentShape.Band
@@ -32,7 +37,10 @@ const SURNAMES: Array[String] = [
 	"Castell", "Nakamura", "Brandt", "Silva", "Osei", "Varga", "Chen", "Adeyemi", "Duarte", "Keller",
 	"Sato", "Moreau", "Rossi", "Byrne", "Haddad", "Kaur", "Weiss", "Quinn", "Lund", "Okoro",
 ]
-const TITLES: Array[String] = ["Ag.", "Tec.", "Dr.", "Dir.", ""]
+## Titoli dei nomi generati, in inglese: in italiano diventano Ag., Tec., Dr., Dir.
+## (voci con contesto "title" in locale/it.po, vedi Game.person_name()).
+# i18n ctx=title
+const TITLES: Array[String] = ["Ofc.", "Tech.", "Dr.", "Dir.", ""]
 
 
 # --- forme predefinite --------------------------------------------------------------
@@ -403,7 +411,7 @@ static func preset(arch: int) -> NPCDefinition:
 	var key := ARCH_KEYS[clampi(arch, 0, ARCH_KEYS.size() - 1)]
 	var d := NPCDefinition.new()
 	d.archetype = arch
-	d.display_name = ARCH_LABELS[arch]
+	d.display_name = ARCH_NAMES[arch]
 	var parts: Dictionary[String, NPCPart] = {}
 	var pp: Dictionary = PRESET_PARTS[key]
 	for p in pp:

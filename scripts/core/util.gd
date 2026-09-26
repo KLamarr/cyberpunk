@@ -4,22 +4,39 @@ extends RefCounted
 ## raycast, evidenziazione degli oggetti "frobbabili".
 
 static var _mat_cache := {}
+static var _loc_cache := {}
 static var _highlight_mat: StandardMaterial3D
 
 
-## Texture per nome (assets/textures/<nome>.png) oppure la Texture2D stessa.
+## Texture per nome (assets/textures/<nome>.png) oppure la Texture2D stessa,
+## nella versione della lingua del gioco (vedi localized()).
 static func tex(t: Variant) -> Texture2D:
 	if t is Texture2D:
-		return t
+		return localized(t)
 	if t == null or String(t) == "":
 		return null
-	return load("res://assets/textures/%s.png" % t)
+	return localized(load("res://assets/textures/%s.png" % t))
+
+
+## Immagini con scritte (insegne, poster): se la lingua non è l'inglese e accanto
+## all'originale c'è la variante <nome>_<lingua>.png (es. sign_sec_it.png), nel
+## gioco si usa quella. Nell'editor si vede sempre l'originale inglese.
+static func localized(t: Texture2D) -> Texture2D:
+	if t == null or t.resource_path == "" or Engine.is_editor_hint():
+		return t
+	var lang := TranslationServer.get_locale().get_slice("_", 0)
+	if lang == "en":
+		return t
+	var p := t.resource_path
+	var alt := "%s_%s.%s" % [p.get_basename(), lang, p.get_extension()]
+	if not _loc_cache.has(alt):
+		_loc_cache[alt] = load(alt) if ResourceLoader.exists(alt) else null
+	return _loc_cache[alt] if _loc_cache[alt] != null else t
 
 
 static func _tex_key(t: Variant) -> String:
-	if t is Texture2D:
-		return (t as Texture2D).resource_path
-	return "" if t == null else String(t)
+	var x := tex(t)
+	return x.resource_path if x != null else ""
 
 
 ## Materiale con texture a filtro nearest (look Dark Engine).

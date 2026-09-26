@@ -45,7 +45,7 @@ func _ready() -> void:
 	alarm_player = AudioStreamPlayer.new()
 	alarm_player.volume_db = -9.0
 	add_child(alarm_player)
-	set_master_volume(0.8)
+	set_master_volume(float(Game.settings.volume))   # impostazione salvata dal giocatore
 
 
 func set_master_volume(v: float) -> void:

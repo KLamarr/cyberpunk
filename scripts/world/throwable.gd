@@ -16,7 +16,11 @@ extends RigidBody3D
 					c.queue_free()
 			_build()
 
-var display := "Lattina"
+## Nomi in inglese, tradotti in get_frob_text().
+# i18n
+const NAMES := {"can": "Kaffa-Nova can", "bottle": "Bottle", "box": "Parts box", "heavy": "SB-14 crate"}
+
+var display: String = NAMES.can
 var shape_kind := "can"
 var size := Vector3(0.07, 0.13, 0.07)
 var tex := ""
@@ -41,24 +45,24 @@ func _apply_kind() -> void:
 	tex = ""
 	match kind:
 		"can":
-			display = "Lattina di Kaffa-Nova"
+			display = NAMES.can
 			size = Vector3(0.07, 0.13, 0.07)
 			col = [Color(0.75, 0.1, 0.12), Color(0.1, 0.5, 0.75), Color(0.85, 0.7, 0.1)][randi() % 3]
 			mass = 0.3
 		"bottle":
-			display = "Bottiglia"
+			display = NAMES.bottle
 			size = Vector3(0.08, 0.28, 0.08)
 			col = Color(0.25, 0.55, 0.35)
 			mass = 0.6
 			noise_mult = 1.3
 		"box":
-			display = "Scatola di componenti"
+			display = NAMES.box
 			size = Vector3(0.45, 0.32, 0.35)
 			tex = "crate"
 			mass = 4.0
 			noise_mult = 1.2
 		"heavy":
-			display = "Cassa SB-14"
+			display = NAMES.heavy
 			size = Vector3(0.8, 0.7, 0.8)
 			tex = "crate"
 			mass = 40.0
@@ -119,13 +123,13 @@ func _on_body_entered(_body: Node) -> void:
 
 func get_frob_text() -> String:
 	if heavy and Game.skill("forza") < 2:
-		return display + " — troppo pesante (Forza 2)"
-	return "Prendi: " + display
+		return tr("%s — too heavy (Strength 2)") % tr(display)
+	return tr("Take: %s") % tr(display)
 
 
 func frob(player: Node) -> void:
 	if heavy and Game.skill("forza") < 2:
-		Game.notify("Troppo pesante. Serve Forza 2.", Color(1, 0.7, 0.4))
+		Game.notify(tr("Too heavy. You need Strength 2."), Color(1, 0.7, 0.4))
 		return
 	player.pick_up(self)
 

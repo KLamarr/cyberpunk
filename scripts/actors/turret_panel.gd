@@ -30,22 +30,22 @@ func _ready() -> void:
 
 func get_frob_text() -> String:
 	if turret == null or not turret.is_hostile_active():
-		return "Pannello torretta (inattiva)"
-	return "Pannello di manutenzione torretta"
+		return tr("Turret panel (inactive)")
+	return tr("Turret maintenance panel")
 
 
 func frob(_player: Node) -> void:
 	if turret == null or not turret.is_hostile_active():
-		Game.notify("La torretta è già fuori servizio.")
+		Game.notify(tr("The turret is already out of service."))
 		return
 	Game.ui.open_lock(self)
 
 
 func get_lock_info() -> Dictionary:
 	return {
-		"kind": "turret", "title": "Pannello torretta C-2", "hack": 2, "difficulty": 2,
+		"kind": "turret", "title": tr("Turret panel C-2"), "hack": 2, "difficulty": 2,
 		"alarm_on_fail": true,
-		"note": "Hacking 2: disattiva.  Hacking 3: riprogramma contro le guardie.",
+		"note": tr("Hacking 2: disable it.  Hacking 3: turn it against the guards."),
 	}
 
 
@@ -61,4 +61,4 @@ func on_hack_result(ok: bool) -> void:
 		turret.set_friendly()
 	else:
 		turret.set_disabled(true)
-		Game.notify("Torretta disattivata.", Color(0.5, 1.0, 0.6))
+		Game.notify(tr("Turret disabled."), Color(0.5, 1.0, 0.6))

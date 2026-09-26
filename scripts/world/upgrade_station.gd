@@ -24,7 +24,7 @@ func _ready() -> void:
 
 
 func get_frob_text() -> String:
-	return "Stazione di potenziamento (%d cyber-moduli)" % Game.modules
+	return tr("Upgrade station (cyber-modules: %d)") % Game.modules
 
 
 func frob(_player: Node) -> void:

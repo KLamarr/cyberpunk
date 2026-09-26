@@ -49,14 +49,15 @@ func _ensure(d: NPCDefinition, shape_name: String) -> void:
 
 
 ## I quattro agenti della Seraph della vertical slice. Il bottino è quello del livello
-## originale (Ruiz ha la Tessera Sicurezza); i dati di gameplay sono quelli standard.
+## originale (Ruiz ha la tessera della sala sicurezza); i dati di gameplay sono quelli standard.
+## Nomi e battute in inglese, come tutti i testi del gioco (italiano in locale/it.po).
 func _characters() -> Array:
 	var G := NPCDefinition.Archetype.GUARDIA
 	var out := []
 	var ruiz := NPCLibrary.random_npc(G, 1401)
-	ruiz.display_name = "Ag. Ruiz"
+	ruiz.display_name = "Ofc. Ruiz"
 	ruiz.keycard_id = "sicurezza"
-	ruiz.keycard_name = "Tessera Sicurezza"
+	ruiz.keycard_name = "Security Keycard"
 	ruiz.ammo = 6
 	ruiz.credits = 30
 	ruiz.medpatch = 0
@@ -78,15 +79,15 @@ func _characters() -> Array:
 	hale.credits = 20
 	hale.medpatch = 1
 	hale.idle_barks = PackedStringArray([
-		"Telecamera tre di nuovo in ritardo. Ma chi le ha installate?",
-		"...lo senti anche tu, il ronzio?",
-		"Altre sei ore di turno.",
-		"Mi fa male la testa. Sempre dopo l'aggiornamento.",
+		"Camera three is lagging again. Who installed these things?",
+		"...you hear that hum too?",
+		"Six more hours to go.",
+		"My head hurts. Always after the update.",
 	])
 	out.append(["hale", hale])
 
 	var kovac := NPCLibrary.random_npc(G, 1403)
-	kovac.display_name = "Ag. Kovač"
+	kovac.display_name = "Ofc. Kovač"
 	kovac.height = 1.9
 	kovac.mass = 1.15
 	kovac.shoulders = 1.12
@@ -99,7 +100,7 @@ func _characters() -> Array:
 	out.append(["kovac", kovac])
 
 	var mori := NPCLibrary.random_npc(G, 1404)
-	mori.display_name = "Ag. Mori"
+	mori.display_name = "Ofc. Mori"
 	_ensure(mori, "spallaccio")
 	mori.ammo = 8
 	mori.credits = 10

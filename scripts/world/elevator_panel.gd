@@ -24,7 +24,7 @@ func _ready() -> void:
 
 
 func get_frob_text() -> String:
-	return "Ascensore di servizio — " + ("SCENDI" if Game.has_item("core") else "in attesa")
+	return tr("Service elevator — GO DOWN") if Game.has_item("core") else tr("Service elevator — standing by")
 
 
 func frob(_player: Node) -> void:
@@ -32,9 +32,9 @@ func frob(_player: Node) -> void:
 		return
 	if not Game.has_item("core"):
 		Sfx.play_ui("denied")
-		Game.say("VESPER", "Non ti muovi da lì senza il nucleo. Laboratorio C, a nord della hall.", 3.5)
+		Game.say(tr("VESPER"), tr("You're not leaving without the core. Lab C, north of the lobby."), 3.5)
 		return
 	used = true
 	Sfx.play_ui("elevator")
-	Game.say("VESPER", "Ottimo lavoro. Ti porto giù.", 2.0)
+	Game.say(tr("VESPER"), tr("Great work. Taking you down."), 2.0)
 	get_tree().create_timer(2.2, false).timeout.connect(Game.complete_mission)
