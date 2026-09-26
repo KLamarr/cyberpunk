@@ -1,14 +1,16 @@
 extends CanvasLayer
 ## Gestore dei pannelli a schermo: menu iniziale (con allocazione delle skill),
-## pausa/opzioni, PDA, serrature/tastierino, minigioco di hacking, stazione di
-## potenziamento, terminali, lettore registri, schermate di morte e di fine.
+## pausa, salva/carica, opzioni (con la rimappatura dei tasti), PDA,
+## serrature/tastierino, minigioco di hacking, stazione di potenziamento, terminali,
+## lettore registri, schermate di morte e di fine.
 ##
 ## Testi: in inglese dentro tr(); l'italiano è in locale/it.po. La traduzione
 ## automatica dei Control è spenta (root.auto_translate_mode): ogni testo passa
 ## esplicitamente da tr(), così lo strumento tools/i18n.gd li trova tutti.
 
+## Riepilogo dei comandi: ogni %s è un tasto (quelli attuali, vedi controls_text()).
 # i18n
-const CONTROLS := "[b]WASD[/b] move   [b]Shift[/b] run   [b]Ctrl[/b] (hold) / [b]C[/b] (toggle) crouch\n[b]Space[/b] jump / climb onto ledges (mantle)   [b]Q / E[/b] lean\n[b]LMB[/b] attack · throw   [b]RMB[/b] or [b]F[/b] interact (frob) · put down\n[b]1 / 2[/b] or wheel: wrench / pistol   [b]R[/b] reload   [b]H[/b] medipatch\n[b]Tab[/b] PDA   [b]Esc[/b] pause   [b]F2[/b] internal resolution   [b]F3[/b] dithering"
+const CONTROLS := "%s move   %s run   %s (hold) / %s (toggle) crouch\n%s jump / climb onto ledges (mantle)   %s lean\n%s attack · throw   %s interact (frob) · put down\n%s wrench / pistol   %s reload   %s medipatch\n%s PDA   %s pause   %s internal resolution   %s dithering\n%s quicksave   %s quickload"
 
 var root: Control
 var dim: ColorRect
@@ -22,6 +24,11 @@ var _hk := {}
 var _st_rows: VBoxContainer
 var _st_pts: Label
 var _st_btn: Button
+# pannelli aperti da un altro pannello (opzioni, salva, carica): dove torna Esc
+var _return_to := Callable()
+# tasto da assegnare nel pannello Comandi: {action, slot}
+var _capture := {}
+var _ctl_msg := ""
 
 
 func _ready() -> void:
@@ -57,7 +64,7 @@ func _show(panel: Control, kind: String, pause := true) -> void:
 
 
 func _clear() -> void:
-	if current_kind == "pause":
+	if current_kind in ["pause", "options"]:
 		Game.save_settings()   # sensibilità e volume cambiati con i cursori
 	if current != null:
 		current.queue_free()
@@ -69,6 +76,12 @@ func _clear() -> void:
 func close_panel() -> void:
 	if current_kind == "hack" and _hk.get("started", false) and not _hk.get("done", false):
 		_hack_lose()
+		return
+	if current_kind in ["options", "save", "load"] and _return_to.is_valid():
+		var back := _return_to
+		_return_to = Callable()
+		_capture = {}
+		back.call()   # torna al pannello da cui si era partiti (pausa o menu iniziale)
 		return
 	if current_kind in ["start", "death", "complete", ""]:
 		return
@@ -129,6 +142,25 @@ func _spacer(h := 8) -> Control:
 	return c
 
 
+## Riepilogo dei comandi con i tasti attuali (BBCode).
+func controls_text() -> String:
+	var k := func(actions: Array, sep := " / ") -> String:
+		return "[b]%s[/b]" % sep.join(actions.map(func(a): return Game.key_label(a)))
+	return tr(CONTROLS) % [
+		k.call(["move_forward", "move_left", "move_back", "move_right"], " "), k.call(["sprint"]),
+		k.call(["crouch"]), k.call(["crouch_toggle"]),
+		k.call(["jump"]), k.call(["lean_left", "lean_right"]),
+		k.call(["attack"]), k.call(["frob"]),
+		k.call(["weapon_1", "weapon_2"]), k.call(["reload"]), k.call(["medpatch"]),
+		k.call(["pda"]), "[b]Esc[/b]", k.call(["toggle_pixel"]), k.call(["toggle_dither"]),
+		k.call(["quicksave"]), k.call(["quickload"]),
+	]
+
+
+func _on_off(on: bool) -> String:
+	return tr("ON") if on else tr("OFF")
+
+
 # --- menu iniziale ---------------------------------------------------------------------
 func show_start() -> void:
 	var pc := _panel(1160, 0)
@@ -147,7 +179,7 @@ func show_start() -> void:
 	left.add_child(brief)
 	left.add_child(_spacer(4))
 	left.add_child(UITheme.label(tr("CONTROLS"), 16, UITheme.ACCENT))
-	left.add_child(_rich(tr(CONTROLS), 14, 570))
+	left.add_child(_rich(controls_text(), 14, 570))
 
 	var right := VBoxContainer.new()
 	right.custom_minimum_size.x = 500
@@ -168,6 +200,16 @@ func show_start() -> void:
 	right.add_child(_spacer(6))
 	right.add_child(UITheme.label(tr("Later: spend cyber-modules at upgrade stations."), 13, UITheme.DIM))
 	right.add_child(_st_btn)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var latest := SaveGame.latest()
+	var cont := UITheme.button(tr("Continue"), func(): Game.load_game(latest))
+	cont.disabled = latest == ""
+	row.add_child(cont)
+	row.add_child(UITheme.button(tr("Load game"), open_load.bind(show_start)))
+	row.add_child(UITheme.button(tr("Options"), open_options.bind(show_start)))
+	row.add_child(UITheme.button(tr("Quit"), Game.quit_game))
+	right.add_child(row)
 	_show(pc, "start", false)
 	dim.color = Color(0, 0.01, 0.01, 0.72)
 
@@ -217,6 +259,8 @@ func _begin() -> void:
 	Game.set_state(Game.State.PLAYING)
 	if Game.level:
 		Game.level.start_intro()
+		if not Game.quick_start:
+			Game.save_game("auto")   # autosalvataggio a inizio missione (non con F6 dall'editor)
 
 
 # --- lingua ----------------------------------------------------------------------------
@@ -229,48 +273,261 @@ func _language_button(rebuild: Callable) -> Button:
 
 # --- pausa ----------------------------------------------------------------------------
 func open_pause() -> void:
-	var w := _window(tr("PAUSED"), 620, 0)
+	var w := _window(tr("PAUSED"), 520, 0)
 	var v: VBoxContainer = w[1]
 	v.add_child(UITheme.button(tr("Resume"), close_panel))
-	v.add_child(UITheme.button(tr("PDA: objectives, logs, inventory  [Tab]"), open_pda))
-	v.add_child(_spacer(4))
-	v.add_child(UITheme.label(tr("OPTIONS"), 16, UITheme.ACCENT))
-	v.add_child(_language_button(open_pause))
-	v.add_child(_slider_row(tr("Mouse sensitivity"), 0.03, 0.4, Game.settings.sensitivity, func(x): Game.settings.sensitivity = x))
-	v.add_child(_slider_row(tr("Volume"), 0.0, 1.0, Game.settings.volume, func(x):
-		Game.settings.volume = x
-		Sfx.set_master_volume(x)))
-	var cap_btn := UITheme.button("", func(): pass)
-	var px_btn := UITheme.button("", func(): pass)
-	var dt_btn := UITheme.button("", func(): pass)
-	var refresh := func():
-		var s: int = Game.settings.pixel_scale
-		px_btn.text = tr("Internal resolution: %s  [F2]") % Game.pixel_scale_name(s)
-		dt_btn.text = tr("15-bit dithering: %s  [F3]") % (tr("ON") if Game.settings.dither else tr("OFF"))
-		cap_btn.text = tr("Captions for signs and writings: %s") % Game.env_captions_name()
-	px_btn.pressed.connect(func():
-		Game.cycle_pixel_scale()
-		refresh.call())
-	dt_btn.pressed.connect(func():
-		Game.toggle_dither()
-		refresh.call())
-	cap_btn.pressed.connect(func():
-		Game.cycle_env_captions()
-		refresh.call())
-	refresh.call()
-	v.add_child(px_btn)
-	v.add_child(dt_btn)
-	v.add_child(cap_btn)
-	v.add_child(_spacer(4))
-	v.add_child(UITheme.label(tr("CONTROLS"), 16, UITheme.ACCENT))
-	v.add_child(_rich(tr(CONTROLS), 13, 590))
-	v.add_child(_spacer(4))
+	var sv := UITheme.button(tr("Save game"), open_save)
+	v.add_child(sv)
+	v.add_child(UITheme.button(tr("Load game"), open_load.bind(open_pause)))
+	v.add_child(UITheme.button(tr("Options"), open_options.bind(open_pause)))
+	v.add_child(UITheme.button(tr("PDA: objectives, logs, inventory  [%s]") % Game.key_label("pda"), open_pda))
+	v.add_child(_spacer(6))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
 	hb.add_child(UITheme.button(tr("Restart mission"), Game.restart))
 	hb.add_child(UITheme.button(tr("Quit game"), Game.quit_game))
 	v.add_child(hb)
 	_show(w[0], "pause")
+	sv.disabled = not Game.can_save()   # dopo _show: tornando da Opzioni o Carica il pannello aperto è ancora quello
+
+
+# --- salva / carica --------------------------------------------------------------------
+func open_save() -> void:
+	var w := _window(tr("SAVE GAME"), 760, 0)
+	var v: VBoxContainer = w[1]
+	for i in SaveGame.MANUAL_SLOTS:
+		v.add_child(_slot_row(str(i + 1), true))
+	v.add_child(_spacer(4))
+	v.add_child(UITheme.button(tr("Back  [Esc]"), close_panel))
+	_return_to = open_pause
+	_show(w[0], "save")
+
+
+## back: il pannello a cui tornare (pausa o menu iniziale).
+func open_load(back: Callable) -> void:
+	var w := _window(tr("LOAD GAME"), 760, 0)
+	var v: VBoxContainer = w[1]
+	for slot in SaveGame.slots():
+		v.add_child(_slot_row(slot, false))
+	v.add_child(_spacer(4))
+	v.add_child(UITheme.button(tr("Back  [Esc]"), close_panel))
+	_return_to = back
+	_show(w[0], "load", Game.state != Game.State.MENU)
+
+
+func _slot_name(slot: String) -> String:
+	match slot:
+		"quick": return tr("Quicksave")
+		"auto": return tr("Autosave")
+	return tr("Slot %s") % slot
+
+
+## Riga di uno slot: anteprima, nome, data e tempo di gioco, bottone Salva/Carica.
+func _slot_row(slot: String, saving: bool) -> Control:
+	var m := SaveGame.meta(slot)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var frame := PanelContainer.new()
+	frame.custom_minimum_size = Vector2(116, 67)
+	frame.add_theme_stylebox_override("panel", UITheme.box(Color(0, 0.02, 0.02), UITheme.BORDER.darkened(0.35), 1, 2))
+	var thumb := TextureRect.new()
+	thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	thumb.texture = SaveGame.thumbnail(slot) if not m.is_empty() else null
+	frame.add_child(thumb)
+	row.add_child(frame)
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.alignment = BoxContainer.ALIGNMENT_CENTER
+	info.add_child(UITheme.label(_slot_name(slot), 17, UITheme.ACCENT))
+	var desc := tr("— empty —")
+	if not m.is_empty():
+		desc = tr("%s   time played %s   objectives %s") % [m.get("saved_at", "?"), Util.fmt_time(float(m.get("playtime", 0.0))), m.get("objectives", "?")]
+	info.add_child(UITheme.label(desc, 14, UITheme.DIM))
+	row.add_child(info)
+	var b := UITheme.button("", func(): pass, 170)
+	if saving:
+		b.text = tr("Save") if m.is_empty() else tr("Overwrite")
+		b.pressed.connect(func():
+			if not m.is_empty() and not b.has_meta("armed"):
+				b.set_meta("armed", true)   # sovrascrivere chiede un secondo clic
+				b.text = tr("Click to confirm")
+				return
+			if Game.save_game(slot):
+				open_save())
+	else:
+		b.text = tr("Load")
+		b.disabled = m.is_empty()
+		b.pressed.connect(func(): Game.load_game(slot))
+	row.add_child(b)
+	return row
+
+
+# --- opzioni -----------------------------------------------------------------------------
+## Pannello Opzioni a schede. back: il pannello a cui tornare (pausa o menu iniziale).
+func open_options(back: Callable, tab := 0) -> void:
+	var w := _window(tr("OPTIONS"), 860, 0)
+	var v: VBoxContainer = w[1]
+	var tabs := TabContainer.new()
+	tabs.custom_minimum_size = Vector2(820, 470)
+	v.add_child(tabs)
+	var reopen := func(t: int): open_options(back, t)
+
+	var game := VBoxContainer.new()
+	game.name = "Game"
+	game.add_theme_constant_override("separation", 10)
+	tabs.add_child(game)
+	game.add_child(_language_button(reopen.bind(0)))
+	game.add_child(UITheme.button(tr("Captions for signs and writings: %s") % Game.env_captions_name(), func():
+		Game.cycle_env_captions()
+		reopen.call(0)))
+	game.add_child(UITheme.label(tr("Captions: AUTO shows them only when a sign isn't in your language."), 13, UITheme.DIM, true))
+
+	var video := VBoxContainer.new()
+	video.name = "Video"
+	video.add_theme_constant_override("separation", 10)
+	tabs.add_child(video)
+	video.add_child(UITheme.button(tr("Fullscreen: %s") % _on_off(Game.settings.fullscreen), func():
+		Game.set_fullscreen(not Game.settings.fullscreen)
+		reopen.call(1)))
+	video.add_child(UITheme.button(tr("V-Sync: %s") % _on_off(Game.settings.vsync), func():
+		Game.set_vsync(not Game.settings.vsync)
+		reopen.call(1)))
+	video.add_child(UITheme.button(tr("Internal resolution: %s  [%s]") % [Game.pixel_scale_name(Game.settings.pixel_scale), Game.key_label("toggle_pixel")], func():
+		Game.cycle_pixel_scale()
+		reopen.call(1)))
+	video.add_child(UITheme.button(tr("15-bit dithering: %s  [%s]") % [_on_off(Game.settings.dither), Game.key_label("toggle_dither")], func():
+		Game.toggle_dither()
+		reopen.call(1)))
+
+	var audio := VBoxContainer.new()
+	audio.name = "Audio"
+	tabs.add_child(audio)
+	audio.add_child(_slider_row(tr("Volume"), 0.0, 1.0, Game.settings.volume, func(x):
+		Game.settings.volume = x
+		Sfx.set_master_volume(x)))
+
+	var ctl := VBoxContainer.new()
+	ctl.name = "Controls"
+	ctl.add_theme_constant_override("separation", 6)
+	tabs.add_child(ctl)
+	ctl.add_child(_slider_row(tr("Mouse sensitivity"), 0.03, 0.4, Game.settings.sensitivity, func(x): Game.settings.sensitivity = x))
+	var status := UITheme.label(_ctl_msg if _ctl_msg != "" else tr("Click a key to change it."), 14, UITheme.DIM)
+	_ctl_msg = ""
+	ctl.add_child(status)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(800, 300)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	ctl.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 4)
+	scroll.add_child(grid)
+	for action in Game.ACTION_LABELS:
+		var l := UITheme.label(tr(Game.ACTION_LABELS[action]), 15)
+		l.custom_minimum_size.x = 330
+		grid.add_child(l)
+		var evs := Game.binding(action)
+		for i in 2:
+			var b := UITheme.button(Game.event_label(evs[i]), func(): pass, 200)
+			b.name = "%s_%d" % [action, i]
+			b.pressed.connect(func():
+				if not _capture.is_empty() and is_instance_valid(_capture.button):
+					_capture.button.text = _capture.label   # un altro tasto era in attesa
+				_capture = {"action": action, "slot": i, "button": b, "label": b.text, "status": status,
+					"t": Time.get_ticks_msec()}
+				b.text = tr("Press a key…")
+				status.text = tr("Esc: cancel   Backspace: clear"))
+			grid.add_child(b)
+	ctl.add_child(UITheme.button(tr("Restore default keys"), func():
+		Game.reset_bindings()
+		reopen.call(3)))
+
+	for i in 4:
+		tabs.set_tab_title(i, [tr("GAME"), tr("VIDEO"), tr("AUDIO"), tr("CONTROLS")][i])
+	tabs.current_tab = tab
+	v.add_child(UITheme.button(tr("Back  [Esc]"), close_panel))
+	_return_to = back
+	_show(w[0], "options", Game.state != Game.State.MENU)
+
+
+func capturing_key() -> bool:
+	return not _capture.is_empty()
+
+
+## Il pannello Comandi aspetta un tasto: lo prende qui, prima di tutto il resto.
+func _input(event: InputEvent) -> void:
+	if _capture.is_empty():
+		return
+	var def: Array = []
+	if event is InputEventKey and event.pressed and not event.echo:
+		var k := event as InputEventKey
+		var code := k.physical_keycode if k.physical_keycode != KEY_NONE else k.keycode
+		if code == KEY_ESCAPE:
+			_capture = {}
+			get_viewport().set_input_as_handled()
+			open_options(_return_to, 3)
+			return
+		if code != KEY_BACKSPACE and code != KEY_DELETE:
+			def = ["key", int(code)]
+	elif event is InputEventMouseButton and event.pressed:
+		var b: Button = _capture.button
+		if not is_instance_valid(b) or not b.get_global_rect().has_point(b.get_global_mouse_position()):
+			# clic altrove (Indietro, un'altra scheda, un altro tasto...): niente
+			# assegnazione, il clic fa quello che deve
+			if is_instance_valid(b):
+				b.text = _capture.label
+			if is_instance_valid(_capture.status):
+				_capture.status.text = tr("Click a key to change it.")
+			_capture = {}
+			return
+		get_viewport().set_input_as_handled()
+		if Time.get_ticks_msec() - int(_capture.t) < 300:
+			return   # secondo clic di un doppio clic: non è una scelta
+		def = ["mouse", int(event.button_index)]
+	else:
+		return
+	get_viewport().set_input_as_handled()
+	var action: String = _capture.action
+	var slot := int(_capture.slot)
+	var old: Array = Game.binding(action)[slot]
+	var swapped := Game.set_binding(action, slot, def)
+	_capture = {}
+	var unbound := func(a: String) -> bool:
+		return Game.binding(a).all(func(e): return e.is_empty())
+	if swapped != "" and swapped != action:
+		var other := tr(Game.ACTION_LABELS.get(swapped, swapped))
+		if unbound.call(swapped):
+			_ctl_msg = tr("Careful: «%s» has no key now.") % other
+		elif old.is_empty():
+			_ctl_msg = tr("Key removed from «%s».") % other
+		else:
+			_ctl_msg = tr("Swapped with «%s».") % other
+	elif def.is_empty() and unbound.call(action):
+		_ctl_msg = tr("Careful: «%s» has no key now.") % tr(Game.ACTION_LABELS.get(action, action))
+	open_options(_return_to, 3)
+
+
+## Blocchi dei dispositivi dopo un hacking fallito, per i salvataggi.
+func save_state() -> Dictionary:
+	var now := Time.get_ticks_msec() / 1000.0
+	var out := {}
+	for id in hack_lockouts:
+		var n := instance_from_id(id) as Node
+		if n != null and Game.level != null and float(hack_lockouts[id]) > now:
+			out[String(Game.level.get_path_to(n))] = float(hack_lockouts[id]) - now
+	return {"hack_lockouts": out}
+
+
+func load_state(d: Dictionary) -> void:
+	var now := Time.get_ticks_msec() / 1000.0
+	var locks: Dictionary = d.get("hack_lockouts", {})
+	for p in locks:
+		var n := Game.level.get_node_or_null(NodePath(p))
+		if n != null:
+			hack_lockouts[n.get_instance_id()] = now + float(locks[p])
 
 
 func _slider_row(label_text: String, mn: float, mx: float, val: float, cb: Callable) -> HBoxContainer:
@@ -683,6 +940,9 @@ func show_death() -> void:
 	v.add_child(_rich(_stats_text(), 15, 580))
 	var hb := HBoxContainer.new()
 	hb.add_theme_constant_override("separation", 12)
+	var latest := SaveGame.latest()
+	if latest != "":
+		hb.add_child(UITheme.button(tr("Load last save"), func(): Game.load_game(latest)))
 	hb.add_child(UITheme.button(tr("Restart"), Game.restart))
 	hb.add_child(UITheme.button(tr("Quit"), Game.quit_game))
 	v.add_child(hb)

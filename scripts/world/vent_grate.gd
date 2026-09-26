@@ -23,6 +23,7 @@ extends StaticBody3D
 @export_flags_3d_render var inner_zone := 0
 
 var removed := false
+var _fallen_xf := Transform3D()
 
 
 func setup(pos: Vector3, yaw_deg: float, sz: Vector2, inner := 0) -> VentGrate:
@@ -52,6 +53,8 @@ func _player_inside(player: Node) -> bool:
 
 
 func get_frob_text() -> String:
+	if removed:
+		return ""
 	if _player_inside(Game.player):
 		return tr("Kick the grate out")
 	if Game.skill("forza") >= pry_skill:
@@ -77,17 +80,39 @@ func take_damage(_amount: float, _hit_pos: Vector3, _dir: Vector3, kind: String)
 func _remove(snd: String, noise: float) -> void:
 	if removed:
 		return
-	removed = true
 	Sfx.play_3d(snd, global_position)
 	Game.emit_noise(global_position, noise, "grate", Game.player)
-	# lascia la grata a terra (solo visiva)
-	var fallen := Node3D.new()
-	get_parent().add_child(fallen)
+	# la grata cade a terra (solo visiva)
 	var down := Util.ray(get_world_3d().direct_space_state, global_position + global_basis.z * 0.6, global_position + global_basis.z * 0.6 + Vector3.DOWN * 4.0, Layers.WORLD)
 	var ground: Vector3 = down.get("position", global_position + Vector3.DOWN * size.y)
-	fallen.global_position = ground + Vector3.UP * 0.03 + global_basis.z * 0.1
-	fallen.rotation_degrees = Vector3(90, rotation_degrees.y + randf_range(-20, 20), 0)
+	var xf := Transform3D(Basis.from_euler(Vector3(deg_to_rad(90), deg_to_rad(rotation_degrees.y + randf_range(-20, 20)), 0)),
+		ground + Vector3.UP * 0.03 + global_basis.z * 0.1)
+	_set_removed(xf)
+
+
+## Il nodo resta (così il salvataggio ricorda dov'è caduta la grata), ma senza più
+## grata né collisione: il passaggio è libero.
+func _set_removed(fallen_xf: Transform3D) -> void:
+	removed = true
+	_fallen_xf = fallen_xf
+	collision_layer = 0
+	for c in get_children():
+		remove_child(c)
+		c.queue_free()
+	var fallen := Node3D.new()
+	fallen.name = "GrataCaduta"
+	fallen.top_level = true
+	add_child(fallen)
+	fallen.global_transform = fallen_xf
 	Util.box(fallen, Vector3(size.x, size.y, 0.04), Vector3.ZERO, Util.mat("vent_grate", {"fit": Vector3(size.x, size.y, 0.04), "alpha": true}))
 	if Game.level:
 		Util.set_layers_recursive(fallen, Game.level.zone_mask_at(fallen.global_position + Vector3.UP * 0.3))
-	queue_free()
+
+
+func save_state() -> Dictionary:
+	return {"removed": removed, "fallen": _fallen_xf}
+
+
+func load_state(d: Dictionary) -> void:
+	if bool(d.removed) and not removed:
+		_set_removed(d.fallen)

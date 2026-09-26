@@ -25,6 +25,14 @@ func _ready() -> void:
 	Util.add_box_collider(self, Vector3(0.7, 0.6, 0.4), Vector3(0, 0.25, 0.1))
 
 
+func save_state() -> Dictionary:
+	return {"logged_in": logged_in}
+
+
+func load_state(d: Dictionary) -> void:
+	logged_in = d.logged_in
+
+
 func get_frob_text() -> String:
 	return tr("Security terminal")
 

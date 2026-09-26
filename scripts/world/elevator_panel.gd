@@ -37,4 +37,20 @@ func frob(_player: Node) -> void:
 	used = true
 	Sfx.play_ui("elevator")
 	Game.say(tr("VESPER"), tr("Great work. Taking you down."), 2.0)
-	get_tree().create_timer(2.2, false).timeout.connect(Game.complete_mission)
+	# un metodo del nodo, non di Game: caricando o ricominciando il timer muore con la scena
+	get_tree().create_timer(2.2, false).timeout.connect(_finish)
+
+
+func _finish() -> void:
+	Game.complete_mission()
+
+
+func save_state() -> Dictionary:
+	return {"used": used}
+
+
+## Salvato mentre l'ascensore partiva: la missione finisce subito dopo il caricamento.
+func load_state(d: Dictionary) -> void:
+	used = bool(d.used)
+	if used:
+		get_tree().create_timer(0.5, false).timeout.connect(_finish)

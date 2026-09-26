@@ -51,10 +51,15 @@ jobs:
       - name: Test morte e riavvio
         run: timeout 300 godot --headless --path . -- --autotest --death
 
-      - name: Test bottoni UI (anche lingua e didascalie delle insegne)
+      - name: Test bottoni UI (anche opzioni, rimappatura tasti, lingua e didascalie)
         run: |
           timeout 300 godot --headless --path . -- --autotest --ui
           timeout 300 godot --headless --path . -- --autotest --ui --lang=it
+
+      - name: Test salvataggio e caricamento (slot, F5/F9, stato del mondo)
+        run: |
+          timeout 300 godot --headless --path . -- --autotest --save
+          timeout 300 godot --headless --path . -- --autotest --save --lang=it
 
       - name: Test generatore di NPC
         run: timeout 300 godot --headless --path . -- --autotest --npc

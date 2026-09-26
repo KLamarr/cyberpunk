@@ -294,6 +294,20 @@ func on_hack_result(ok: bool) -> void:
 		open()
 
 
+# --- salvataggi (vedi SaveGame) --------------------------------------------------------
+func save_state() -> Dictionary:
+	return {"locked": locked, "open_t": open_t, "target": target, "close_timer": close_timer}
+
+
+func load_state(d: Dictionary) -> void:
+	locked = d.locked
+	_update_status()
+	open_t = d.open_t
+	target = d.target
+	close_timer = d.close_timer
+	panel.position.x = open_t * (width * 0.97)
+
+
 func unlock(sound := true) -> void:
 	locked = false
 	_update_status()

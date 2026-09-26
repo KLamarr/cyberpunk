@@ -309,6 +309,18 @@ Per le **texture delle stanze**: in `assets/surfaces/` ci sono i SurfaceSet di S
 crearne uno nuovo, duplica un `.tres` (tasto destro → *Duplicate…*) e cambia texture,
 densità (*Scale*: ripetizioni per metro), colore e passi.
 
+**E i salvataggi?** Tutto quello che trascini da `scenes/entities/` finisce da solo nei
+salvataggi del giocatore (`F5` in gioco, slot della pausa, salvataggio automatico): porte
+aperte o sbloccate, luci spente o rotte, guardie svenute o spostate, oggetti raccolti o
+lanciati. Tre cose da sapere:
+- il salvataggio ritrova ogni oggetto dal suo **percorso nell'albero** (per esempio
+  `Porte/PortaMagazzino`): se rinomini o sposti un nodo, i salvataggi fatti prima non lo
+  ritrovano e quell'oggetto torna com'era all'inizio. Mentre costruisci il livello non è un
+  problema; dopo averlo pubblicato, evita di rinominare;
+- le guardie che devono arrivare dopo (rinforzi) vanno piazzate nel livello con
+  **Dormant** acceso, non create da codice: solo quello che c'è nella scena si salva;
+- arredi (`props/`) e brush non cambiano durante il gioco e non si salvano.
+
 ---
 
 ## 5. Il validatore e i problemi comuni
@@ -368,7 +380,7 @@ cambiano in *Project → Project Settings → Layer Names → 3D Render*.
 ## 7. Testi e traduzioni
 
 Il gioco parte in **inglese** (la prima volta sempre, poi nella lingua scelta dal giocatore
-con il bottone *Language* del menu iniziale o della pausa). L'inglese è la lingua in cui si
+con il bottone *Language* del menu iniziale o delle *Options*). L'inglese è la lingua in cui si
 scrivono i testi; l'italiano è una traduzione in `locale/it.po`. Se una frase non ha
 traduzione, in italiano compare in inglese: il gioco non si rompe, ma è una svista.
 
@@ -398,9 +410,9 @@ e i commenti restano come vuoi: il giocatore non li vede.
    all'inizio è vuota (`msgstr ""`). La riga `#:` dice dove si trova la frase. Le voci con
    `msgctxt "title"` sono i titoli dei nomi (`Ofc.` → `Ag.`).
 3. **Controlla.** Riesegui `aggiorna_traduzioni.gd`: in fondo all'Output c'è `RISULTATO
-   TRADUZIONI: 0 errori, 0 avvisi`, oppure l'elenco dei problemi. Poi `F6`, `Esc` e il
-   bottone *Language* per vedere il livello in italiano (la scelta resta anche ai lanci
-   successivi, finché non la cambi).
+   TRADUZIONI: 0 errori, 0 avvisi`, oppure l'elenco dei problemi. Poi `F6`, `Esc`, *Options*
+   e il bottone *Language* per vedere il livello in italiano (la scelta resta anche ai
+   lanci successivi, finché non la cambi).
 
 **Regole per tradurre.**
 
@@ -423,7 +435,7 @@ le texture di `prop_quad.tscn` e `prop_box.tscn`; nell'editor vedi sempre l'ingl
 
 **Didascalie di insegne e scritte.** Quando il giocatore guarda una scritta (insegna,
 poster, graffito, murale) può comparire sotto il mirino una didascalia con il testo
-tradotto: «Sign: SECURITY», in italiano «Insegna: SICUREZZA». Nella pausa sceglie
+tradotto: «Sign: SECURITY», in italiano «Insegna: SICUREZZA». In *Options → Game* sceglie
 *Captions for signs and writings* (*Didascalie di insegne e scritte*):
 
 ![Didascalie: un graffito in inglese e un'insegna in italiano](screenshots/didascalie.png)
@@ -455,11 +467,12 @@ godot --headless --path . -- --validate --level=res://levels/palestra/palestra.t
 godot --headless --path . -- --autotest                 # il test completo di Seraph
 godot --headless --path . -- --autotest --lang=it       # lo stesso, con i testi in italiano
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
+godot --headless --path . -- --autotest --save          # salvataggi e caricamenti in Seraph
 godot --headless --path . --script res://tools/i18n.gd -- --update           # come aggiorna_traduzioni.gd
 godot --headless --path . --script res://tools/i18n.gd -- --check --strict   # il controllo della CI
 ```
 
 `--lang=it` (o `--lang=en`) sceglie la lingua solo per quel lancio. La CI su GitHub esegue
 il validatore su tutti i livelli in `levels/`, li apre nell'editor per scovare errori negli
-script, controlla le traduzioni e gioca Seraph (in inglese e in italiano) e il livello
-della guida.
+script, controlla le traduzioni e gioca Seraph (in inglese e in italiano, anche salvando e
+ricaricando) e il livello della guida.

@@ -32,6 +32,7 @@ func _ready() -> void:
 	viewport.handle_input_locally = false
 	viewport.positional_shadow_atlas_size = 4096
 	container.add_child(viewport)
+	Game.world_viewport = viewport   # per l'anteprima dei salvataggi
 	_apply_settings()
 
 	if "--convert-seraph" in OS.get_cmdline_user_args():
@@ -63,7 +64,10 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tool="):
 			tool_script = a.substr(7)
-	if tool_script != "":
+	if not Game.pending_load.is_empty():
+		# caricamento di un salvataggio: la scena è pronta, si applica lo stato
+		Game.finish_load.call_deferred()
+	elif tool_script != "":
 		# strumenti di sviluppo (es. tools/validate_level.gd) che girano sul livello caricato
 		var scr: GDScript = load(tool_script)
 		if scr == null or not scr.can_instantiate():
@@ -109,12 +113,27 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.pressed and Game.state == Game.State.PLAYING and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if ui.capturing_key():
+		return   # il pannello Comandi sta aspettando un tasto da assegnare
 	if event.is_action_pressed("pause"):
 		if Game.state == Game.State.PLAYING:
 			ui.open_pause()
-		elif Game.state == Game.State.PANEL:
+		elif Game.state == Game.State.PANEL or (Game.state == Game.State.MENU and ui.current_kind in ["options", "load"]):
 			ui.close_panel()
 		get_viewport().set_input_as_handled()
+		return
+	# i tasti rapidi non scattano mentre si scrive un codice nel tastierino, né con i
+	# clic nei menu (anche se il giocatore li ha messi su un tasto del mouse o una cifra)
+	if get_viewport().gui_get_focus_owner() is LineEdit:
+		return
+	if event is InputEventMouseButton and Game.state != Game.State.PLAYING:
+		return
+	if event.is_action_pressed("quicksave"):
+		Game.quicksave()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("quickload") and Game.state != Game.State.MENU:
+		get_viewport().set_input_as_handled()   # prima: caricando, la scena (e main) se ne va
+		Game.quickload()
 	elif event.is_action_pressed("pda"):
 		ui.toggle_pda()
 		get_viewport().set_input_as_handled()

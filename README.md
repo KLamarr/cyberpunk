@@ -22,7 +22,7 @@ Laboratorio C e tornare all'ascensore. Come ci arrivi è affar tuo.
 3. Premi **F5**. Nel menu iniziale distribuisci 4 punti fra le skill e inizia.
 
 Il gioco è in **inglese**; l'**italiano** si sceglie con il bottone *Language* del menu
-iniziale o della pausa, e la scelta resta per le partite successive (vedi [Lingue](#lingue)).
+iniziale o in *Options*, e la scelta resta per le partite successive (vedi [Lingue](#lingue)).
 
 Una partita dura 10–25 minuti. Nessun asset esterno: texture e suoni sono generati dagli
 script in `tools/` e sono già inclusi.
@@ -47,8 +47,39 @@ nell'editor di Godot: leggi la [guida all'editor](docs/GUIDA_EDITOR.md), che par
 | Tab | PDA (obiettivi, registri, inventario, personaggio) |
 | Esc | pausa e opzioni |
 | F2 / F3 | risoluzione interna (1280×720 → 320×180) / dithering |
+| F5 / F9 | salvataggio rapido / caricamento rapido |
 
-I comandi sono nella Mappa input del progetto e si possono rimappare dall'editor.
+Tutti i tasti (tranne Esc) si cambiano in **Opzioni → Controls**: si clicca il tasto da
+cambiare e si preme quello nuovo (anche un tasto del mouse); ogni azione ha due tasti,
+Backspace/Canc toglie un tasto, e se il tasto nuovo era già usato le due azioni se lo
+scambiano. I suggerimenti a schermo mostrano i tasti scelti.
+
+## Salvataggi e opzioni
+
+Si salva **ovunque**, tranne nei menu, nei minigiochi e da morti:
+- **F5** salvataggio rapido, **F9** lo ricarica;
+- un **salvataggio automatico** all'inizio della missione;
+- **5 slot** dalla pausa (*Save game*), con data, tempo di gioco, obiettivi e anteprima;
+  sovrascrivere uno slot chiede un secondo clic.
+
+Si carica dal menu iniziale (*Continue* riprende l'ultimo salvataggio, *Load game* li
+mostra tutti), dalla pausa e dalla schermata di morte (*Load last save*). Il salvataggio
+contiene tutto il mondo: posizione e salute del giocatore, skill e inventario, obiettivi e
+registri, guardie (stato, allerta, KO o morte, corpi spostati o in braccio, refurtiva
+presa), porte, luci, telecamere, torrette, oggetti raccolti o spostati, terminali, allarme
+e lockdown. I file sono in `user://saves/` (`<slot>.json` più l'anteprima `<slot>.png`).
+
+**Opzioni** (dal menu iniziale e dalla pausa), a schede:
+- *Game*: lingua, didascalie delle insegne;
+- *Video*: schermo intero, V-Sync, risoluzione interna, dithering;
+- *Audio*: volume;
+- *Controls*: sensibilità del mouse e rimappatura dei tasti.
+
+Le opzioni si salvano in `user://settings.cfg` e valgono per le partite successive.
+
+| | |
+|---|---|
+| ![Caricamento](docs/screenshots/ui_salvataggi.png) | ![Opzioni, comandi](docs/screenshots/ui_opzioni_comandi.png) |
 
 ## Cosa c'è nella slice
 
@@ -212,7 +243,8 @@ scenes/entities/*.tscn      entità da trascinare nei livelli (porte, luci, guar
 scenes/props/*.tscn         arredo: scatole, pannelli, cilindri
 assets/surfaces/*.tres      SurfaceSet: texture e passi delle superfici delle stanze
 scripts/main.gd             SubViewport retro, HUD, UI, input globale
-scripts/core/game.gd        autoload Game: skill, inventario, obiettivi, rumore, allarmi
+scripts/core/game.gd        autoload Game: skill, inventario, obiettivi, rumore, allarmi, impostazioni, tasti
+scripts/core/save_game.gd   salvataggi: raccolta e applicazione dello stato del mondo, slot, anteprime
 scripts/core/sfx.gd         autoload Sfx: suoni 2D/3D e loop
 scripts/core/util.gd        materiali nearest, primitive, raycast, evidenziazione frob
 scripts/core/layers.gd      layer di collisione (mondo, player, npc, porte…)
@@ -255,20 +287,22 @@ provare. La [guida all'editor](docs/GUIDA_EDITOR.md) spiega tutto passo passo.
 Dal lato codice: i testi per il giocatore si scrivono in inglese dentro `tr()` (vedi
 [Lingue](#lingue)); i registri si aggiungono in `scripts/data/logs.gd`; la logica di missione
 di un livello si scrive estendendo `Level` (vedi `levels/seraph/seraph.gd`: `setup_mission`,
-`start_intro`, `on_lockdown`). Un oggetto qualsiasi diventa interattivo se ha i metodi
+`start_intro`, `on_lockdown`; per battute ed eventi ritardati `later(secondi, "metodo")`, che a
+differenza di un timer finisce nei salvataggi). Un oggetto qualsiasi diventa interattivo se ha i metodi
 `get_frob_text()` e `frob(player)`; un bersaglio se ha `take_damage(amount, hit_pos, dir,
-kind)`; una serratura se espone `get_lock_info()`, `try_code()` e `on_hack_result()`. Le
-entità nuove seguono lo schema di quelle esistenti: script `@tool` con proprietà `@export`
-commentate (il commento diventa il tooltip dell'Inspector) e una scena in
-`scenes/entities/`.
+kind)`; una serratura se espone `get_lock_info()`, `try_code()` e `on_hack_result()`; finisce
+nei salvataggi se ha `save_state() -> Dictionary` e `load_state(d)` (anche vuoti, se può
+sparire dalla scena: vedi `scripts/core/save_game.gd`). Le entità nuove seguono lo schema
+di quelle esistenti: script `@tool` con proprietà `@export` commentate (il commento diventa
+il tooltip dell'Inspector) e una scena in `scenes/entities/`.
 
 ## Lingue
 
 L'**inglese** è la lingua sorgente: i testi sono scritti in inglese nel codice (dentro
 `tr()`), nelle scene e nei personaggi. L'**italiano** è una traduzione gettext in
 `locale/it.po`; una frase senza traduzione resta in inglese. Al primo avvio il gioco è
-sempre in inglese; lingua, didascalie, risoluzione, dithering, sensibilità e volume
-scelti dal giocatore si salvano in `user://settings.cfg`. Gli strumenti di sviluppo (validatore,
+sempre in inglese; lingua, didascalie, schermo intero, V-Sync, risoluzione, dithering,
+sensibilità, volume e tasti scelti dal giocatore si salvano in `user://settings.cfg`. Gli strumenti di sviluppo (validatore,
 creatore di NPC, guide) restano in italiano.
 
 | | |
@@ -290,8 +324,8 @@ creatore di NPC, guide) restano in italiano.
   lingua attiva, anche quando il giocatore la cambia a partita in corso.
 - **Didascalie dei testi ambientali**: guardando un'insegna, un poster o un graffito può
   comparire sotto il mirino il testo tradotto («Sign: SECURITY» / «Insegna: SICUREZZA»).
-  Opzione nella pausa: NO / AUTO (solo se la scritta non è nella lingua del giocatore,
-  predefinita) / SEMPRE. Testi in `scripts/data/env_texts.gd` o nella proprietà *Caption*
+  Opzione in *Options → Game*: NO / AUTO (solo se la scritta non è nella lingua del
+  giocatore, predefinita) / SEMPRE. Testi in `scripts/data/env_texts.gd` o nella proprietà *Caption*
   di `prop_quad`/`prop_box`.
 - **Una lingua nuova**: `tools/i18n.gd -- --new=fr`, poi aggiungi `locale/fr.po` alle
   traduzioni del progetto e `"fr"` a `Game.LANGUAGES`.
@@ -305,8 +339,11 @@ godot --headless --path . -- --autotest            # 72 controlli: navmesh, frob
                                                    # lingua e impostazioni
 godot --headless --path . -- --autotest --lang=it  # lo stesso in italiano (--lang vale per ogni test)
 godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
-godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino, lingua,
-                                                   # didascalie (davanti all'insegna, altrove, dietro un muro)
+godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, opzioni, tastierino,
+                                                   # lingua, rimappatura dei tasti, didascalie (davanti
+                                                   # all'insegna, altrove, dietro un muro)
+godot --headless --path . -- --autotest --save     # salvataggi: slot, sovrascrittura, F5/F9, automatico, stato
+                                                   # del mondo dopo il caricamento, file rovinati, morte
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
 godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache
@@ -328,10 +365,12 @@ Rigenerare gli asset: `python3 tools/gen_textures.py` e `python3 tools/gen_sound
 
 ## Limiti noti / prossimi passi
 
-- Niente salvataggio/caricamento (il classico quicksave F5/F9 è il prossimo pezzo naturale).
 - Le guardie sono modelli low-poly skinnati generati dal creatore di NPC, ma l'animazione
   è ancora procedurale (passo, corsa, mira, respiro, caduta): mancano clip vere (colpito,
   perquisizione, reazioni) e le armi in prima persona sono ancora primitive.
+- I salvataggi ritrovano gli oggetti per percorso nella scena: se si modifica un livello,
+  i salvataggi fatti prima possono non corrispondere più (le entità che non ci sono più
+  si ignorano, con un avviso). Non c'è ancora il supporto al gamepad.
 - Il creatore modella i segmenti con curve e sezione; mancano le maniglie per trascinare
   gli anelli direttamente nella vista 3D.
 - Il suono si attenua con raycast diretti; il Dark Engine propagava il suono lungo le stanze

@@ -152,62 +152,64 @@ msgstr "Chissà se Okafor è ancora in laboratorio."
 msgid "My head hurts. Always after the update."
 msgstr "Mi fa male la testa. Sempre dopo l'aggiornamento."
 
-#: scripts/actors/guard.gd:764
+#: scripts/actors/guard.gd:769
 #, c-format
 msgid "Search %s (dead)"
 msgstr "Perquisisci %s (morto)"
 
-#: scripts/actors/guard.gd:764
+#: scripts/actors/guard.gd:769
 #, c-format
 msgid "Search %s (unconscious)"
 msgstr "Perquisisci %s (svenuto)"
 
-#: scripts/actors/guard.gd:765
+#: scripts/actors/guard.gd:770
 #, c-format
 msgid "Pick up %s's body"
 msgstr "Solleva il corpo di %s"
 
-#: scripts/actors/guard.gd:767
+#: scripts/actors/guard.gd:772
 #, c-format
 msgid "Pickpocket %s"
 msgstr "Borseggia %s"
 
-#: scripts/actors/guard.gd:791
+#: scripts/actors/guard.gd:796
 #, c-format
 msgid "%d round"
 msgstr "%d munizione"
 
-#: scripts/actors/guard.gd:791
+#: scripts/actors/guard.gd:796
 #, c-format
 msgid "%d rounds"
 msgstr "%d munizioni"
 
-#: scripts/actors/guard.gd:795
+#: scripts/actors/guard.gd:800
 #, c-format
 msgid "%d credit"
 msgstr "%d credito"
 
-#: scripts/actors/guard.gd:795
+#: scripts/actors/guard.gd:800
 #, c-format
 msgid "%d credits"
 msgstr "%d crediti"
 
-#: scripts/actors/guard.gd:798
+#: scripts/actors/guard.gd:803
 msgid "medipatch"
 msgstr "medipatch"
 
-#: scripts/actors/guard.gd:804
+#: scripts/actors/guard.gd:809
 #, c-format
 msgid "Found: %s"
 msgstr "Hai trovato: %s"
 
 #: scripts/actors/player.gd:461
-msgid "[LMB] Throw   [RMB/F] Put down"
-msgstr "[LMB] Lancia   [RMB/F] Posa"
+#, c-format
+msgid "[%s] Throw   [%s] Put down"
+msgstr "[%s] Lancia   [%s] Posa"
 
 #: scripts/actors/player.gd:463
-msgid "[RMB/F] Put down the body"
-msgstr "[RMB/F] Posa il corpo"
+#, c-format
+msgid "[%s] Put down the body"
+msgstr "[%s] Posa il corpo"
 
 #: scripts/actors/player.gd:513
 msgid "No medipatches."
@@ -218,14 +220,15 @@ msgid "You're already at full health."
 msgstr "Sei già in piena salute."
 
 #: scripts/actors/player.gd:674
-msgid "Carrying the body. [RMB/F] to put it down."
-msgstr "Trasporti il corpo. [RMB/F] per posarlo."
+#, c-format
+msgid "Carrying the body. [%s] to put it down."
+msgstr "Trasporti il corpo. [%s] per posarlo."
 
-#: scripts/actors/security_camera.gd:109
+#: scripts/actors/security_camera.gd:106
 msgid "Camera destroyed."
 msgstr "Telecamera distrutta."
 
-#: scripts/actors/security_camera.gd:178
+#: scripts/actors/security_camera.gd:197
 msgid "Spotted by the cameras."
 msgstr "Rilevato dalle telecamere."
 
@@ -233,7 +236,7 @@ msgstr "Rilevato dalle telecamere."
 msgid "Turret reprogrammed: now targeting guards."
 msgstr "Torretta riprogrammata: ora spara alle guardie."
 
-#: scripts/actors/turret.gd:167
+#: scripts/actors/turret.gd:188
 msgid "Turret destroyed."
 msgstr "Torretta distrutta."
 
@@ -261,154 +264,380 @@ msgstr "Hacking 2: disattiva.  Hacking 3: riprogramma contro le guardie."
 msgid "Turret disabled."
 msgstr "Torretta disattivata."
 
-#: scripts/core/game.gd:37
+#: scripts/core/game.gd:39
 msgid "HACKING"
 msgstr "HACKING"
 
-#: scripts/core/game.gd:38
+#: scripts/core/game.gd:40
 msgid "FIREARMS"
 msgstr "ARMI DA FUOCO"
 
-#: scripts/core/game.gd:39
+#: scripts/core/game.gd:41
 msgid "STRENGTH"
 msgstr "FORZA"
 
-#: scripts/core/game.gd:40
+#: scripts/core/game.gd:42
 msgid "STEALTH"
 msgstr "FURTIVITÀ"
 
-#: scripts/core/game.gd:44
+#: scripts/core/game.gd:46
 msgid "Lets you hack doors, terminals and turrets. Each device requires a minimum level; every extra level raises the success chance per node."
 msgstr "Sblocca porte, terminali e torrette. Ogni dispositivo richiede un livello minimo; ogni livello in più alza le probabilità di successo per nodo."
 
-#: scripts/core/game.gd:45
+#: scripts/core/game.gd:47
 msgid "More accurate pistol (-25% spread per level), more damage and faster reloads."
 msgstr "Pistola più precisa (-25% dispersione per livello), più danno e ricarica più rapida."
 
-#: scripts/core/game.gd:46
+#: scripts/core/game.gd:48
 msgid "+10 max health and more melee damage per level. Level 1: remove grates by hand, quietly. Level 2: lift heavy crates. You throw farther."
 msgstr "+10 salute massima e più danno in mischia per livello. Livello 1: rimuovi le grate a mano, quasi in silenzio. Livello 2: sollevi le casse pesanti. Lanci più lontano."
 
-#: scripts/core/game.gd:47
+#: scripts/core/game.gd:49
 msgid "-12% visibility and -15% footstep noise per level. You move faster while crouched."
 msgstr "-12% visibilità e -15% rumore dei passi per livello. Ti muovi più veloce da accovacciato."
 
-#: scripts/core/game.gd:192
+#: scripts/core/game.gd:88
+msgid "Move forward"
+msgstr "Avanti"
+
+#: scripts/core/game.gd:88
+msgid "Move back"
+msgstr "Indietro"
+
+#: scripts/core/game.gd:88
+msgid "Move left"
+msgstr "Sinistra"
+
+#: scripts/core/game.gd:88
+msgid "Move right"
+msgstr "Destra"
+
+#: scripts/core/game.gd:89
+msgid "Run"
+msgstr "Corri"
+
+#: scripts/core/game.gd:89
+msgid "Crouch (hold)"
+msgstr "Accovacciati (tieni premuto)"
+
+#: scripts/core/game.gd:89
+msgid "Crouch (toggle)"
+msgstr "Accovacciati (alterna)"
+
+#: scripts/core/game.gd:89
+msgid "Jump / climb"
+msgstr "Salta / aggrappati"
+
+#: scripts/core/game.gd:90
+msgid "Lean left"
+msgstr "Sporgiti a sinistra"
+
+#: scripts/core/game.gd:90
+msgid "Lean right"
+msgstr "Sporgiti a destra"
+
+#: scripts/core/game.gd:90
+msgid "Attack · throw"
+msgstr "Attacca · lancia"
+
+#: scripts/core/game.gd:91
+msgid "Interact (frob) · put down"
+msgstr "Interagisci (frob) · posa"
+
+#: scripts/core/game.gd:91
+msgid "Reload"
+msgstr "Ricarica"
+
+#: scripts/core/game.gd:91
+msgid "Wrench"
+msgstr "Chiave inglese"
+
+#: scripts/core/game.gd:91
+msgid "Pistol"
+msgstr "Pistola"
+
+#: scripts/core/game.gd:92
+msgid "Next weapon"
+msgstr "Arma successiva"
+
+#: scripts/core/game.gd:92
+msgid "Previous weapon"
+msgstr "Arma precedente"
+
+#: scripts/core/game.gd:92
+msgid "Use medipatch"
+msgstr "Usa medipatch"
+
+#: scripts/core/game.gd:92
+msgid "PDA"
+msgstr "PDA"
+
+#: scripts/core/game.gd:93
+#: scripts/ui/ui_root.gd:320
+msgid "Quicksave"
+msgstr "Salvataggio rapido"
+
+#: scripts/core/game.gd:93
+msgid "Quickload"
+msgstr "Caricamento rapido"
+
+#: scripts/core/game.gd:93
+msgid "Internal resolution"
+msgstr "Risoluzione interna"
+
+#: scripts/core/game.gd:94
+msgid "Dithering"
+msgstr "Dithering"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Space"
+msgstr "Spazio"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Escape"
+msgstr "Esc"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Enter"
+msgstr "Invio"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Backspace"
+msgstr "Backspace"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Delete"
+msgstr "Canc"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Insert"
+msgstr "Ins"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "Home"
+msgstr "Home"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "End"
+msgstr "Fine"
+
+#: scripts/core/game.gd:98
+msgctxt "key"
+msgid "PageUp"
+msgstr "PagSu"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "PageDown"
+msgstr "PagGiù"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "Up"
+msgstr "Su"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "Down"
+msgstr "Giù"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "Left"
+msgstr "Sinistra"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "Right"
+msgstr "Destra"
+
+#: scripts/core/game.gd:99
+msgctxt "key"
+msgid "CapsLock"
+msgstr "BlocMaiusc"
+
+#: scripts/core/game.gd:243
 msgid "Seraph Protocol (Vertical Slice)"
 msgstr "Protocollo Seraph (Vertical Slice)"
 
-#: scripts/core/game.gd:307
+#: scripts/core/game.gd:361
+msgid "LMB"
+msgstr "Mouse sx"
+
+#: scripts/core/game.gd:362
+msgid "RMB"
+msgstr "Mouse dx"
+
+#: scripts/core/game.gd:363
+msgid "MMB"
+msgstr "Mouse centrale"
+
+#: scripts/core/game.gd:364
+msgid "Wheel up"
+msgstr "Rotella su"
+
+#: scripts/core/game.gd:365
+msgid "Wheel down"
+msgstr "Rotella giù"
+
+#: scripts/core/game.gd:366
+#, c-format
+msgid "Mouse %d"
+msgstr "Mouse %d"
+
+#: scripts/core/game.gd:478
 msgid "Alarm cleared."
 msgstr "Allarme rientrato."
 
-#: scripts/core/game.gd:353
+#: scripts/core/game.gd:524
 #, c-format
 msgid "%s Keycard"
 msgstr "Tessera %s"
 
-#: scripts/core/game.gd:389
+#: scripts/core/game.gd:560
 msgid "You found a secret!"
 msgstr "Hai trovato un segreto!"
 
-#: scripts/core/game.gd:399
+#: scripts/core/game.gd:570
 #, c-format
 msgid "Log added to PDA: %s"
 msgstr "Registro aggiunto al PDA: %s"
 
-#: scripts/core/game.gd:436
+#: scripts/core/game.gd:607
 #, c-format
 msgid "(cyber-modules +%d)"
 msgstr "(cyber-moduli +%d)"
 
-#: scripts/core/game.gd:438
+#: scripts/core/game.gd:609
 #, c-format
 msgid "OBJECTIVE COMPLETE: %s"
 msgstr "OBIETTIVO COMPLETATO: %s"
 
-#: scripts/core/game.gd:447
+#: scripts/core/game.gd:618
 #, c-format
 msgid "OBJECTIVE FAILED: %s"
 msgstr "OBIETTIVO FALLITO: %s"
 
-#: scripts/core/game.gd:485
+#: scripts/core/game.gd:656
 #, c-format
 msgid "ALARM! %s"
 msgstr "ALLARME! %s"
 
-#: scripts/core/game.gd:486
+#: scripts/core/game.gd:657
 #: scripts/ui/hud.gd:234
 #: levels/seraph/seraph.gd:48
 msgid "PA SYSTEM"
 msgstr "SISTEMA PA"
 
-#: scripts/core/game.gd:486
+#: scripts/core/game.gd:657
 msgid "Security alert in sector 14. All security personnel, respond."
 msgstr "Allarme di sicurezza nel settore 14. Personale di vigilanza, convergere."
 
-#: scripts/core/game.gd:496
+#: scripts/core/game.gd:667
 msgid "Cameras disabled."
 msgstr "Telecamere disattivate."
 
-#: scripts/core/game.gd:502
+#: scripts/core/game.gd:673
 msgid "Turrets disabled."
 msgstr "Torrette disattivate."
 
-#: scripts/core/game.gd:545
+#: scripts/core/game.gd:716
 msgid "SPECTER — nobody knows you were here"
 msgstr "SPETTRO — nessuno sa che sei stato qui"
 
-#: scripts/core/game.gd:547
+#: scripts/core/game.gd:718
 msgid "SHADOW"
 msgstr "FANTASMA"
 
-#: scripts/core/game.gd:549
+#: scripts/core/game.gd:720
 msgid "NON-LETHAL PROFESSIONAL"
 msgstr "PROFESSIONISTA NON LETALE"
 
-#: scripts/core/game.gd:551
+#: scripts/core/game.gd:722
 msgid "BUTCHER OF SERAPH"
 msgstr "MACELLAIO DI SERAPH"
 
-#: scripts/core/game.gd:552
+#: scripts/core/game.gd:723
 msgid "OPERATIVE"
 msgstr "OPERATIVO"
 
-#: scripts/core/game.gd:559
+#: scripts/core/game.gd:730
 #, c-format
 msgid "Internal resolution: %s"
 msgstr "Risoluzione interna: %s"
 
-#: scripts/core/game.gd:564
+#: scripts/core/game.gd:735
 msgid "1280x720 (native)"
 msgstr "1280x720 (nativa)"
 
-#: scripts/core/game.gd:565
+#: scripts/core/game.gd:736
 msgid "640x360 (default)"
 msgstr "640x360 (predefinita)"
 
-#: scripts/core/game.gd:579
-#: scripts/core/game.gd:588
-#: scripts/ui/ui_root.gd:249
+#: scripts/core/game.gd:750
+#: scripts/core/game.gd:759
+#: scripts/ui/ui_root.gd:161
 msgid "OFF"
 msgstr "NO"
 
-#: scripts/core/game.gd:580
+#: scripts/core/game.gd:751
 msgid "ALWAYS"
 msgstr "SEMPRE"
 
-#: scripts/core/game.gd:581
+#: scripts/core/game.gd:752
 msgid "AUTO"
 msgstr "AUTO"
 
-#: scripts/core/game.gd:588
+#: scripts/core/game.gd:759
 #, c-format
 msgid "Dithering: %s"
 msgstr "Dithering: %s"
 
-#: scripts/core/game.gd:588
-#: scripts/ui/ui_root.gd:249
+#: scripts/core/game.gd:759
+#: scripts/ui/ui_root.gd:161
 msgid "ON"
 msgstr "SÌ"
+
+#: scripts/core/game.gd:814
+msgid "You can't save right now."
+msgstr "Adesso non puoi salvare."
+
+#: scripts/core/game.gd:822
+msgid "Couldn't save the game."
+msgstr "Salvataggio non riuscito."
+
+#: scripts/core/game.gd:824
+msgid "Quicksave done."
+msgstr "Salvataggio rapido fatto."
+
+#: scripts/core/game.gd:826
+msgid "Autosave done."
+msgstr "Salvataggio automatico fatto."
+
+#: scripts/core/game.gd:828
+msgid "Game saved."
+msgstr "Partita salvata."
+
+#: scripts/core/game.gd:836
+msgid "Couldn't load the save."
+msgstr "Impossibile caricare il salvataggio."
+
+#: scripts/core/game.gd:858
+msgid "Game loaded."
+msgstr "Partita caricata."
+
+#: scripts/core/game.gd:871
+#, c-format
+msgid "No quicksave yet (%s to quicksave)."
+msgstr "Nessun salvataggio rapido (%s per farne uno)."
 
 #: scripts/data/env_texts.gd:24
 #: scripts/data/env_texts.gd:25
@@ -736,60 +965,62 @@ msgstr "Dir."
 msgid "VESPER"
 msgstr "VESPER"
 
-#: scripts/ui/hud.gd:314
+#: scripts/ui/hud.gd:315
 #, c-format
 msgid "HEALTH %d / %d"
 msgstr "SALUTE %d / %d"
 
-#: scripts/ui/hud.gd:315
+#: scripts/ui/hud.gd:316
 #, c-format
-msgid "MEDIPATCH x%d [H]   MODULES %d   CREDITS %d"
-msgstr "MEDIPATCH x%d [H]   MODULI %d   CREDITI %d"
+msgid "MEDIPATCH x%d [%s]   MODULES %d   CREDITS %d"
+msgstr "MEDIPATCH x%d [%s]   MODULI %d   CREDITI %d"
 
-#: scripts/ui/hud.gd:317
+#: scripts/ui/hud.gd:318
 msgid "WRENCH"
 msgstr "CHIAVE INGLESE"
 
-#: scripts/ui/hud.gd:320
+#: scripts/ui/hud.gd:321
 msgid "9mm PISTOL"
 msgstr "PISTOLA 9mm"
 
-#: scripts/ui/hud.gd:320
+#: scripts/ui/hud.gd:321
 msgid "(reloading...)"
 msgstr "(ricarica...)"
 
-#: scripts/ui/hud.gd:329
+#: scripts/ui/hud.gd:330
 #, c-format
 msgid "ALARM  %ds"
 msgstr "ALLARME  %ds"
 
-#: scripts/ui/hud.gd:332
+#: scripts/ui/hud.gd:333
 msgid "LOCKDOWN — GET BACK TO THE ELEVATOR"
 msgstr "LOCKDOWN — TORNA ALL'ASCENSORE"
 
-#: scripts/ui/ui_root.gd:11
+#: scripts/ui/ui_root.gd:13
 msgid ""
-"[b]WASD[/b] move   [b]Shift[/b] run   [b]Ctrl[/b] (hold) / [b]C[/b] (toggle) crouch\n"
-"[b]Space[/b] jump / climb onto ledges (mantle)   [b]Q / E[/b] lean\n"
-"[b]LMB[/b] attack · throw   [b]RMB[/b] or [b]F[/b] interact (frob) · put down\n"
-"[b]1 / 2[/b] or wheel: wrench / pistol   [b]R[/b] reload   [b]H[/b] medipatch\n"
-"[b]Tab[/b] PDA   [b]Esc[/b] pause   [b]F2[/b] internal resolution   [b]F3[/b] dithering"
+"%s move   %s run   %s (hold) / %s (toggle) crouch\n"
+"%s jump / climb onto ledges (mantle)   %s lean\n"
+"%s attack · throw   %s interact (frob) · put down\n"
+"%s wrench / pistol   %s reload   %s medipatch\n"
+"%s PDA   %s pause   %s internal resolution   %s dithering\n"
+"%s quicksave   %s quickload"
 msgstr ""
-"[b]WASD[/b] muovi   [b]Shift[/b] corri   [b]Ctrl[/b] (tieni) / [b]C[/b] (alterna) accovacciati\n"
-"[b]Spazio[/b] salta / aggrappati alle sporgenze (mantle)   [b]Q / E[/b] sporgiti\n"
-"[b]Mouse sx[/b] attacca · lancia   [b]Mouse dx[/b] o [b]F[/b] interagisci (frob) · posa\n"
-"[b]1 / 2[/b] o rotella: chiave inglese / pistola   [b]R[/b] ricarica   [b]H[/b] medipatch\n"
-"[b]Tab[/b] PDA   [b]Esc[/b] pausa   [b]F2[/b] risoluzione interna   [b]F3[/b] dithering"
+"%s muovi   %s corri   %s (tieni) / %s (alterna) accovacciati\n"
+"%s salta / aggrappati alle sporgenze (mantle)   %s sporgiti\n"
+"%s attacca · lancia   %s interagisci (frob) · posa\n"
+"%s chiave inglese / pistola   %s ricarica   %s medipatch\n"
+"%s PDA   %s pausa   %s risoluzione interna   %s dithering\n"
+"%s salvataggio rapido   %s caricamento rapido"
 
-#: scripts/ui/ui_root.gd:142
+#: scripts/ui/ui_root.gd:174
 msgid "SERAPH PROTOCOL"
 msgstr "PROTOCOLLO SERAPH"
 
-#: scripts/ui/ui_root.gd:143
+#: scripts/ui/ui_root.gd:175
 msgid "vertical slice — FPS/RPG immersive sim"
 msgstr "vertical slice — immersive sim FPS/RPG"
 
-#: scripts/ui/ui_root.gd:145
+#: scripts/ui/ui_root.gd:177
 msgid ""
 "Nysa Arcology, Level 14, night shift. Your contact, [color=#ffcc55]Vesper[/color], got you up the service elevator into the lab wing of [b]Seraph Biotek[/b].\n"
 "\n"
@@ -803,271 +1034,403 @@ msgstr ""
 "\n"
 "Le ombre sono tue alleate: la [b]gemma[/b] in basso ti dice quanto sei visibile, gli archi accanto quanto rumore fai. Ogni ostacolo ha più di una soluzione: codici, tessere, hacking, condotti, distrazioni... o la pistola."
 
-#: scripts/ui/ui_root.gd:149
-#: scripts/ui/ui_root.gd:265
+#: scripts/ui/ui_root.gd:181
+#: scripts/ui/ui_root.gd:449
 msgid "CONTROLS"
 msgstr "COMANDI"
 
-#: scripts/ui/ui_root.gd:158
+#: scripts/ui/ui_root.gd:190
 msgid "OPERATIVE PROFILE"
 msgstr "PROFILO DELL'OPERATIVO"
 
-#: scripts/ui/ui_root.gd:166
-#: scripts/ui/ui_root.gd:202
+#: scripts/ui/ui_root.gd:198
+#: scripts/ui/ui_root.gd:244
 msgid "START MISSION"
 msgstr "INIZIA LA MISSIONE"
 
-#: scripts/ui/ui_root.gd:169
+#: scripts/ui/ui_root.gd:201
 msgid "Later: spend cyber-modules at upgrade stations."
 msgstr "Poi: spendi i cyber-moduli nelle stazioni di potenziamento."
 
-#: scripts/ui/ui_root.gd:182
+#: scripts/ui/ui_root.gd:206
+msgid "Continue"
+msgstr "Continua"
+
+#: scripts/ui/ui_root.gd:209
+#: scripts/ui/ui_root.gd:281
+msgid "Load game"
+msgstr "Carica partita"
+
+#: scripts/ui/ui_root.gd:210
+#: scripts/ui/ui_root.gd:282
+msgid "Options"
+msgstr "Opzioni"
+
+#: scripts/ui/ui_root.gd:211
+#: scripts/ui/ui_root.gd:947
+#: scripts/ui/ui_root.gd:969
+msgid "Quit"
+msgstr "Esci"
+
+#: scripts/ui/ui_root.gd:224
 #, c-format
 msgid "Points to assign: %d   (max %d per skill at start)"
 msgstr "Punti da assegnare: %d   (max %d per skill all'inizio)"
 
-#: scripts/ui/ui_root.gd:202
+#: scripts/ui/ui_root.gd:244
 #, c-format
 msgid "START (unspent points: %d)"
 msgstr "INIZIA (punti non spesi: %d)"
 
-#: scripts/ui/ui_root.gd:225
+#: scripts/ui/ui_root.gd:269
 #, c-format
 msgid "Language: %s"
 msgstr "Lingua: %s"
 
-#: scripts/ui/ui_root.gd:232
+#: scripts/ui/ui_root.gd:276
 msgid "PAUSED"
 msgstr "PAUSA"
 
-#: scripts/ui/ui_root.gd:234
+#: scripts/ui/ui_root.gd:278
 msgid "Resume"
 msgstr "Riprendi"
 
-#: scripts/ui/ui_root.gd:235
-msgid "PDA: objectives, logs, inventory  [Tab]"
-msgstr "PDA: obiettivi, registri, inventario  [Tab]"
+#: scripts/ui/ui_root.gd:279
+msgid "Save game"
+msgstr "Salva partita"
 
-#: scripts/ui/ui_root.gd:237
+#: scripts/ui/ui_root.gd:283
+#, c-format
+msgid "PDA: objectives, logs, inventory  [%s]"
+msgstr "PDA: obiettivi, registri, inventario  [%s]"
+
+#: scripts/ui/ui_root.gd:287
+msgid "Restart mission"
+msgstr "Ricomincia missione"
+
+#: scripts/ui/ui_root.gd:288
+msgid "Quit game"
+msgstr "Esci dal gioco"
+
+#: scripts/ui/ui_root.gd:296
+msgid "SAVE GAME"
+msgstr "SALVA PARTITA"
+
+#: scripts/ui/ui_root.gd:301
+#: scripts/ui/ui_root.gd:313
+#: scripts/ui/ui_root.gd:451
+msgid "Back  [Esc]"
+msgstr "Indietro  [Esc]"
+
+#: scripts/ui/ui_root.gd:308
+msgid "LOAD GAME"
+msgstr "CARICA PARTITA"
+
+#: scripts/ui/ui_root.gd:321
+msgid "Autosave"
+msgstr "Salvataggio automatico"
+
+#: scripts/ui/ui_root.gd:322
+#, c-format
+msgid "Slot %s"
+msgstr "Slot %s"
+
+#: scripts/ui/ui_root.gd:344
+msgid "— empty —"
+msgstr "— vuoto —"
+
+#: scripts/ui/ui_root.gd:346
+#, c-format
+msgid "%s   time played %s   objectives %s"
+msgstr "%s   tempo di gioco %s   obiettivi %s"
+
+#: scripts/ui/ui_root.gd:351
+msgid "Save"
+msgstr "Salva"
+
+#: scripts/ui/ui_root.gd:351
+msgid "Overwrite"
+msgstr "Sovrascrivi"
+
+#: scripts/ui/ui_root.gd:355
+msgid "Click to confirm"
+msgstr "Clic per confermare"
+
+#: scripts/ui/ui_root.gd:360
+msgid "Load"
+msgstr "Carica"
+
+#: scripts/ui/ui_root.gd:370
 msgid "OPTIONS"
 msgstr "OPZIONI"
 
-#: scripts/ui/ui_root.gd:239
-msgid "Mouse sensitivity"
-msgstr "Sensibilità mouse"
-
-#: scripts/ui/ui_root.gd:240
-msgid "Volume"
-msgstr "Volume"
-
-#: scripts/ui/ui_root.gd:248
-#, c-format
-msgid "Internal resolution: %s  [F2]"
-msgstr "Risoluzione interna: %s  [F2]"
-
-#: scripts/ui/ui_root.gd:249
-#, c-format
-msgid "15-bit dithering: %s  [F3]"
-msgstr "Dithering a 15 bit: %s  [F3]"
-
-#: scripts/ui/ui_root.gd:250
+#: scripts/ui/ui_root.gd:382
 #, c-format
 msgid "Captions for signs and writings: %s"
 msgstr "Didascalie di insegne e scritte: %s"
 
-#: scripts/ui/ui_root.gd:270
-msgid "Restart mission"
-msgstr "Ricomincia missione"
+#: scripts/ui/ui_root.gd:385
+msgid "Captions: AUTO shows them only when a sign isn't in your language."
+msgstr "Didascalie: AUTO le mostra solo se una scritta non è nella tua lingua."
 
-#: scripts/ui/ui_root.gd:271
-msgid "Quit game"
-msgstr "Esci dal gioco"
+#: scripts/ui/ui_root.gd:391
+#, c-format
+msgid "Fullscreen: %s"
+msgstr "Schermo intero: %s"
 
-#: scripts/ui/ui_root.gd:314
+#: scripts/ui/ui_root.gd:394
+#, c-format
+msgid "V-Sync: %s"
+msgstr "V-Sync: %s"
+
+#: scripts/ui/ui_root.gd:397
+#, c-format
+msgid "Internal resolution: %s  [%s]"
+msgstr "Risoluzione interna: %s  [%s]"
+
+#: scripts/ui/ui_root.gd:400
+#, c-format
+msgid "15-bit dithering: %s  [%s]"
+msgstr "Dithering a 15 bit: %s  [%s]"
+
+#: scripts/ui/ui_root.gd:407
+msgid "Volume"
+msgstr "Volume"
+
+#: scripts/ui/ui_root.gd:415
+msgid "Mouse sensitivity"
+msgstr "Sensibilità mouse"
+
+#: scripts/ui/ui_root.gd:416
+#: scripts/ui/ui_root.gd:483
+msgid "Click a key to change it."
+msgstr "Fai clic su un tasto per cambiarlo."
+
+#: scripts/ui/ui_root.gd:441
+msgid "Press a key…"
+msgstr "Premi un tasto…"
+
+#: scripts/ui/ui_root.gd:442
+msgid "Esc: cancel   Backspace: clear"
+msgstr "Esc: annulla   Backspace: togli"
+
+#: scripts/ui/ui_root.gd:444
+msgid "Restore default keys"
+msgstr "Ripristina i tasti predefiniti"
+
+#: scripts/ui/ui_root.gd:449
+msgid "GAME"
+msgstr "GIOCO"
+
+#: scripts/ui/ui_root.gd:449
+msgid "VIDEO"
+msgstr "VIDEO"
+
+#: scripts/ui/ui_root.gd:449
+msgid "AUDIO"
+msgstr "AUDIO"
+
+#: scripts/ui/ui_root.gd:503
+#: scripts/ui/ui_root.gd:509
+#, c-format
+msgid "Careful: «%s» has no key now."
+msgstr "Attenzione: «%s» ora non ha nessun tasto."
+
+#: scripts/ui/ui_root.gd:505
+#, c-format
+msgid "Key removed from «%s»."
+msgstr "Tasto tolto a «%s»."
+
+#: scripts/ui/ui_root.gd:507
+#, c-format
+msgid "Swapped with «%s»."
+msgstr "Scambiato con «%s»."
+
+#: scripts/ui/ui_root.gd:571
 msgid "(optional)"
 msgstr "(opzionale)"
 
-#: scripts/ui/ui_root.gd:318
+#: scripts/ui/ui_root.gd:575
 #, c-format
 msgid "Time: %s    Secrets: %d/2    Alarms: %d    Times spotted: %d"
 msgstr "Tempo: %s    Segreti: %d/2    Allarmi: %d    Volte avvistato: %d"
 
-#: scripts/ui/ui_root.gd:332
+#: scripts/ui/ui_root.gd:589
 msgid "Select a log."
 msgstr "Seleziona un registro."
 
-#: scripts/ui/ui_root.gd:347
+#: scripts/ui/ui_root.gd:604
 msgid "Wrench — melee. Hit an unaware guard from behind for a silent KO."
 msgstr "Chiave inglese — mischia. Alle spalle di una guardia ignara: KO silenzioso."
 
-#: scripts/ui/ui_root.gd:348
+#: scripts/ui/ui_root.gd:605
 #, c-format
 msgid "9mm pistol — magazine %d/%d, reserve %d."
 msgstr "Pistola 9mm — caricatore %d/%d, riserva %d."
 
-#: scripts/ui/ui_root.gd:350
+#: scripts/ui/ui_root.gd:607
 #, c-format
 msgid "Medipatch x%d  (+40 health)"
 msgstr "Medipatch x%d  (+40 salute)"
 
-#: scripts/ui/ui_root.gd:351
+#: scripts/ui/ui_root.gd:608
 msgid "Use"
 msgstr "Usa"
 
-#: scripts/ui/ui_root.gd:358
+#: scripts/ui/ui_root.gd:615
 #, c-format
 msgid "Cyber-modules: %d    Credits: %d ¢"
 msgstr "Cyber-moduli: %d    Crediti: %d ¢"
 
-#: scripts/ui/ui_root.gd:360
+#: scripts/ui/ui_root.gd:617
 msgid "KEYCARDS AND MISSION ITEMS"
 msgstr "TESSERE E OGGETTI DI MISSIONE"
 
-#: scripts/ui/ui_root.gd:362
+#: scripts/ui/ui_root.gd:619
 msgid "— none —"
 msgstr "— nessuno —"
 
-#: scripts/ui/ui_root.gd:366
+#: scripts/ui/ui_root.gd:623
 msgid "SERAPH-7 data core (it's warm. And it hums.)"
 msgstr "Nucleo dati SERAPH-7 (è tiepido. E vibra.)"
 
-#: scripts/ui/ui_root.gd:372
+#: scripts/ui/ui_root.gd:629
 #, c-format
 msgid "Cyber-modules available: %d — spend them at an upgrade station."
 msgstr "Cyber-moduli disponibili: %d — spendili in una stazione di potenziamento."
 
-#: scripts/ui/ui_root.gd:379
+#: scripts/ui/ui_root.gd:636
 msgid "OBJECTIVES"
 msgstr "OBIETTIVI"
 
-#: scripts/ui/ui_root.gd:379
+#: scripts/ui/ui_root.gd:636
 msgid "LOGS"
 msgstr "REGISTRI"
 
-#: scripts/ui/ui_root.gd:379
+#: scripts/ui/ui_root.gd:636
 msgid "INVENTORY"
 msgstr "INVENTARIO"
 
-#: scripts/ui/ui_root.gd:379
+#: scripts/ui/ui_root.gd:636
 msgid "CHARACTER"
 msgstr "PERSONAGGIO"
 
-#: scripts/ui/ui_root.gd:390
+#: scripts/ui/ui_root.gd:647
 msgid "LOG"
 msgstr "REGISTRO"
 
-#: scripts/ui/ui_root.gd:399
-#: scripts/ui/ui_root.gd:473
-#: scripts/ui/ui_root.gd:647
+#: scripts/ui/ui_root.gd:656
+#: scripts/ui/ui_root.gd:730
+#: scripts/ui/ui_root.gd:904
 msgid "Close  [Esc]"
 msgstr "Chiudi  [Esc]"
 
-#: scripts/ui/ui_root.gd:407
+#: scripts/ui/ui_root.gd:664
 #, c-format
 msgid "ACCESS DENIED — %s"
 msgstr "ACCESSO NEGATO — %s"
 
-#: scripts/ui/ui_root.gd:411
+#: scripts/ui/ui_root.gd:668
 #, c-format
 msgid "Keycard: %s  %s"
 msgstr "Tessera: %s  %s"
 
-#: scripts/ui/ui_root.gd:411
+#: scripts/ui/ui_root.gd:668
 msgid "(in inventory)"
 msgstr "(ce l'hai)"
 
-#: scripts/ui/ui_root.gd:411
+#: scripts/ui/ui_root.gd:668
 msgid "(missing)"
 msgstr "(non ce l'hai)"
 
-#: scripts/ui/ui_root.gd:413
+#: scripts/ui/ui_root.gd:670
 msgid "Keypad — enter the 4-digit code:"
 msgstr "Tastierino — inserisci il codice a 4 cifre:"
 
-#: scripts/ui/ui_root.gd:423
+#: scripts/ui/ui_root.gd:680
 msgid "Code accepted."
 msgstr "Codice accettato."
 
-#: scripts/ui/ui_root.gd:429
+#: scripts/ui/ui_root.gd:686
 msgid "WRONG"
 msgstr "ERRATO"
 
-#: scripts/ui/ui_root.gd:461
+#: scripts/ui/ui_root.gd:718
 #, c-format
 msgid "Hacking required: %d — yours: %d"
 msgstr "Hacking richiesto: %d — il tuo: %d"
 
-#: scripts/ui/ui_root.gd:464
+#: scripts/ui/ui_root.gd:721
 msgid "START INTRUSION"
 msgstr "AVVIA INTRUSIONE"
 
-#: scripts/ui/ui_root.gd:467
+#: scripts/ui/ui_root.gd:724
 msgid "Insufficient skill"
 msgstr "Skill insufficiente"
 
-#: scripts/ui/ui_root.gd:470
+#: scripts/ui/ui_root.gd:727
 #, c-format
 msgid "Device locked out (%ds)"
 msgstr "Dispositivo in blocco (%ds)"
 
-#: scripts/ui/ui_root.gd:496
+#: scripts/ui/ui_root.gd:753
 #, c-format
 msgid "INTRUSION — %s"
 msgstr "INTRUSIONE — %s"
 
-#: scripts/ui/ui_root.gd:498
+#: scripts/ui/ui_root.gd:755
 msgid "Build a path from left to right. Each node must touch the previous one (diagonals count). Failed nodes burn out."
 msgstr "Crea un percorso da sinistra a destra. Ogni nodo deve toccare il precedente (anche in diagonale). I nodi falliti bruciano."
 
-#: scripts/ui/ui_root.gd:522
+#: scripts/ui/ui_root.gd:779
 msgid "Abort  [Esc]"
 msgstr "Interrompi  [Esc]"
 
-#: scripts/ui/ui_root.gd:555
+#: scripts/ui/ui_root.gd:812
 #, c-format
 msgid "Chance per node: %d%%    Mistakes left: %d"
 msgstr "Probabilità per nodo: %d%%    Errori tollerati: %d"
 
-#: scripts/ui/ui_root.gd:585
+#: scripts/ui/ui_root.gd:842
 msgid "ACCESS GRANTED"
 msgstr "ACCESSO OTTENUTO"
 
-#: scripts/ui/ui_root.gd:600
+#: scripts/ui/ui_root.gd:857
 msgid "INTRUSION FAILED — device locked for 20s"
 msgstr "INTRUSIONE FALLITA — dispositivo bloccato per 20 s"
 
-#: scripts/ui/ui_root.gd:610
+#: scripts/ui/ui_root.gd:867
 msgid "ICE: intrusion detected."
 msgstr "ICE: intrusione rilevata."
 
-#: scripts/ui/ui_root.gd:617
+#: scripts/ui/ui_root.gd:874
 msgid "NEURAL UPGRADE STATION"
 msgstr "STAZIONE DI POTENZIAMENTO NEURALE"
 
-#: scripts/ui/ui_root.gd:619
+#: scripts/ui/ui_root.gd:876
 #, c-format
 msgid "Cyber-modules available: %d"
 msgstr "Cyber-moduli disponibili: %d"
 
-#: scripts/ui/ui_root.gd:632
+#: scripts/ui/ui_root.gd:889
 msgid "MAX"
 msgstr "MASSIMO"
 
-#: scripts/ui/ui_root.gd:636
+#: scripts/ui/ui_root.gd:893
 #, c-format
 msgid "UPGRADE (cost: %d)"
 msgstr "POTENZIA (costo: %d)"
 
-#: scripts/ui/ui_root.gd:639
+#: scripts/ui/ui_root.gd:896
 #, c-format
 msgid "%s raised to level %d."
 msgstr "%s: ora al livello %d."
 
-#: scripts/ui/ui_root.gd:666
+#: scripts/ui/ui_root.gd:923
 msgid "Disconnect  [Esc]"
 msgstr "Disconnetti  [Esc]"
 
-#: scripts/ui/ui_root.gd:673
+#: scripts/ui/ui_root.gd:930
 #, c-format
 msgid ""
 "Time: %s\n"
@@ -1080,28 +1443,27 @@ msgstr ""
 "Allarmi: %d    Volte avvistato: %d    Hack riusciti: %d\n"
 "Segreti: %d/2    Crediti: %d ¢"
 
-#: scripts/ui/ui_root.gd:679
+#: scripts/ui/ui_root.gd:936
 msgid "SIGNAL LOST"
 msgstr "SEGNALE PERSO"
 
-#: scripts/ui/ui_root.gd:682
+#: scripts/ui/ui_root.gd:939
 msgid "Seraph Biotek thanks you for your involuntary cooperation."
 msgstr "La Seraph Biotek ringrazia per la collaborazione involontaria."
 
-#: scripts/ui/ui_root.gd:686
+#: scripts/ui/ui_root.gd:945
+msgid "Load last save"
+msgstr "Carica l'ultimo salvataggio"
+
+#: scripts/ui/ui_root.gd:946
 msgid "Restart"
 msgstr "Ricomincia"
 
-#: scripts/ui/ui_root.gd:687
-#: scripts/ui/ui_root.gd:709
-msgid "Quit"
-msgstr "Esci"
-
-#: scripts/ui/ui_root.gd:693
+#: scripts/ui/ui_root.gd:953
 msgid "EXTRACTION SUCCESSFUL"
 msgstr "ESTRAZIONE RIUSCITA"
 
-#: scripts/ui/ui_root.gd:695
+#: scripts/ui/ui_root.gd:955
 msgid ""
 "[color=#ffcc55]VESPER:[/color] The core is mine, and the payment's already in your account. Nice work, really.\n"
 "...Wait. Why is the core [i]transmitting[/i]? Who— "
@@ -1109,16 +1471,16 @@ msgstr ""
 "[color=#ffcc55]VESPER:[/color] Il nucleo è mio, il pagamento è già sul tuo conto. Bel lavoro, davvero.\n"
 "...Aspetta. Perché il nucleo sta [i]trasmettendo[/i]? Chi— "
 
-#: scripts/ui/ui_root.gd:704
+#: scripts/ui/ui_root.gd:964
 #, c-format
 msgid "RATING: %s"
 msgstr "VALUTAZIONE: %s"
 
-#: scripts/ui/ui_root.gd:705
+#: scripts/ui/ui_root.gd:965
 msgid "End of the vertical slice. Thanks for playing."
 msgstr "Fine della vertical slice. Grazie per aver giocato."
 
-#: scripts/ui/ui_root.gd:708
+#: scripts/ui/ui_root.gd:968
 msgid "Play again"
 msgstr "Rigioca"
 
@@ -1184,43 +1546,43 @@ msgstr "Raccogli: %s"
 msgid "Picked up: %s"
 msgstr "Raccolto: %s"
 
-#: scripts/world/security_terminal.gd:29
-#: scripts/world/security_terminal.gd:43
+#: scripts/world/security_terminal.gd:37
+#: scripts/world/security_terminal.gd:51
 msgid "Security terminal"
 msgstr "Terminale di sicurezza"
 
-#: scripts/world/security_terminal.gd:44
+#: scripts/world/security_terminal.gd:52
 #: levels/seraph/seraph.tscn:1207
 #: assets/npc/characters/ruiz.tres:164
 msgid "Security Keycard"
 msgstr "Tessera Sicurezza"
 
-#: scripts/world/security_terminal.gd:60
+#: scripts/world/security_terminal.gd:68
 #, c-format
 msgid "SERAPH-SEC // NODE 14 // SESSION: %s"
 msgstr "SERAPH-SEC // NODO 14 // SESSIONE: %s"
 
-#: scripts/world/security_terminal.gd:69
+#: scripts/world/security_terminal.gd:77
 msgid "Disable surveillance cameras"
 msgstr "Disattiva telecamere di sorveglianza"
 
-#: scripts/world/security_terminal.gd:70
+#: scripts/world/security_terminal.gd:78
 msgid "Disable Corridor C turret"
 msgstr "Disattiva torretta corridoio C"
 
-#: scripts/world/security_terminal.gd:71
+#: scripts/world/security_terminal.gd:79
 msgid "Read shift log"
 msgstr "Leggi registro di turno"
 
-#: scripts/world/server_core.gd:47
+#: scripts/world/server_core.gd:59
 msgid "Extract the SERAPH-7 core"
 msgstr "Estrai il nucleo SERAPH-7"
 
-#: scripts/world/server_core.gd:59
+#: scripts/world/server_core.gd:71
 msgid "Get back to the service elevator with the core."
 msgstr "Torna all'ascensore di servizio con il nucleo."
 
-#: scripts/world/server_core.gd:60
+#: scripts/world/server_core.gd:72
 msgid "...don't shut me down... get me out..."
 msgstr "...non spegnermi... portami fuori..."
 
@@ -1285,20 +1647,20 @@ msgstr "Troppo pesante. Serve Forza 2."
 msgid "Upgrade station (cyber-modules: %d)"
 msgstr "Stazione di potenziamento (cyber-moduli: %d)"
 
-#: scripts/world/vent_grate.gd:56
+#: scripts/world/vent_grate.gd:59
 msgid "Kick the grate out"
 msgstr "Spingi via la grata (calcio)"
 
-#: scripts/world/vent_grate.gd:58
+#: scripts/world/vent_grate.gd:61
 msgid "Remove the grate"
 msgstr "Rimuovi la grata"
 
-#: scripts/world/vent_grate.gd:59
+#: scripts/world/vent_grate.gd:62
 #, c-format
 msgid "Grate bolted down (Strength %d, or smash it)"
 msgstr "Grata fissata (Forza %d, o sfondala)"
 
-#: scripts/world/vent_grate.gd:69
+#: scripts/world/vent_grate.gd:72
 #, c-format
 msgid "The grate is bolted down. You need Strength %d to remove it by hand, or you can smash it."
 msgstr "La grata è avvitata. Serve Forza %d per toglierla a mano, oppure puoi sfondarla."
@@ -1320,8 +1682,9 @@ msgid "Don't trigger any alarms."
 msgstr "Non far scattare allarmi."
 
 #: levels/seraph/seraph.gd:31
-msgid "You're in. Level 14, Seraph labs. The briefing's on your PDA [Tab]."
-msgstr "Sei dentro. Livello 14, laboratori Seraph. Il briefing è nel tuo PDA [Tab]."
+#, c-format
+msgid "You're in. Level 14, Seraph labs. The briefing's on your PDA [%s]."
+msgstr "Sei dentro. Livello 14, laboratori Seraph. Il briefing è nel tuo PDA [%s]."
 
 #: levels/seraph/seraph.gd:36
 msgid "The core is in Lab C, north of the lobby. How you get there is your business."

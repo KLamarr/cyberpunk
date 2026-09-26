@@ -122,3 +122,13 @@ func frob(_player: Node) -> void:
 	if secret_id != "":
 		Game.found_secret(secret_id)
 	queue_free()
+
+
+# --- salvataggi: niente da salvare, ma se sparisce (raccolto, letto, sfondata) al
+# caricamento viene tolto anche lui (vedi SaveGame, «removed») -------------------------
+func save_state() -> Dictionary:
+	return {}
+
+
+func load_state(_d: Dictionary) -> void:
+	pass
