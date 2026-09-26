@@ -51,7 +51,7 @@ jobs:
       - name: Test morte e riavvio
         run: timeout 300 godot --headless --path . -- --autotest --death
 
-      - name: Test bottoni UI (anche il cambio di lingua)
+      - name: Test bottoni UI (anche lingua e didascalie delle insegne)
         run: |
           timeout 300 godot --headless --path . -- --autotest --ui
           timeout 300 godot --headless --path . -- --autotest --ui --lang=it

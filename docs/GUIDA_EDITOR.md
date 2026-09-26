@@ -297,8 +297,8 @@ spiegazione nel tooltip dell'Inspector.
 | `trigger_zone.tscn` | volume che mostra una battuta quando entri | Size, Speaker, Text (in inglese), Duration, Once | centro del volume |
 | `security_terminal.tscn`, `upgrade_station.tscn`, `server_core.tscn`, `elevator_panel.tscn` | pezzi della missione di Seraph | — | — |
 | `player_start.tscn` | partenza del giocatore (uno per livello) | — | a terra; il giocatore guarda verso -Z |
-| `props/prop_box.tscn` | scatola: mobili, casse, vetri, schermi | Size, Texture, Uv Mode, Tint, Emission, Opacity, Collision | **centro** |
-| `props/prop_quad.tscn` | pannello piatto: insegne, poster, graffiti | Size, Texture, Emission, Alpha Cut | guarda verso +Z |
+| `props/prop_box.tscn` | scatola: mobili, casse, vetri, schermi | Size, Texture, Uv Mode, Tint, Emission, Opacity, Collision, Caption | **centro** |
+| `props/prop_quad.tscn` | pannello piatto: insegne, poster, graffiti | Size, Texture, Emission, Alpha Cut, Caption | guarda verso +Z |
 | `props/prop_cylinder.tscn` | tubi, colonne, vasche | Radius, Length, Sides, Texture, Opacity | centro, asse lungo Y |
 
 Per i **brush solidi** (pilastri, gradini, fasce): crea sotto `Geometria` un nodo
@@ -420,6 +420,28 @@ Seraph `sign_sec.png` dice «SECURITY» e `sign_sec_it.png` «SICUREZZA» (le ge
 `tools/gen_textures.py`). Nel livello metti sempre quella inglese: in italiano il gioco usa
 da solo la variante `_it`, anche se il giocatore cambia lingua a partita in corso. Vale per
 le texture di `prop_quad.tscn` e `prop_box.tscn`; nell'editor vedi sempre l'inglese.
+
+**Didascalie di insegne e scritte.** Quando il giocatore guarda una scritta (insegna,
+poster, graffito, murale) può comparire sotto il mirino una didascalia con il testo
+tradotto: «Sign: SECURITY», in italiano «Insegna: SICUREZZA». Nella pausa sceglie
+*Captions for signs and writings* (*Didascalie di insegne e scritte*):
+
+![Didascalie: un graffito in inglese e un'insegna in italiano](screenshots/didascalie.png)
+
+- **NO**: mai;
+- **AUTO** (predefinita): solo se la scritta non è nella sua lingua, cioè se manca la
+  texture `_it` e la traduzione è diversa dall'inglese (per «SERAPH BIOTEK» niente
+  didascalia, è uguale in tutte le lingue);
+- **SEMPRE**: anche per leggere le scritte piccole o lontane.
+
+Le didascalie delle texture con scritte stanno in `scripts/data/env_texts.gd`, una riga per
+texture: tipo (`Sign`, `Poster`…) e testo, in inglese. Valgono per ogni pannello o scatola
+che usa quella texture. Per una scritta unica, come un murale col suo messaggio, scrivila
+nella proprietà **Caption** del `prop_quad` o `prop_box` (in inglese; `-` = nessuna
+didascalia). Si traducono come gli altri testi (i tre passi qui sopra). La didascalia
+compare per gli oggetti entro 12 m, guardati di fronte e non coperti da muri o porte (i
+vetri non coprono); una scritta dipinta nella texture di un muro (SurfaceSet) non può
+averla: mettila su un `prop_quad`.
 
 **E la CI?** Ad ogni push controlla che `locale/it.po` sia completo e coerente: un testo
 nuovo senza traduzione italiana fa fallire la CI, anche se il gioco funziona.

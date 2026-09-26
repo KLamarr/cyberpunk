@@ -111,6 +111,7 @@ var settings := {
 	"dither": true,
 	"sensitivity": 0.12,
 	"volume": 0.8,
+	"env_captions": "auto",   # didascalie dei testi ambientali: off | auto | always (EnvTexts)
 }
 ## false = non legge e non scrive user://settings.cfg (test e strumenti di sviluppo,
 ## così partono sempre dalle impostazioni predefinite).
@@ -162,6 +163,8 @@ func load_settings() -> void:
 			settings[k] = v
 	if not LANGUAGES.has(settings.language):
 		settings.language = "en"
+	if not (settings.env_captions in EnvTexts.MODES):
+		settings.env_captions = "auto"
 	settings.pixel_scale = clampi(int(settings.pixel_scale), 1, 4)
 	settings.sensitivity = clampf(float(settings.sensitivity), 0.03, 0.4)
 	settings.volume = clampf(float(settings.volume), 0.0, 1.0)
@@ -562,6 +565,20 @@ func pixel_scale_name(scale: int) -> String:
 		2: return tr("640x360 (default)")
 		3: return "427x240"
 	return "320x180"
+
+
+## Didascalie di insegne e scritte: spente, automatiche, sempre.
+func cycle_env_captions() -> void:
+	var i: int = EnvTexts.MODES.find(settings.env_captions)
+	settings.env_captions = EnvTexts.MODES[(i + 1) % EnvTexts.MODES.size()]
+	save_settings()
+
+
+func env_captions_name() -> String:
+	match settings.env_captions:
+		"off": return tr("OFF")
+		"always": return tr("ALWAYS")
+	return tr("AUTO")
 
 
 func toggle_dither() -> void:

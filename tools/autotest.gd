@@ -14,10 +14,33 @@ var shot_dir := "user://shots"
 var p: Node
 var lvl: Node
 var mode := "full"   # full | death | post_restart | ui | npc | stress
+## Errori di script durante il test (condiviso anche col test dopo il riavvio).
+static var _script_errors: ScriptErrors
+
+
+## Un errore di script dentro una funzione del test la interrompe a metà senza far
+## fallire nessun controllo: li contiamo e a fine test valgono come FAIL.
+class ScriptErrors extends Logger:
+	var count := 0
+	var first := ""
+	var _lock := Mutex.new()
+
+	func _log_error(_function: String, file: String, line: int, code: String, rationale: String,
+			_editor_notify: bool, error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+		if error_type != ERROR_TYPE_SCRIPT:
+			return
+		_lock.lock()
+		count += 1
+		if first == "":
+			first = "%s:%d %s" % [file, line, rationale if rationale != "" else code]
+		_lock.unlock()
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	if _script_errors == null:
+		_script_errors = ScriptErrors.new()
+		OS.add_logger(_script_errors)
 	shots = "--shots" in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless"
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--shot-dir="):
@@ -71,6 +94,14 @@ func run_death() -> void:
 	helper.fails = fails
 	get_tree().root.add_child(helper)
 	Game.restart()
+
+
+## Fine del test: risultato ed exit code (1 se qualche controllo o script è fallito).
+func finish(exit_on_fail := true) -> void:
+	if _script_errors.count > 0:
+		check(false, "errori di script durante il test: %d (il primo: %s)" % [_script_errors.count, _script_errors.first])
+	print("RISULTATO: %d ok, %d fail" % [oks, fails])
+	get_tree().quit(1 if fails > 0 and exit_on_fail else 0)
 
 
 func _find_button(n: Node, prefix: String) -> Button:
@@ -150,6 +181,16 @@ func run_ui() -> void:
 	check(_press(_label("Language: %s")), "pausa: di nuovo la lingua")
 	await frames(2)
 	check(Game.settings.language == lang, "lingua tornata com'era")
+	var cap0: String = Game.settings.env_captions
+	check(cap0 == "auto" and _press(_label("Captions for signs and writings: %s")), "pausa: didascalie (predefinite: auto)")
+	await frames(2)
+	var cap1: String = Game.settings.env_captions
+	_press(_label("Captions for signs and writings: %s"))
+	await frames(2)
+	var cap2: String = Game.settings.env_captions
+	_press(_label("Captions for signs and writings: %s"))
+	await frames(2)
+	check([cap1, cap2, Game.settings.env_captions] == ["always", "off", "auto"], "didascalie: auto → sempre → no → auto")
 	check(_press(tr("Resume")), "pausa: riprendi")
 	await frames(2)
 	check(Game.state == Game.State.PLAYING, "ripreso")
@@ -166,8 +207,69 @@ func run_ui() -> void:
 	check(_press("OK"), "tastierino: OK")
 	await frames(2)
 	check(not door.locked and Game.state == Game.State.PLAYING, "porta sbloccata dal tastierino")
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0 if fails == 0 else 1)
+	await _check_env_captions()
+	finish()
+
+
+## Didascalie dei testi ambientali: regole della modalità "auto" e didascalia in gioco
+## (davanti all'insegna, spente, guardando altrove, dietro un muro).
+func _check_env_captions() -> void:
+	var sign: Node3D = Game.level.find_child("Pannello_sign_sec1", true, false)
+	var graf: Texture2D = load("res://assets/textures/graffiti.png")
+	var lang0: String = Game.settings.language
+	Game.set_language("en", false)
+	check(not EnvTexts.wanted("auto", "SECURITY", sign.texture) and EnvTexts.wanted("always", "SECURITY", sign.texture)
+		and not EnvTexts.wanted("off", "SECURITY", sign.texture), "didascalie in inglese: auto no, sempre sì, no mai")
+	Game.set_language("it", false)
+	check(not EnvTexts.wanted("auto", "SECURITY", sign.texture), "auto in italiano: l'insegna ha già la texture italiana")
+	check(EnvTexts.wanted("auto", "SECURITY", graf), "auto: scritta tradotta ma texture solo inglese → didascalia")
+	check(not EnvTexts.wanted("auto", "NO CALMA", graf), "auto: scritta uguale nelle due lingue → niente didascalia")
+	Game.set_language(lang0, false)
+	var cap := func() -> String: return Game.hud.env_caption.get_parsed_text()
+	Game.settings.env_captions = "always"
+	await _stand_before(sign, sign.global_position + sign.global_basis.z * 2.6)
+	await wait(0.3)
+	check(cap.call().contains(tr("SECURITY")) and cap.call().contains(tr("Sign")), "didascalia davanti all'insegna: «%s»" % cap.call())
+	Game.settings.env_captions = "off"
+	await wait(0.2)
+	check(cap.call() == "", "didascalie spente: niente")
+	Game.settings.env_captions = "always"
+	await wait(0.2)
+	p.yaw += PI
+	p.rotation.y = p.yaw
+	await wait(0.9)
+	check(cap.call() == "", "guardando altrove la didascalia sparisce")
+	# un punto davanti all'insegna ma con un muro in mezzo
+	var space: PhysicsDirectSpaceState3D = p.get_world_3d().direct_space_state
+	var behind := Vector3.INF
+	for i in 48:
+		var a := i * TAU / 48.0
+		var c: Vector3 = sign.global_position + Vector3(cos(a), 0, sin(a)) * (4.0 + (i % 3) * 2.0)
+		if sign.global_basis.z.dot(c - sign.global_position) <= 0.5:
+			continue
+		var down: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(c, c + Vector3.DOWN * 6.0, Layers.WORLD))
+		if down.is_empty() or Game.level.builder.air_brush_at(down.position + Vector3.UP).is_empty():
+			continue
+		var eye: Vector3 = down.position + Vector3.UP * 1.6
+		var block: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(eye, sign.global_position, Layers.WORLD | Layers.DOOR))
+		if not block.is_empty() and eye.distance_to(block.position) < eye.distance_to(sign.global_position) - 0.3:
+			behind = down.position
+			break
+	check(behind != Vector3.INF, "trovato un punto con un muro davanti all'insegna")
+	if behind != Vector3.INF:
+		await _stand_before(sign, behind)
+		await wait(0.9)
+		check(cap.call() == "", "insegna dietro un muro: niente didascalia")
+	Game.settings.env_captions = "auto"
+
+
+## Mette il giocatore in pos (sul pavimento sotto) e lo gira verso target.
+func _stand_before(target: Node3D, pos: Vector3) -> void:
+	var down: Dictionary = p.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(pos + Vector3.UP, pos + Vector3.DOWN * 6.0, Layers.WORLD))
+	p.global_position = (down.position if not down.is_empty() else pos) + Vector3.UP * 0.05
+	p.velocity = Vector3.ZERO
+	await frames(4)
+	await face(target.global_position)
 
 
 ## Il livello d'esempio di docs/GUIDA_EDITOR.md (levels/guida): stanza, porta
@@ -198,8 +300,7 @@ func run_guida() -> void:
 	await face(Vector3(-0.8, 1.1, -5.5))
 	await wait(0.8)
 	await shot("guida_02_magazzino")
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0 if fails == 0 else 1)
+	finish()
 
 
 ## Generatore di NPC: libreria, definizioni dei personaggi, mesh, scheletro, pose, cache.
@@ -318,8 +419,7 @@ func run_npc() -> void:
 		bb.queue_free()
 	print("      costruzione di un NPC (dati + mesh): %.2f ms   posa per NPC per frame: %.1f µs" % [build_ms, pose_us])
 	check(build_ms < 50.0, "costruzione della mesh sotto i 50 ms")
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0 if fails == 0 else 1)
+	finish()
 
 
 ## Controlli di resa del corpo e dei parametri della guardia (bug trovati in review).
@@ -470,8 +570,7 @@ func run_stress() -> void:
 		avg /= times.size()
 		var p95: float = times[mini(int(times.size() * 0.95), times.size() - 1)]
 		print("  %7d   %16.2f   %14.2f   %9.0f" % [get_tree().get_nodes_in_group("guards").size(), avg, p95, dc_sum / times.size()])
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0)
+	finish(false)
 
 
 func run_post_restart() -> void:
@@ -479,8 +578,7 @@ func run_post_restart() -> void:
 	check(Game.level != null and Game.player != null and Game.player.health > 0.0, "riavvio: livello ricostruito")
 	check(Game.state == Game.State.MENU and Game.ui.current_kind == "start", "riavvio: menu iniziale")
 	check(Game.logs_read.is_empty() and Game.stats.kills == 0, "riavvio: stato azzerato")
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0 if fails == 0 else 1)
+	finish()
 
 
 func check(cond: bool, what: String) -> void:
@@ -913,5 +1011,4 @@ func run() -> void:
 	check(Game.ui.current_kind == "complete", "schermata finale mostrata")
 	await shot("09_fine")
 	print("VALUTAZIONE: ", Game.rating())
-	print("RISULTATO: %d ok, %d fail" % [oks, fails])
-	get_tree().quit(0 if fails == 0 else 1)
+	finish()

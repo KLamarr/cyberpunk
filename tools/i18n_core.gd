@@ -23,7 +23,7 @@ extends RefCounted
 
 const SCRIPT_DIRS := ["res://scripts", "res://levels"]
 const SCENE_DIRS := ["res://levels", "res://scenes", "res://assets"]
-const TEXT_PROPS := ["text", "display", "lock_title", "keycard_name", "loot_keycard_name", "idle_barks"]
+const TEXT_PROPS := ["text", "display", "lock_title", "keycard_name", "loot_keycard_name", "idle_barks", "caption"]
 const NAME_PROPS := ["guard_name", "display_name", "speaker"]
 const LOCALE_DIR := "res://locale"
 ## Chiamate che mostrano testo al giocatore: una stringa scritta lì senza tr() è una svista.
