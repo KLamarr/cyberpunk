@@ -629,8 +629,9 @@ func say(speaker: String, text: String, duration := 3.5) -> void:
 
 
 # --- rumore -------------------------------------------------------------------
-## Ogni suono "udibile" dall'IA passa da qui. kind: step, impact, clang, glass,
-## grate, gunshot, shout, body, alarm.  source: nodo che l'ha generato.
+## Ogni suono "udibile" dall'IA passa da qui (è lo stimolo «rumore», vedi Stimuli).
+## kind: step, door, body, impact, clang, glass, grate, splash, hiss, zap, gunshot,
+## shout, alarm.  source: nodo che l'ha generato.
 func emit_noise(pos: Vector3, radius: float, kind: String, source: Node = null, info := {}) -> void:
 	if radius <= 0.05:
 		return

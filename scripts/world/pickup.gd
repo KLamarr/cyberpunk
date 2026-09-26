@@ -81,7 +81,7 @@ func _build() -> void:
 			Util.box(self, Vector3(0.12, 0.075, 0.03), Vector3(0, 0.036, 0), Util.color_mat(Color(0.8, 0.1, 0.1)))
 			Util.box(self, Vector3(0.03, 0.075, 0.1), Vector3(0, 0.036, 0), Util.color_mat(Color(0.8, 0.1, 0.1)))
 		"ammo":
-			Util.box(self, Vector3(0.18, 0.1, 0.1), Vector3(0, 0.05, 0), Util.mat("crate", {"fit": Vector3(0.18, 0.1, 0.1), "color": Color(0.7, 0.6, 0.4)}))
+			Util.box(self, Vector3(0.18, 0.1, 0.1), Vector3(0, 0.05, 0), Util.mat("crate_light", {"fit": Vector3(0.18, 0.1, 0.1)}))
 			Util.box(self, Vector3(0.16, 0.02, 0.08), Vector3(0, 0.105, 0), Util.color_mat(Color(0.75, 0.6, 0.2), 0.3))
 		"module":
 			Util.box(self, Vector3(0.16, 0.04, 0.11), Vector3(0, 0.02, 0), Util.color_mat(Color(0.15, 0.2, 0.22)))

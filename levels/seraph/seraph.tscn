@@ -57,6 +57,7 @@
 [ext_resource type="PackedScene" uid="uid://dqy7seabs2eru" path="res://scenes/entities/datapad.tscn" id="69_0oga3"]
 [ext_resource type="PackedScene" uid="uid://tfksnhrrsnty" path="res://scenes/entities/pickup.tscn" id="71_vgtmr"]
 [ext_resource type="PackedScene" uid="uid://dgkcll7mxtce3" path="res://scenes/entities/throwable.tscn" id="73_mbnri"]
+[ext_resource type="PackedScene" path="res://scenes/entities/live_cable.tscn" id="90_cavo"]
 [ext_resource type="PackedScene" uid="uid://chvuw0lephtxf" path="res://scenes/entities/patrol_route.tscn" id="75_5geo3"]
 [ext_resource type="PackedScene" uid="uid://bnm5xubeprmj2" path="res://scenes/entities/waypoint.tscn" id="77_vffit"]
 [ext_resource type="PackedScene" uid="uid://d1h18oc5cgj6r" path="res://scenes/entities/guard.tscn" id="79_iiovw"]
@@ -972,6 +973,27 @@ radius = 0.14
 length = 15.6
 texture = ExtResource("24_nip3u")
 
+[node name="Distributore" parent="Arredo" unique_id=256569821 instance=ExtResource("19_v83if")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.45, 0.5, -1.5)
+size = Vector3(0.36, 1, 0.36)
+tint = Color(0.78, 0.8, 0.8, 1)
+
+[node name="DistributoreRubinetto" parent="Arredo" unique_id=199596299 instance=ExtResource("19_v83if")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.25, 0.8, -1.5)
+size = Vector3(0.05, 0.06, 0.08)
+tint = Color(0.15, 0.3, 0.7, 1)
+collision = 2
+
+[node name="MensolaAlta" parent="Arredo" unique_id=133960586 instance=ExtResource("19_v83if")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.23, 3, 12.3)
+size = Vector3(0.45, 0.1, 1)
+tint = Color(0.32, 0.34, 0.36, 1)
+
+[node name="CondottoRotto" parent="Arredo" unique_id=1359043745 instance=ExtResource("19_v83if")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 3.42, 7.4)
+size = Vector3(0.22, 0.14, 3.8)
+tint = Color(0.2, 0.21, 0.22, 1)
+
 [node name="Luci" type="Node3D" parent="." unique_id=1892228790]
 
 [node name="Luce1" parent="Luci" unique_id=915087744 instance=ExtResource("47_ldvib")]
@@ -1263,6 +1285,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.05, 1.55, -5.99)
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 7.99, 1.55, -21.45)
 inner_zone = 256
 
+[node name="CavoScoperto" parent="Dispositivi" unique_id=591850141 instance=ExtResource("90_cavo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 3.5, 5.5)
+length = 3.2
+
+[node name="InterruttoreCorrente" parent="Dispositivi" unique_id=1926235809 instance=ExtResource("65_mf5ux")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.4, 1.3, 5.03)
+targets = Array[NodePath]([NodePath("../CavoScoperto")])
+switch_type = "power"
+
 [node name="Oggetti" type="Node3D" parent="." unique_id=1004220767]
 
 [node name="Datapad_turni" parent="Oggetti" unique_id=1869477045 instance=ExtResource("69_0oga3")]
@@ -1380,6 +1411,46 @@ kind = "box"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.4, 0.2, 15.3)
 mass = 4.0
 kind = "box"
+
+[node name="Tanica1" parent="Oggetti" unique_id=1185782843 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.45, 1.235, -1.5)
+mass = 12.0
+kind = "jug"
+
+[node name="Tanica2" parent="Oggetti" unique_id=1911316186 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.8, 0.235, 5.7)
+mass = 12.0
+kind = "jug"
+
+[node name="Tanica3" parent="Oggetti" unique_id=496911153 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 0.235, 5.62)
+mass = 12.0
+kind = "jug"
+
+[node name="Estintore1" parent="Oggetti" unique_id=1446842749 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 0.26, -5.7)
+mass = 4.5
+kind = "extinguisher"
+
+[node name="Estintore2" parent="Oggetti" unique_id=177593188 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 0.26, -18.4)
+mass = 4.5
+kind = "extinguisher"
+
+[node name="CassaPesante1" parent="Oggetti" unique_id=347443294 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6, 0.36, 10.3)
+mass = 40.0
+kind = "heavy"
+
+[node name="CassaPesante2" parent="Oggetti" unique_id=897468572 instance=ExtResource("73_mbnri")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.3, 0.36, 8.5)
+mass = 40.0
+kind = "heavy"
+
+[node name="Ammo3" parent="Oggetti" unique_id=1163662931 instance=ExtResource("71_vgtmr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 3.06, 12.3)
+kind = "ammo"
+amount = 8
 
 [node name="Guardie" type="Node3D" parent="." unique_id=251421903]
 

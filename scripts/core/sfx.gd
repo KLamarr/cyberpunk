@@ -7,11 +7,11 @@ const SOUNDS := [
 	"alarm", "ambient_drone", "body_fall", "cam_alert", "cam_beep", "clatter0", "clatter1",
 	"datapad", "denied", "door_locked", "door_open", "elevator", "empty", "glass_break",
 	"granted", "grate_break", "grate_pry", "guard_gun", "hack_fail", "hack_ok", "hack_win",
-	"heartbeat", "hit_flesh", "hit_metal", "hurt", "impact", "keypad", "land", "medpatch",
-	"objective", "pickup", "pistol", "radio", "reload", "server_hum", "servo",
-	"step_carpet0", "step_carpet1", "step_concrete0", "step_concrete1", "step_grate0",
-	"step_grate1", "step_metal0", "step_metal1", "swing", "turret_alert", "turret_fire",
-	"ui_click", "ui_open", "upgrade", "whisper",
+	"heartbeat", "hiss", "hit_flesh", "hit_metal", "hurt", "impact", "keypad", "land", "medpatch",
+	"objective", "pickup", "pistol", "radio", "reload", "server_hum", "servo", "spark", "splash",
+	"step_carpet0", "step_carpet1", "step_concrete0", "step_concrete1", "step_glass0", "step_glass1",
+	"step_grate0", "step_grate1", "step_metal0", "step_metal1", "step_water0", "step_water1",
+	"swing", "turret_alert", "turret_fire", "ui_click", "ui_open", "upgrade", "whisper", "zap",
 ]
 const LOOPS := ["alarm", "ambient_drone", "server_hum", "elevator"]
 

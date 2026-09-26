@@ -4,7 +4,7 @@ extends Node3D
 ## Torretta automatica a sensori ottici: come le guardie, vede meglio se sei
 ## illuminato. Si spegne dal terminale di sicurezza, si distrugge a colpi di
 ## pistola, oppure si hackera dal pannello: con Hacking 3 diventa amica e spara
-## alle guardie.
+## alle guardie. Come tutti i sensori ottici non vede attraverso il fumo (vedi Stimuli).
 ## Guarda verso la -Z locale: ruota il nodo per orientarla.
 
 enum T { IDLE, ACQUIRE, FIRE, OFF, FRIENDLY, DESTROYED }
@@ -169,13 +169,14 @@ func light_contribution(p: Vector3) -> float:
 	return _spot.light_energy * (1.0 - d / t_range) * 0.5
 
 
-func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, _kind: String) -> void:
+func take_damage(amount: float, hit_pos: Vector3, _dir: Vector3, kind: String) -> void:
 	if state == T.DESTROYED:
 		return
 	hp -= amount
 	Effects.sparks(hit_pos, Color(1.0, 0.8, 0.4), 10, 3.0)
 	Sfx.play_3d("hit_metal", hit_pos, -2.0)
-	if state == T.IDLE or state == T.ACQUIRE:
+	# un oggetto lanciato che la sfiora non la mette in allarme; un colpo vero sì
+	if (state == T.IDLE or state == T.ACQUIRE) and (kind != "impact" or amount >= 5.0):
 		awareness = 1.0
 		state = T.ACQUIRE
 		_acq = 0.3
@@ -251,7 +252,7 @@ func _perceive() -> void:
 			var tp: Vector3 = g.global_position + Vector3.UP * 1.2
 			var d := from.distance_to(tp)
 			if d < t_range and d < best and rad_to_deg(Vector3(fwd.x, 0, fwd.z).angle_to(Vector3(tp.x - from.x, 0, tp.z - from.z))) < 80.0:
-				if Util.ray_clear(space, from, tp, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
+				if Stimuli.smoke_between(from, tp) < Stimuli.SMOKE_BLOCKS and Util.ray_clear(space, from, tp, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 					best = d
 					_target = g
 		_sees = _target != null
@@ -264,11 +265,13 @@ func _perceive() -> void:
 	var to := aim - from
 	var d := to.length()
 	var fov := half_fov if state == T.IDLE else 80.0
+	var smoke := 0.0
 	if d < t_range and rad_to_deg(Vector3(fwd.x, 0, fwd.z).angle_to(Vector3(to.x, 0, to.z))) < fov:
-		if Util.ray_clear(space, from, aim, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
+		smoke = Stimuli.smoke_between(from, aim)
+		if smoke < Stimuli.SMOKE_BLOCKS and Util.ray_clear(space, from, aim, Layers.WORLD | Layers.DOOR, [_head.get_rid()]):
 			_sees = true
 	if _sees:
-		var vis: float = p.visibility
+		var vis: float = p.visibility * (1.0 - smoke)
 		var df := 1.0 - d / t_range
 		awareness += vis * (0.6 + 2.6 * df) * 0.1
 	else:

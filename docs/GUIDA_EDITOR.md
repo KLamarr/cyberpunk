@@ -265,8 +265,9 @@ una guardia resta ferma di piantone, guardando verso la sua -Z.
 - `pickup.tscn`: **Kind** `medpatch`, `ammo`, `module`, `credits` o `keycard` (con
   **Item Id**, lo stesso scritto nel *Keycard Id* della porta). Mettine uno in
   `(2.4, 0.02, -10.4)`.
-- `throwable.tscn`: **Kind** `can`, `bottle`, `box`, `heavy`. Si raccolgono e si lanciano per
-  distrarre le guardie. Una lattina in `(-3.2, 0.1, 3.2)`.
+- `throwable.tscn`: **Kind** `can`, `bottle`, `box`, `heavy`, `jug`, `extinguisher`. Si
+  raccolgono e si lanciano per distrarre le guardie; alcuni si rompono (bottiglia, tanica,
+  estintore: vedi «Materiali e stimoli» nella sezione 4). Una lattina in `(-3.2, 0.1, 3.2)`.
 
 ### 3.10 Controlla
 
@@ -287,12 +288,13 @@ spiegazione nel tooltip dell'Inspector.
 | `door.tscn` | porta scorrevole | Width, Height, Auto Close; *Serratura*: Locked, Code, Keycard Id, Hack Level, Bypass Zones | a terra, al centro del varco; si estende lungo X |
 | `datapad.tscn` | registro da leggere | Log Id, Wall Terminal | base; il terminale a muro guarda verso +Z |
 | `pickup.tscn` | oggetto da raccogliere | Kind, Amount, Item Id, Secret Id | base |
-| `throwable.tscn` | lattina, bottiglia, scatola, cassa pesante | Kind | centro, poco sopra il piano |
+| `throwable.tscn` | lattina, bottiglia, scatola, cassa pesante SB-14, tanica d'acqua, estintore | Kind, Material | centro, poco sopra il piano |
 | `guard.tscn` | guardia | Definition (un personaggio di `assets/npc/characters`), Guard Name, Patrol Route, Dormant, *Bottino (senza definizione)* | a terra; guarda verso -Z |
 | `patrol_route.tscn` + `waypoint.tscn` | percorso di ronda | Wait (sulle tappe) | tappe a terra |
 | `security_camera.tscn` | telecamera che fa scattare l'allarme | Sweep, Period, Pitch, Cam Range | guarda verso -Z |
 | `turret.tscn` + `turret_panel.tscn` | torretta e suo pannello di manutenzione | Sweep, T Range, Start Disabled; il pannello ha Turret Path | la torretta guarda verso -Z |
-| `light_switch.tscn` | interruttore | Targets (le luci che comanda) | a muro |
+| `light_switch.tscn` | interruttore della luce o della corrente | Targets (luci o cavi), Switch Type | a muro, guarda verso +Z |
+| `live_cable.tscn` | cavo scoperto che fa scintille (scossa) | Length, Voltage, Powered | l'attacco sul soffitto; il cavo pende verso il basso |
 | `vent_grate.tscn` | grata di un condotto | Size, Pry Skill, Inner Zone | lato esterno verso +Z |
 | `trigger_zone.tscn` | volume che mostra una battuta quando entri | Size, Speaker, Text (in inglese), Duration, Once | centro del volume |
 | `security_terminal.tscn`, `upgrade_station.tscn`, `server_core.tscn`, `elevator_panel.tscn` | pezzi della missione di Seraph | — | — |
@@ -320,6 +322,49 @@ lanciati. Tre cose da sapere:
 - le guardie che devono arrivare dopo (rinforzi) vanno piazzate nel livello con
   **Dormant** acceso, non create da codice: solo quello che c'è nella scena si salva;
 - arredi (`props/`) e brush non cambiano durante il gioco e non si salvano.
+
+### Materiali e stimoli
+
+Gli oggetti del mondo si parlano con degli **stimoli**, come nel Dark Engine: chi fa
+qualcosa emette uno stimolo, chi ha il «recettore» giusto reagisce. Non devi collegare
+niente a mano: basta mettere gli ingredienti vicini e il giocatore trova le combinazioni.
+
+| Stimolo | Chi lo emette | Chi reagisce |
+|---|---|---|
+| **rumore** | passi, urti, vetri rotti, sibili, scosse | le guardie vanno a vedere |
+| **colpo** | un oggetto lanciato, la chiave inglese, un proiettile | luci, telecamere, torrette, grate, bottiglie, taniche, estintori |
+| **cocci** (a terra) | una bottiglia rotta | chiunque ci cammini sopra fa rumore, anche accovacciato; guardie comprese |
+| **acqua** (a terra) | una tanica rotta | passi rumorosi; se tocca una corrente, chi ci sta dentro prende la scossa |
+| **corrente** (a terra) | una luce rotta (per 8 secondi, bassa tensione); un cavo scoperto (alta o bassa) | l'acqua che la tocca diventa elettrificata |
+| **fumo** | un estintore colpito o lanciato (circa 15 secondi) | guardie, telecamere e torrette non vedono attraverso |
+
+La **scossa** dipende dalla fonte: bassa tensione (le scintille di una luce rotta, un cavo
+con *Voltage* `low`) fa **svenire** una guardia, e non conta come uccisione; alta tensione
+(un cavo con *Voltage* `high`) la **uccide**, e l'obiettivo «Don't kill anyone» fallisce.
+Il giocatore prende danni in entrambi i casi.
+
+Qualche combinazione, per dare l'idea:
+- una tanica rotta sotto una plafoniera, una guardia attirata lì da un rumore, una bottiglia
+  lanciata contro la plafoniera: la guardia sviene;
+- una tanica rotta vicino alla punta di un cavo scoperto: la pozza uccide chi ci entra,
+  finché qualcuno non abbassa l'interruttore della corrente;
+- un estintore lanciato nel corridoio della torretta: la torretta non vede chi passa.
+
+**Il materiale** di un Throwable (proprietà *Material*) decide peso, Forza necessaria,
+rumore degli urti, danni a ciò che colpisce e cosa diventa quando si rompe (*Breaks Into*:
+cocci, acqua, fumo). Vuoto = quello del *Kind*, in `assets/prop_materials/`: aprilo
+nell'Inspector per cambiare i numeri di tutti gli oggetti di quel tipo, oppure duplicalo
+(tasto destro → *Duplicate…*) e trascina la copia nel *Material* di un solo oggetto (per
+esempio una bottiglia più resistente, o una scatola che fa più rumore).
+
+**Il cavo scoperto** (`live_cable.tscn`): mettilo con l'origine sul soffitto e regola
+*Length* finché la punta arriva a meno di 80 cm dal pavimento (se no non elettrifica le
+pozze: il validatore lo segnala). Per poterlo spegnere, metti un `light_switch.tscn` con
+*Switch Type* `power` e il cavo nei *Targets*. Ha un collider sottile: le guardie ci girano
+intorno e nessuno lo attraversa per sbaglio.
+
+Anche questi si salvano da soli: cocci, pozze, nubi di fumo e cavi spenti restano come li
+ha lasciati il giocatore.
 
 ---
 
@@ -352,6 +397,9 @@ probabile svista.
 | "manca la traduzione (it) di …" | un testo nuovo del livello non è ancora in `locale/it.po` | aggiorna e traduci (sezione 7); finché manca, in italiano quel testo resta in inglese |
 | "il codice … non compare nella traduzione (it)" | la traduzione del registro ha perso o cambiato il codice | correggi la frase in `locale/it.po` |
 | clicco nella vista 3D e si seleziona un'altra cosa | i brush si sovrappongono | seleziona dall'albero Scene |
+| "la punta del cavo è a … m dal pavimento" | *Length* troppo corta: la corrente non arriva alle pozze | allunga *Length* |
+| "la punta del cavo entra nel pavimento" | *Length* troppo lunga | accorciala |
+| "comanda un cavo scoperto: metti Switch Type su power" | l'interruttore di un cavo dice «interruttore della luce» | cambia *Switch Type* |
 
 ---
 
@@ -468,6 +516,7 @@ godot --headless --path . -- --autotest                 # il test completo di Se
 godot --headless --path . -- --autotest --lang=it       # lo stesso, con i testi in italiano
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 godot --headless --path . -- --autotest --save          # salvataggi e caricamenti in Seraph
+godot --headless --path . -- --autotest --stimoli       # cocci, pozze, corrente, fumo, casse pesanti
 godot --headless --path . --script res://tools/i18n.gd -- --update           # come aggiorna_traduzioni.gd
 godot --headless --path . --script res://tools/i18n.gd -- --check --strict   # il controllo della CI
 ```

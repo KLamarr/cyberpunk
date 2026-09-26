@@ -25,6 +25,11 @@ var _redirecting := false
 var _later: Array = []
 
 
+func _enter_tree() -> void:
+	# i campi degli stimoli (cocci, pozze, fumo...) appartengono al livello di prima
+	Stimuli.clear()
+
+
 func _ready() -> void:
 	# Avviato da solo con F6: passa dalla scena principale (HUD, menu, SubViewport)
 	if get_tree().current_scene == self:
@@ -69,7 +74,11 @@ func zone_mask_at(p: Vector3) -> int:
 	return builder.zone_mask_at(p) if builder else 1
 
 
+## Superficie sotto i piedi: cocci o acqua (vedi Stimuli), altrimenti quella del pavimento.
 func surface_at(p: Vector3) -> String:
+	var s := Stimuli.surface_at(p)
+	if s != "":
+		return s
 	return builder.surface_at(p) if builder else "concrete"
 
 

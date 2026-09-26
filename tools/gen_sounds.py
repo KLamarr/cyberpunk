@@ -397,6 +397,78 @@ def elevator():
     save("elevator", x, 0.6)
 
 
+# ---------------------------------------------------------------- stimoli e materiali
+def steps_special():
+    """Passi su cocci di vetro e nell'acqua (superfici degli stimoli, vedi Stimuli)."""
+    for i in range(2):
+        d = 0.2
+        x = np.zeros(int(SR * d))
+        for k in range(7):
+            o = int(rng.uniform(0, 0.07) * SR)
+            s = resonator(noise(0.06) * env(int(SR * 0.06), 0.0003, 0.0015), rng.uniform(3000, 7500), 0.02)
+            x[o:o + len(s)] += s[:len(x) - o] * rng.uniform(0.3, 1.0)
+        x += bandpass(noise(d), 1500, 6000) * env(int(SR * d), 0.001, 0.02) * 0.6
+        save(f"step_glass{i}", x, 0.5)
+        d = 0.3
+        n = noise(d)
+        w = bandpass(n, 250 + i * 60, 2600) * env(len(n), 0.004, 0.06)
+        w += lowpass(n, 400) * env(len(n), 0.002, 0.03) * 0.8
+        o = int(SR * 0.05)
+        b = sine(lambda q: 700 + 900 * q / d, 0.08) * env(int(SR * 0.08), 0.002, 0.02) * 0.25
+        w[o:o + len(b)] += b
+        save(f"step_water{i}", w, 0.5)
+
+
+def splash():
+    """Tanica che si rompe: tonfo, crepa della plastica e acqua che si sparge."""
+    d = 1.4
+    n = noise(d)
+    x = lowpass(n, 300) * env(len(n), 0.002, 0.06) * 1.2
+    crack = highpass(noise(0.05), 2000) * env(int(SR * 0.05), 0.0005, 0.01)
+    x[:len(crack)] += crack
+    gush = bandpass(noise(d), 300, 3000) * env(len(n), 0.03, 0.45)
+    x += gush * 0.9
+    for k in range(10):
+        o = int(rng.uniform(0.1, 1.0) * SR)
+        f0 = rng.uniform(500, 1400)
+        b = sine(lambda q, f0=f0: f0 + 800 * q / 0.06, 0.06) * env(int(SR * 0.06), 0.002, 0.015) * 0.2
+        x[o:o + len(b)] += b[:len(x) - o]
+    save("splash", x, 0.75)
+
+
+def hiss():
+    """Estintore che si scarica: schiocco e sibilo che si spegne piano."""
+    d = 2.2
+    tt = t(d)
+    x = highpass(noise(d), 1800) * np.exp(-tt / 0.9) * (0.85 + 0.15 * np.sin(tt * 37))
+    x += bandpass(noise(d), 400, 1500) * np.exp(-tt / 0.5) * 0.4
+    pop = lowpass(noise(0.08), 900) * env(int(SR * 0.08), 0.0005, 0.02) * 1.5
+    x[:len(pop)] += pop
+    save("hiss", x * np.minimum(1, tt * 60), 0.7)
+
+
+def zap():
+    """Scossa: ronzio a 60 Hz con armoniche e crepitio."""
+    d = 0.45
+    tt = t(d)
+    x = square(60, d) * 0.5 + square(180, d) * 0.3
+    x = bandpass(x, 100, 3000)
+    x += highpass(noise(d), 2500) * 0.7 * (rng.random(len(tt)) < 0.35)
+    gate = np.repeat(rng.random(int(d * 40) + 1) > 0.25, int(SR / 40) + 1)[:len(tt)]
+    save("zap", x * gate * env(len(tt), 0.003, 0.2), 0.7)
+
+
+def spark():
+    """Scintille: pochi crepitii secchi."""
+    d = 0.25
+    x = np.zeros(int(SR * d))
+    for k in range(5):
+        o = int(rng.uniform(0, 0.15) * SR)
+        s = highpass(noise(0.03), 2000) * env(int(SR * 0.03), 0.0003, 0.004)
+        x[o:o + len(s)] += s[:len(x) - o] * rng.uniform(0.4, 1.0)
+    save("spark", x, 0.5)
+
+
 def main():
     steps(); land(); door_open(); door_locked()
     gunshot("pistol", 140, 0.012, 0.25)
@@ -405,8 +477,16 @@ def main():
     turret_fire(); servo(); alarm(); ambient_drone(); server_hum(); whisper()
     pickup(); medpatch(); glass_break(); grate_break(); grate_pry(); clatter()
     body_fall(); hurt(); heartbeat(); radio(); ui(); elevator()
+    # in fondo: i suoni di prima restano identici (stesso seme)
+    steps_special(); splash(); hiss(); zap(); spark()
     print("suoni generati in", os.path.normpath(OUT))
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    # python3 tools/gen_sounds.py splash hiss  -> rigenera solo i suoni indicati
+    if len(sys.argv) > 1:
+        for name in sys.argv[1:]:
+            globals()[name]()
+    else:
+        main()

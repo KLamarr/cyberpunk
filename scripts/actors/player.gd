@@ -283,8 +283,10 @@ func _footstep(running: bool) -> void:
 	var surf := "concrete"
 	if Game.level:
 		surf = Game.level.surface_at(global_position)
-	var base: float = {"metal": 1.0, "grate": 1.25, "concrete": 0.75, "carpet": 0.35}.get(surf, 0.8)
-	var mult := 0.3 if crouching else (1.9 if running else 1.0)
+	# cocci e acqua (vedi Stimuli) fanno rumore anche camminando piano
+	var base: float = {"metal": 1.0, "grate": 1.25, "concrete": 0.75, "carpet": 0.35, "glass": 1.5, "water": 1.2}.get(surf, 0.8)
+	var crouch_mult: float = {"glass": 0.6, "water": 0.45}.get(surf, 0.3)
+	var mult := crouch_mult if crouching else (1.9 if running else 1.0)
 	var radius := 7.0 * base * mult * (1.0 - 0.15 * Game.skill("furtivita"))
 	Game.emit_noise(global_position, radius, "step", self)
 	var vol := linear_to_db(clampf(radius / 9.0, 0.08, 1.2)) - 4.0
@@ -642,11 +644,30 @@ func _update_held(delta: float) -> void:
 	held.rotation.y = lerp_angle(held.rotation.y, yaw, clampf(delta * 8.0, 0.0, 1.0))
 
 
+## Lascia andare l'oggetto in mano senza lanciarlo (es. se si rompe mentre lo tieni).
+func drop_held_now() -> void:
+	if held != null and is_instance_valid(held):
+		_drop_held(false)
+
+
 func _drop_held(throw: bool) -> void:
 	var body := held
+	if body == null or not is_instance_valid(body):
+		held = null
+		return
 	held = null
 	body.set_held(false)
 	body.linear_velocity = velocity * 0.5
+	if not throw:
+		# posato: dritto e appoggiato sulla superficie sotto (così si possono impilare
+		# le casse, e bottiglie e taniche non si rompono cadendo)
+		var ex: Array[RID] = [get_rid(), body.get_rid()]
+		var hit := Util.ray(get_world_3d().direct_space_state, body.global_position, body.global_position + Vector3.DOWN * 3.0, WORLD_MASK, ex)
+		if not hit.is_empty():
+			body.rotation = Vector3(0.0, body.rotation.y, 0.0)
+			body.global_position = hit.position + Vector3.UP * (body.size.y * 0.5 + 0.02)
+			body.linear_velocity = Vector3.ZERO
+			body.angular_velocity = Vector3.ZERO
 	if throw:
 		var power: float = (7.5 + 1.8 * Game.skill("forza")) / maxf(1.0, sqrt(body.mass))
 		body.linear_velocity += -camera.global_basis.z * power + Vector3.UP * 1.2
@@ -769,6 +790,14 @@ func take_damage(amount: float, _hit_pos: Vector3, dir: Vector3, _kind: String) 
 	if health <= 0.0:
 		health = 0.0
 		_die()
+
+
+## Scossa elettrica (vedi Stimuli.shock): bassa tensione = danno e scossone, alta = mortale in pochi secondi.
+func on_shock(voltage: int, pos: Vector3) -> void:
+	if dead:
+		return
+	_shake = 1.0
+	take_damage(14.0 if voltage < Stimuli.HIGH_VOLTAGE else 45.0, pos, Vector3.UP, "shock")
 
 
 func _die() -> void:

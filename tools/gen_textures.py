@@ -405,6 +405,24 @@ def crate():
     save("crate", img)
 
 
+def crate_light():
+    """Scatola leggera (si solleva a mano): niente scritta SB-14, che è solo sulle
+    casse pesanti (vedi il registro del magazzino)."""
+    w = h = 64
+    img = base(w, h, (118, 96, 64))
+    img += grain(w, h, 12)[:, :, None]
+    img[0:5, :] = (92, 76, 52)
+    img[59:64, :] = (92, 76, 52)
+    img[:, 0:5] = (92, 76, 52)
+    img[:, 59:64] = (92, 76, 52)
+    bevel_rect(img, 0, 0, 64, 64, 1.25, 0.55)
+    bevel_rect(img, 5, 5, 59, 59, 0.7, 1.15)
+    img[28:36, 5:59] *= 0.8          # nastro adesivo
+    img[28, 5:59] *= 1.2
+    grime(img, 0.3)
+    save("crate_light", img)
+
+
 def screen(name, bg, fg, lines=True):
     w = h = 64
     img = base(w, h, bg)
@@ -765,6 +783,7 @@ def main():
     signs()
     poster(); vending(); keypad(); graffiti(); locker(); desk(); glass_blue(); pipes(); skin_face()
     npc_atlas()
+    crate_light()   # in fondo: le texture di prima restano identiche (stesso seme)
     print("texture generate in", os.path.normpath(OUT))
 
 

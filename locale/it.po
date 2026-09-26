@@ -152,83 +152,83 @@ msgstr "Chissà se Okafor è ancora in laboratorio."
 msgid "My head hurts. Always after the update."
 msgstr "Mi fa male la testa. Sempre dopo l'aggiornamento."
 
-#: scripts/actors/guard.gd:769
+#: scripts/actors/guard.gd:785
 #, c-format
 msgid "Search %s (dead)"
 msgstr "Perquisisci %s (morto)"
 
-#: scripts/actors/guard.gd:769
+#: scripts/actors/guard.gd:785
 #, c-format
 msgid "Search %s (unconscious)"
 msgstr "Perquisisci %s (svenuto)"
 
-#: scripts/actors/guard.gd:770
+#: scripts/actors/guard.gd:786
 #, c-format
 msgid "Pick up %s's body"
 msgstr "Solleva il corpo di %s"
 
-#: scripts/actors/guard.gd:772
+#: scripts/actors/guard.gd:788
 #, c-format
 msgid "Pickpocket %s"
 msgstr "Borseggia %s"
 
-#: scripts/actors/guard.gd:796
+#: scripts/actors/guard.gd:812
 #, c-format
 msgid "%d round"
 msgstr "%d munizione"
 
-#: scripts/actors/guard.gd:796
+#: scripts/actors/guard.gd:812
 #, c-format
 msgid "%d rounds"
 msgstr "%d munizioni"
 
-#: scripts/actors/guard.gd:800
+#: scripts/actors/guard.gd:816
 #, c-format
 msgid "%d credit"
 msgstr "%d credito"
 
-#: scripts/actors/guard.gd:800
+#: scripts/actors/guard.gd:816
 #, c-format
 msgid "%d credits"
 msgstr "%d crediti"
 
-#: scripts/actors/guard.gd:803
+#: scripts/actors/guard.gd:819
 msgid "medipatch"
 msgstr "medipatch"
 
-#: scripts/actors/guard.gd:809
+#: scripts/actors/guard.gd:825
 #, c-format
 msgid "Found: %s"
 msgstr "Hai trovato: %s"
 
-#: scripts/actors/player.gd:461
+#: scripts/actors/player.gd:463
 #, c-format
 msgid "[%s] Throw   [%s] Put down"
 msgstr "[%s] Lancia   [%s] Posa"
 
-#: scripts/actors/player.gd:463
+#: scripts/actors/player.gd:465
 #, c-format
 msgid "[%s] Put down the body"
 msgstr "[%s] Posa il corpo"
 
-#: scripts/actors/player.gd:513
+#: scripts/actors/player.gd:515
 msgid "No medipatches."
 msgstr "Nessun medipatch."
 
-#: scripts/actors/player.gd:516
+#: scripts/actors/player.gd:518
 msgid "You're already at full health."
 msgstr "Sei già in piena salute."
 
-#: scripts/actors/player.gd:674
+#: scripts/actors/player.gd:695
 #, c-format
 msgid "Carrying the body. [%s] to put it down."
 msgstr "Trasporti il corpo. [%s] per posarlo."
 
-#: scripts/actors/security_camera.gd:106
+#: scripts/actors/security_camera.gd:107
 msgid "Camera destroyed."
 msgstr "Telecamera distrutta."
 
-#: scripts/actors/security_camera.gd:197
+#: scripts/actors/security_camera.gd:199
 msgid "Spotted by the cameras."
 msgstr "Rilevato dalle telecamere."
 
@@ -236,7 +236,7 @@ msgstr "Rilevato dalle telecamere."
 msgid "Turret reprogrammed: now targeting guards."
 msgstr "Torretta riprogrammata: ora spara alle guardie."
 
-#: scripts/actors/turret.gd:188
+#: scripts/actors/turret.gd:189
 msgid "Turret destroyed."
 msgstr "Torretta distrutta."
 
@@ -526,115 +526,115 @@ msgstr "OBIETTIVO COMPLETATO: %s"
 msgid "OBJECTIVE FAILED: %s"
 msgstr "OBIETTIVO FALLITO: %s"
 
-#: scripts/core/game.gd:656
+#: scripts/core/game.gd:657
 #, c-format
 msgid "ALARM! %s"
 msgstr "ALLARME! %s"
 
-#: scripts/core/game.gd:657
+#: scripts/core/game.gd:658
 #: scripts/ui/hud.gd:234
 #: levels/seraph/seraph.gd:48
 msgid "PA SYSTEM"
 msgstr "SISTEMA PA"
 
-#: scripts/core/game.gd:657
+#: scripts/core/game.gd:658
 msgid "Security alert in sector 14. All security personnel, respond."
 msgstr "Allarme di sicurezza nel settore 14. Personale di vigilanza, convergere."
 
-#: scripts/core/game.gd:667
+#: scripts/core/game.gd:668
 msgid "Cameras disabled."
 msgstr "Telecamere disattivate."
 
-#: scripts/core/game.gd:673
+#: scripts/core/game.gd:674
 msgid "Turrets disabled."
 msgstr "Torrette disattivate."
 
-#: scripts/core/game.gd:716
+#: scripts/core/game.gd:717
 msgid "SPECTER — nobody knows you were here"
 msgstr "SPETTRO — nessuno sa che sei stato qui"
 
-#: scripts/core/game.gd:718
+#: scripts/core/game.gd:719
 msgid "SHADOW"
 msgstr "FANTASMA"
 
-#: scripts/core/game.gd:720
+#: scripts/core/game.gd:721
 msgid "NON-LETHAL PROFESSIONAL"
 msgstr "PROFESSIONISTA NON LETALE"
 
-#: scripts/core/game.gd:722
+#: scripts/core/game.gd:723
 msgid "BUTCHER OF SERAPH"
 msgstr "MACELLAIO DI SERAPH"
 
-#: scripts/core/game.gd:723
+#: scripts/core/game.gd:724
 msgid "OPERATIVE"
 msgstr "OPERATIVO"
 
-#: scripts/core/game.gd:730
+#: scripts/core/game.gd:731
 #, c-format
 msgid "Internal resolution: %s"
 msgstr "Risoluzione interna: %s"
 
-#: scripts/core/game.gd:735
+#: scripts/core/game.gd:736
 msgid "1280x720 (native)"
 msgstr "1280x720 (nativa)"
 
-#: scripts/core/game.gd:736
+#: scripts/core/game.gd:737
 msgid "640x360 (default)"
 msgstr "640x360 (predefinita)"
 
-#: scripts/core/game.gd:750
-#: scripts/core/game.gd:759
+#: scripts/core/game.gd:751
+#: scripts/core/game.gd:760
 #: scripts/ui/ui_root.gd:161
 msgid "OFF"
 msgstr "NO"
 
-#: scripts/core/game.gd:751
+#: scripts/core/game.gd:752
 msgid "ALWAYS"
 msgstr "SEMPRE"
 
-#: scripts/core/game.gd:752
+#: scripts/core/game.gd:753
 msgid "AUTO"
 msgstr "AUTO"
 
-#: scripts/core/game.gd:759
+#: scripts/core/game.gd:760
 #, c-format
 msgid "Dithering: %s"
 msgstr "Dithering: %s"
 
-#: scripts/core/game.gd:759
+#: scripts/core/game.gd:760
 #: scripts/ui/ui_root.gd:161
 msgid "ON"
 msgstr "SÌ"
 
-#: scripts/core/game.gd:814
+#: scripts/core/game.gd:815
 msgid "You can't save right now."
 msgstr "Adesso non puoi salvare."
 
-#: scripts/core/game.gd:822
+#: scripts/core/game.gd:823
 msgid "Couldn't save the game."
 msgstr "Salvataggio non riuscito."
 
-#: scripts/core/game.gd:824
+#: scripts/core/game.gd:825
 msgid "Quicksave done."
 msgstr "Salvataggio rapido fatto."
 
-#: scripts/core/game.gd:826
+#: scripts/core/game.gd:827
 msgid "Autosave done."
 msgstr "Salvataggio automatico fatto."
 
-#: scripts/core/game.gd:828
+#: scripts/core/game.gd:829
 msgid "Game saved."
 msgstr "Partita salvata."
 
-#: scripts/core/game.gd:836
+#: scripts/core/game.gd:837
 msgid "Couldn't load the save."
 msgstr "Impossibile caricare il salvataggio."
 
-#: scripts/core/game.gd:858
+#: scripts/core/game.gd:859
 msgid "Game loaded."
 msgstr "Partita caricata."
 
-#: scripts/core/game.gd:871
+#: scripts/core/game.gd:872
 #, c-format
 msgid "No quicksave yet (%s to quicksave)."
 msgstr "Nessun salvataggio rapido (%s per farne uno)."
@@ -960,8 +960,8 @@ msgstr "Dir."
 #: levels/seraph/seraph.gd:31
 #: levels/seraph/seraph.gd:36
 #: levels/seraph/seraph.gd:64
-#: levels/seraph/seraph.tscn:1473
-#: levels/seraph/seraph.tscn:1480
+#: levels/seraph/seraph.tscn:1544
+#: levels/seraph/seraph.tscn:1551
 msgid "VESPER"
 msgstr "VESPER"
 
@@ -1510,11 +1510,19 @@ msgstr "Non ti muovi da lì senza il nucleo. Laboratorio C, a nord della hall."
 msgid "Great work. Taking you down."
 msgstr "Ottimo lavoro. Ti porto giù."
 
-#: scripts/world/light_switch.gd:36
+#: scripts/world/light_switch.gd:40
+msgid "Power switch (turn off)"
+msgstr "Interruttore della corrente (spegni)"
+
+#: scripts/world/light_switch.gd:40
+msgid "Power switch (turn on)"
+msgstr "Interruttore della corrente (accendi)"
+
+#: scripts/world/light_switch.gd:41
 msgid "Light switch (turn off)"
 msgstr "Interruttore luci (spegni)"
 
-#: scripts/world/light_switch.gd:36
+#: scripts/world/light_switch.gd:41
 msgid "Light switch (turn on)"
 msgstr "Interruttore luci (accendi)"
 
@@ -1552,7 +1560,7 @@ msgid "Security terminal"
 msgstr "Terminale di sicurezza"
 
 #: scripts/world/security_terminal.gd:52
-#: levels/seraph/seraph.tscn:1207
+#: levels/seraph/seraph.tscn:1229
 #: assets/npc/characters/ruiz.tres:164
 msgid "Security Keycard"
 msgstr "Tessera Sicurezza"
@@ -1612,35 +1620,48 @@ msgstr "Sblocchi la porta dall'interno."
 msgid "Using: %s"
 msgstr "Usi: %s"
 
-#: scripts/world/throwable.gd:21
+#: scripts/world/throwable.gd:33
 msgid "Kaffa-Nova can"
 msgstr "Lattina di Kaffa-Nova"
 
-#: scripts/world/throwable.gd:21
+#: scripts/world/throwable.gd:33
 msgid "Bottle"
 msgstr "Bottiglia"
 
-#: scripts/world/throwable.gd:21
+#: scripts/world/throwable.gd:33
 msgid "Parts box"
 msgstr "Scatola di componenti"
 
-#: scripts/world/throwable.gd:21
+#: scripts/world/throwable.gd:33
 msgid "SB-14 crate"
 msgstr "Cassa SB-14"
 
-#: scripts/world/throwable.gd:126
-#, c-format
-msgid "%s — too heavy (Strength 2)"
-msgstr "%s — troppo pesante (Forza 2)"
+#: scripts/world/throwable.gd:34
+msgid "Water jug"
+msgstr "Tanica d'acqua"
 
-#: scripts/world/throwable.gd:127
+#: scripts/world/throwable.gd:34
+msgid "Fire extinguisher"
+msgstr "Estintore"
+
+#: scripts/world/throwable.gd:401
+msgid "Fire extinguisher (empty)"
+msgstr "Estintore (scarico)"
+
+#: scripts/world/throwable.gd:409
+#, c-format
+msgid "%s — too heavy (Strength %d)"
+msgstr "%s — troppo pesante (Forza %d)"
+
+#: scripts/world/throwable.gd:410
 #, c-format
 msgid "Take: %s"
 msgstr "Prendi: %s"
 
-#: scripts/world/throwable.gd:132
-msgid "Too heavy. You need Strength 2."
-msgstr "Troppo pesante. Serve Forza 2."
+#: scripts/world/throwable.gd:417
+#, c-format
+msgid "Too heavy. You need Strength %d."
+msgstr "Troppo pesante. Serve Forza %d."
 
 #: scripts/world/upgrade_station.gd:27
 #, c-format
@@ -1702,28 +1723,28 @@ msgstr "Si sono accorti del nucleo. Hanno mandato qualcuno dall'ascensore princi
 msgid "Storeroom"
 msgstr "Magazzino"
 
-#: levels/seraph/seraph.tscn:1205
+#: levels/seraph/seraph.tscn:1227
 msgid "Security Room"
 msgstr "Sala Sicurezza"
 
-#: levels/seraph/seraph.tscn:1216
+#: levels/seraph/seraph.tscn:1238
 msgid "Lab C"
 msgstr "Laboratorio C"
 
-#: levels/seraph/seraph.tscn:1218
-#: levels/seraph/seraph.tscn:1329
+#: levels/seraph/seraph.tscn:1240
+#: levels/seraph/seraph.tscn:1360
 msgid "Lab C Keycard"
 msgstr "Tessera Laboratorio C"
 
-#: levels/seraph/seraph.tscn:1474
+#: levels/seraph/seraph.tscn:1545
 msgid "The lobby. Camera in the northeast corner and a guard on patrol. Stay in the shadows."
 msgstr "La hall. Telecamera sull'angolo nord-est e una guardia di ronda. Resta nell'ombra."
 
-#: levels/seraph/seraph.tscn:1481
+#: levels/seraph/seraph.tscn:1552
 msgid "You're in the lab. The core is in the central server, the one that's humming."
 msgstr "Sei nel laboratorio. Il nucleo è nel server centrale, quello che ronza."
 
-#: levels/seraph/seraph.tscn:1486
+#: levels/seraph/seraph.tscn:1557
 msgid "Ventilation duct: stay crouched."
 msgstr "Condotto di ventilazione: resta accovacciato."
 
