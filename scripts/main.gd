@@ -74,7 +74,12 @@ func _ready() -> void:
 		tl.name = "Tool"
 		add_child(tl)
 	elif "--autotest" in OS.get_cmdline_user_args() and not get_tree().root.has_node("PostRestartTest"):
-		var t: Node = load("res://tools/autotest.gd").new()
+		var ts: GDScript = load("res://tools/autotest.gd")
+		if ts == null or not ts.can_instantiate():
+			push_error("tools/autotest.gd non si carica (errore nello script)")
+			get_tree().quit(3)   # altrimenti il gioco resterebbe aperto fino al timeout
+			return
+		var t: Node = ts.new()
 		t.name = "Autotest"
 		add_child(t)
 	elif Game.quick_start:

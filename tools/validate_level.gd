@@ -260,6 +260,9 @@ func _check_translations() -> void:
 		add.call(n.display, n)
 	for n in _all(func(x): return x is Label3D):
 		add.call(n.text, n)
+	for n in _all(func(x): return x is PropQuad or x is PropBox):
+		if n.caption != "-":
+			add.call(n.caption, n)   # didascalia scritta sull'oggetto (quelle delle texture sono nel codice)
 	for g in _all(func(x): return x is Guard):
 		add_name.call(g.guard_name, g)
 		add.call(g.loot_keycard_name, g)

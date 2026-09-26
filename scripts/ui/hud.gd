@@ -69,6 +69,13 @@ var weapon_label: Label
 var ammo_label: Label
 var items_label: Label
 var prompt: Label
+var env_caption: RichTextLabel
+var _env_node: Node3D = null
+var _env_scan := 0.0
+var _env_hold := 0.0
+## Didascalie dei testi ambientali: distanza massima e margine attorno all'insegna.
+const ENV_RANGE := 12.0
+const ENV_MARGIN_DEG := 4.0
 var crosshair: Crosshair
 var msg_box: VBoxContainer
 var sub_speaker: Label
@@ -110,6 +117,19 @@ func _ready() -> void:
 	prompt.add_theme_color_override("font_outline_color", Color.BLACK)
 	prompt.add_theme_constant_override("outline_size", 6)
 	root.add_child(prompt)
+
+	# didascalia dell'insegna/poster che stai guardando (Opzioni > didascalie)
+	env_caption = RichTextLabel.new()
+	env_caption.bbcode_enabled = true
+	env_caption.fit_content = true
+	env_caption.scroll_active = false
+	env_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	env_caption.add_theme_font_size_override("normal_font_size", 16)
+	env_caption.add_theme_color_override("default_color", UITheme.TEXT)
+	env_caption.add_theme_color_override("font_outline_color", Color.BLACK)
+	env_caption.add_theme_constant_override("outline_size", 5)
+	_place(env_caption, Control.PRESET_CENTER, Rect2(-350, 58, 700, 28))
+	root.add_child(env_caption)
 
 	# gemma in basso al centro
 	gem = LightGem.new()
@@ -215,6 +235,60 @@ func _on_subtitle(speaker: String, text: String, duration: float) -> void:
 		Sfx.play_ui("radio", -8.0)
 
 
+# --- didascalie dei testi ambientali ------------------------------------------------
+func _update_env_caption(p: Node, delta: float) -> void:
+	_env_scan -= delta
+	_env_hold -= delta
+	var mode: String = Game.settings.env_captions
+	if _env_scan <= 0.0:
+		_env_scan = 0.1
+		var n: Node3D = _find_env_text(p, mode) if mode != "off" else null
+		if n != null:
+			_env_node = n
+			_env_hold = 0.6   # resta un attimo quando lo sguardo scivola via
+	if _env_hold <= 0.0 or not is_instance_valid(_env_node) or mode == "off":
+		_env_node = null
+	if _env_node == null or p.get_frob_prompt() != "":
+		env_caption.text = ""
+		return
+	var c: Array = _env_node.get_caption()
+	var kind := (tr(c[0]) + ": ") if c[0] != "" else ""
+	# «[» nel testo non deve diventare un tag BBCode
+	env_caption.text = "[center][color=#6a9c98]%s[/color]%s[/center]" % [kind.replace("[", "[lb]"), tr(c[1]).replace("[", "[lb]")]
+
+
+## La scritta più vicina al centro dello sguardo: entro ENV_RANGE, davanti (i pannelli
+## si leggono solo dal davanti), non coperta da muri o porte (i vetri non coprono) e
+## con una didascalia che serve nella modalità scelta (EnvTexts.wanted).
+func _find_env_text(p: Node, mode: String) -> Node3D:
+	var cam: Camera3D = p.camera
+	var from := cam.global_position
+	var fwd := -cam.global_basis.z
+	var space: PhysicsDirectSpaceState3D = p.get_world_3d().direct_space_state
+	var best: Node3D = null
+	var best_ang := INF
+	for n in get_tree().get_nodes_in_group("env_text"):
+		var pos: Vector3 = (n as Node3D).global_position
+		var d := pos - from
+		var dist := d.length()
+		if dist > ENV_RANGE or dist < 0.2:
+			continue
+		var ang := rad_to_deg(fwd.angle_to(d))
+		if ang > rad_to_deg(atan2(n.caption_radius(), dist)) + ENV_MARGIN_DEG or ang >= best_ang:
+			continue
+		if n is PropQuad and (n as Node3D).global_basis.z.dot(d) >= 0.0:
+			continue
+		if not EnvTexts.wanted(mode, n.get_caption()[1], n.texture):
+			continue
+		var q := PhysicsRayQueryParameters3D.create(from, pos, Layers.WORLD | Layers.DOOR, [p.get_rid()])
+		var hit := space.intersect_ray(q)
+		if not hit.is_empty() and hit.collider != n and from.distance_to(hit.position) < dist - 0.1:
+			continue
+		best = n
+		best_ang = ang
+	return best
+
+
 func _on_damage(amount: float, _from: Vector3) -> void:
 	_flash_a = clampf(_flash_a + amount / 40.0, 0.0, 0.55)
 
@@ -246,6 +320,7 @@ func _process(delta: float) -> void:
 	else:
 		weapon_label.text = tr("9mm PISTOL") + ("  " + tr("(reloading...)") if p.reloading > 0.0 else "")
 		ammo_label.text = "%d / %d" % [Game.ammo_mag, Game.ammo_reserve]
+	_update_env_caption(p, delta)
 	var pr: String = p.get_frob_prompt()
 	prompt.text = pr
 	crosshair.active = pr != ""

@@ -267,8 +267,8 @@ commentate (il commento diventa il tooltip dell'Inspector) e una scena in
 L'**inglese** è la lingua sorgente: i testi sono scritti in inglese nel codice (dentro
 `tr()`), nelle scene e nei personaggi. L'**italiano** è una traduzione gettext in
 `locale/it.po`; una frase senza traduzione resta in inglese. Al primo avvio il gioco è
-sempre in inglese; lingua, risoluzione, dithering, sensibilità e volume scelti dal
-giocatore si salvano in `user://settings.cfg`. Gli strumenti di sviluppo (validatore,
+sempre in inglese; lingua, didascalie, risoluzione, dithering, sensibilità e volume
+scelti dal giocatore si salvano in `user://settings.cfg`. Gli strumenti di sviluppo (validatore,
 creatore di NPC, guide) restano in italiano.
 
 | | |
@@ -288,6 +288,11 @@ creatore di NPC, guide) restano in italiano.
 - **Insegne e poster con scritte**: una texture per lingua, `sign_sec.png` (inglese) e
   accanto `sign_sec_it.png`; nel gioco `Util.tex()` sceglie da sola la variante della
   lingua attiva, anche quando il giocatore la cambia a partita in corso.
+- **Didascalie dei testi ambientali**: guardando un'insegna, un poster o un graffito può
+  comparire sotto il mirino il testo tradotto («Sign: SECURITY» / «Insegna: SICUREZZA»).
+  Opzione nella pausa: NO / AUTO (solo se la scritta non è nella lingua del giocatore,
+  predefinita) / SEMPRE. Testi in `scripts/data/env_texts.gd` o nella proprietà *Caption*
+  di `prop_quad`/`prop_box`.
 - **Una lingua nuova**: `tools/i18n.gd -- --new=fr`, poi aggiungi `locale/fr.po` alle
   traduzioni del progetto e `"fr"` a `Game.LANGUAGES`.
 
@@ -300,7 +305,8 @@ godot --headless --path . -- --autotest            # 72 controlli: navmesh, frob
                                                    # lingua e impostazioni
 godot --headless --path . -- --autotest --lang=it  # lo stesso in italiano (--lang vale per ogni test)
 godot --headless --path . -- --autotest --death    # morte, schermata "segnale perso", riavvio
-godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino, lingua
+godot --headless --path . -- --autotest --ui       # preme i bottoni veri di menu, PDA, pausa, tastierino, lingua,
+                                                   # didascalie (davanti all'insegna, altrove, dietro un muro)
 godot --headless --path . -- --level=res://levels/guida/guida.tscn --autotest --guida
 godot --headless --path . -- --validate --level=res://levels/palestra/palestra.tscn   # validatore
 godot --headless --path . -- --autotest --npc      # generatore di NPC: libreria, personaggi, mesh, ossa, pose, cache

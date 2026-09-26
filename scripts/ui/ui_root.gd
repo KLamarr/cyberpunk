@@ -240,21 +240,27 @@ func open_pause() -> void:
 	v.add_child(_slider_row(tr("Volume"), 0.0, 1.0, Game.settings.volume, func(x):
 		Game.settings.volume = x
 		Sfx.set_master_volume(x)))
+	var cap_btn := UITheme.button("", func(): pass)
 	var px_btn := UITheme.button("", func(): pass)
 	var dt_btn := UITheme.button("", func(): pass)
 	var refresh := func():
 		var s: int = Game.settings.pixel_scale
 		px_btn.text = tr("Internal resolution: %s  [F2]") % Game.pixel_scale_name(s)
 		dt_btn.text = tr("15-bit dithering: %s  [F3]") % (tr("ON") if Game.settings.dither else tr("OFF"))
+		cap_btn.text = tr("Captions for signs and writings: %s") % Game.env_captions_name()
 	px_btn.pressed.connect(func():
 		Game.cycle_pixel_scale()
 		refresh.call())
 	dt_btn.pressed.connect(func():
 		Game.toggle_dither()
 		refresh.call())
+	cap_btn.pressed.connect(func():
+		Game.cycle_env_captions()
+		refresh.call())
 	refresh.call()
 	v.add_child(px_btn)
 	v.add_child(dt_btn)
+	v.add_child(cap_btn)
 	v.add_child(_spacer(4))
 	v.add_child(UITheme.label(tr("CONTROLS"), 16, UITheme.ACCENT))
 	v.add_child(_rich(tr(CONTROLS), 13, 590))

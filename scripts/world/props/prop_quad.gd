@@ -17,6 +17,9 @@ extends MeshInstance3D
 	set(v):
 		emission = v
 		_rebuild()
+## Didascalia: cosa c'è scritto sulla texture, in inglese (tradotta in locale/it.po).
+## Vuoto = quella della texture (scripts/data/env_texts.gd), «-» = nessuna.
+@export var caption := ""
 ## Usa la trasparenza della texture (graffiti, grate).
 @export var alpha_cut := false:
 	set(v):
@@ -28,6 +31,17 @@ func _ready() -> void:
 	_rebuild()
 	if not Engine.is_editor_hint():
 		Game.settings_changed.connect(_rebuild)   # insegne con scritte: cambia la lingua
+		if not get_caption().is_empty():
+			add_to_group("env_text")
+
+
+## [tipo, testo] della didascalia ([] = nessuna). Raggio: per decidere se la guardi.
+func get_caption() -> Array:
+	return EnvTexts.resolve(caption, texture)
+
+
+func caption_radius() -> float:
+	return maxf(size.x, size.y) * 0.5
 
 
 func _rebuild() -> void:

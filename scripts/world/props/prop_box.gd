@@ -47,6 +47,9 @@ extends StaticBody3D
 	set(v):
 		collision = v
 		_rebuild()
+## Didascalia: cosa c'è scritto sulla texture, in inglese (tradotta in locale/it.po).
+## Vuoto = quella della texture (scripts/data/env_texts.gd), «-» = nessuna.
+@export var caption := ""
 @export var cast_shadows := true:
 	set(v):
 		cast_shadows = v
@@ -60,6 +63,16 @@ func _ready() -> void:
 	_rebuild()
 	if not Engine.is_editor_hint():
 		Game.settings_changed.connect(func(): if _mesh != null: _mesh.material_override = build_material())   # lingua delle scritte
+		if not get_caption().is_empty():
+			add_to_group("env_text")
+
+
+func get_caption() -> Array:
+	return EnvTexts.resolve(caption, texture)
+
+
+func caption_radius() -> float:
+	return maxf(size.x, maxf(size.y, size.z)) * 0.5
 
 
 func build_material() -> Material:
